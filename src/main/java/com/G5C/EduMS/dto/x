@@ -1,0 +1,289 @@
+// ========================
+// ADMISSIONS
+// ========================
+
+Table admission_applications {
+  id int [pk]
+  full_name varchar(255)
+  date_of_birth datetime
+  email varchar(255)
+  phone varchar(20)
+  national_id varchar(12)
+  address varchar(255)
+  major_id int [ref: > majors.id]
+  total_score float
+  exam_group varchar(5) // e.g., A00, D01
+  status int
+  approval_date datetime
+  deleted int [not null, default: 0]
+}
+
+Table benchmark_scores {
+  id int [pk]
+  major_id int [ref: > majors.id]
+  admission_year int
+  score float
+}
+
+
+// ========================
+// ACCOUNTS & PERMISSIONS
+// ========================
+
+Table accounts {
+  id int [pk]
+  role_id int [ref: > roles.id]
+  username varchar(255) [unique]
+  password varchar(255)
+  status int [default: 1]
+  avatar_url varchar
+  deleted int [not null, default: 0]
+}
+
+Table roles {
+  id int [pk]
+  role_name varchar(255)
+  status int [default: 1]
+  deleted int [not null, default: 0]
+}
+
+Table role_permissions {
+  id int [pk]
+  role_id int [ref: > roles.id]
+  function_code varchar(255) // e.g., STUDENT_MGMT, LECTURER_MGMT
+  deleted int [not null, default: 0]
+}
+
+
+// ========================
+// HUMAN RESOURCES (HR)
+// ========================
+
+Table students {
+  id int [pk]
+  account_id int [ref: > accounts.id]
+  class_id int [ref: > administrative_classes.id]
+  specialization_id int [ref: > specializations.id]
+  parent_id int [ref: > parents.id]
+
+  student_code varchar(10) [unique]
+  full_name varchar(50)
+  email varchar(50) [unique]
+
+  address varchar(250)
+  date_of_birth datetime
+  gender int
+  phone varchar(10)
+
+  national_id varchar(12) [unique]
+  ethnicity varchar(20)
+  religion varchar(50)
+  place_of_birth varchar(50)
+  nationality varchar(50)
+
+  status int [default: 1]
+  created_at datetime
+  deleted int [not null, default: 0]
+}
+
+Table lecturers {
+  id int [pk]
+  account_id int [ref: > accounts.id]
+  full_name varchar(50)
+  academic_degree varchar(50)
+  email varchar(50)
+  phone varchar(10)
+  deleted int [not null, default: 0]
+}
+
+Table parents {
+  id int [pk]
+  account_id int [ref: > accounts.id]
+  full_name varchar(50)
+  phone varchar(10)
+  relationship varchar(50) // e.g., Father, Mother, Guardian
+  deleted int [not null, default: 0]
+}
+
+
+// ========================
+// ACADEMIC STRUCTURE
+// ========================
+
+Table faculties {
+  id int [pk]
+  faculty_name varchar(255)
+  deleted int [not null, default: 0]
+}
+
+Table majors {
+  id int [pk]
+  faculty_id int [ref: > faculties.id]
+  major_name varchar(255)
+  deleted int [not null, default: 0]
+}
+
+Table specializations {
+  id int [pk]
+  major_id int [ref: > majors.id]
+  specialization_name varchar(255)
+  deleted int [not null, default: 0]
+}
+
+Table cohorts {
+  id int [pk]
+  cohort_name varchar(255) // e.g., Intake 2022
+  start_year int
+  end_year int
+  status int // 1: Active, 0: Graduated
+  deleted int [not null, default: 0]
+}
+
+Table administrative_classes {
+  id int [pk]
+  class_name varchar(255)
+  head_lecturer_id int [ref: > lecturers.id]
+  cohort_id int [ref: > cohorts.id]
+  major_id int [ref: > majors.id]
+  max_capacity int
+  deleted int [not null, default: 0]
+}
+
+
+// ========================
+// COURSES & CURRICULUM
+// ========================
+
+Table courses {
+  id int [pk]
+  course_code varchar(20) [unique]
+  course_name varchar(255)
+  credits int
+  faculty_id int [ref: > faculties.id]
+  prerequisite_course_id int [ref: > courses.id]
+  status int
+  deleted int [not null, default: 0]
+}
+
+Table semesters {
+  id int [pk]
+  semester_number int
+  academic_year varchar(50)
+  deleted int [not null, default: 0]
+}
+
+Table course_sections {
+  id int [pk]
+  section_code varchar(50) [unique]
+  course_id int [ref: > courses.id]
+  lecturer_id int [ref: > lecturers.id]
+  semester_id int [ref: > semesters.id]
+  max_capacity int
+  status int
+  created_at datetime
+  deleted int [not null, default: 0]
+}
+
+
+// ========================
+// FACILITIES & SCHEDULING
+// ========================
+
+Table classrooms {
+  id int [pk]
+  room_name varchar(255)
+  capacity int
+  room_type varchar(255) // e.g., Theory, Lab
+  deleted int [not null, default: 0]
+}
+
+// Master Schedule (Weekly Template)
+Table recurring_schedules {
+  id int [pk]
+  section_id int [ref: > course_sections.id]
+  room_id int [ref: > classrooms.id]
+  day_of_week int // 2 (Mon) to 8 (Sun)
+  start_period int
+  end_period int
+  indexes {
+    (room_id, day_of_week, start_period)
+  }
+}
+
+// Actual Class Sessions (Generated for Attendance)
+Table class_sessions {
+  id int [pk]
+  section_id int [ref: > course_sections.id]
+  room_id int [ref: > classrooms.id]
+  session_date date
+  start_period int
+  end_period int
+  lesson_content text
+  status int // 1: Normal, 2: Cancelled, 3: Rescheduled
+}
+
+
+// ========================
+// ATTENDANCE & REGISTRATION
+// ========================
+
+Table attendance {
+  id int [pk]
+  session_id int [ref: > class_sessions.id]
+  registration_id int [ref: > course_registrations.id]
+  attendance_status int // 1: Present, 0: Absent, 2: Late
+  note varchar(255)
+  deleted int [not null, default: 0]
+  indexes {
+    (session_id, registration_id) [unique]
+  }
+}
+
+Table course_registrations {
+  id int [pk]
+  student_id int [ref: > students.id]
+  section_id int [ref: > course_sections.id]
+  registration_time datetime
+  status int
+  deleted int [not null, default: 0]
+  indexes {
+    (student_id, section_id) [unique]
+  }
+}
+
+
+// ========================
+// GRADES & ASSESSMENT
+// ========================
+
+Table grade_reports {
+  id int [pk]
+  registration_id int [ref: > course_registrations.id, unique]
+  final_score float
+  letter_grade varchar(5)
+  status int
+  created_at datetime
+  deleted int [not null, default: 0]
+}
+
+Table grade_components {
+  id int [pk]
+  component_name varchar(50) // e.g., Attendance, Midterm, Final
+  weight_percentage float
+  course_id int [ref: > courses.id]
+  deleted int [not null, default: 0]
+  indexes {
+    (course_id, component_name)
+  }
+}
+
+Table grade_details {
+  id int [pk]
+  report_id int [ref: > grade_reports.id]
+  component_id int [ref: > grade_components.id]
+  score float
+  deleted int [not null, default: 0]
+  indexes {
+    (report_id, component_id) [unique]
+  }
+}
