@@ -69,6 +69,17 @@ EduMS/
 │       │   │
 │       │   ├── controller/                    # Tầng nhận request HTTP
 │       │   │   └── FacultyController.java     # ← Xem làm mẫu
+│       │   │── enums/                     # Enum dùng trong Entity
+│       │   │       ├── AccountStatus.java     # ACTIVE, INACTIVE, LOCKED
+│       │   │       ├── StudentStatus.java     # ACTIVE, SUSPENDED, GRADUATED, DROPPED_OUT
+│       │   │       ├── CohortStatus.java      # ACTIVE, GRADUATED
+│       │   │       ├── CourseStatus.java      # ACTIVE, INACTIVE
+│       │   │       ├── CourseSectionStatus.java # OPEN, CLOSED, ONGOING, CANCELLED, FINISHED
+│       │   │       ├── RegistrationStatus.java  # PENDING, CONFIRMED, CANCELLED, DROPPED
+│       │   │       ├── SessionStatus.java     # NORMAL, CANCELLED, RESCHEDULED
+│       │   │       ├── AttendanceStatus.java  # PRESENT, ABSENT, LATE, EXCUSED
+│       │   │       ├── ApplicationStatus.java # PENDING, APPROVED, REJECTED
+│       │   │       └── GradeStatus.java       # DRAFT, PUBLISHED, LOCKED
 │       │   │
 │       │   ├── service/                       # Tầng xử lý business logic
 │       │   │   ├── FacultyService.java        # Interface định nghĩa contract
@@ -103,17 +114,7 @@ EduMS/
 │       │   │   ├── BenchmarkScore.java
 │       │   │   ├── Role.java
 │       │   │   ├── RolePermission.java
-│       │   │   └── enums/                     # Enum dùng trong Entity
-│       │   │       ├── AccountStatus.java     # ACTIVE, INACTIVE, LOCKED
-│       │   │       ├── StudentStatus.java     # ACTIVE, SUSPENDED, GRADUATED, DROPPED_OUT
-│       │   │       ├── CohortStatus.java      # ACTIVE, GRADUATED
-│       │   │       ├── CourseStatus.java      # ACTIVE, INACTIVE
-│       │   │       ├── CourseSectionStatus.java # OPEN, CLOSED, ONGOING, CANCELLED, FINISHED
-│       │   │       ├── RegistrationStatus.java  # PENDING, CONFIRMED, CANCELLED, DROPPED
-│       │   │       ├── SessionStatus.java     # NORMAL, CANCELLED, RESCHEDULED
-│       │   │       ├── AttendanceStatus.java  # PRESENT, ABSENT, LATE, EXCUSED
-│       │   │       ├── ApplicationStatus.java # PENDING, APPROVED, REJECTED
-│       │   │       └── GradeStatus.java       # DRAFT, PUBLISHED, LOCKED
+│       │   │   
 │       │   │
 │       │   ├── dto/
 │       │   │   ├── request/                   # DTO nhận dữ liệu từ client (input)
