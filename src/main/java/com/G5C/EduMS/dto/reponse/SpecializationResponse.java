@@ -7,10 +7,11 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class FacultyResponse {
+public class SpecializationResponse {
 
     private Integer id;
-    private String facultyName;
-    private String facultyCode;
+    private Integer majorId;
+    private String majorName;
+    private String specializationName;
 }
 

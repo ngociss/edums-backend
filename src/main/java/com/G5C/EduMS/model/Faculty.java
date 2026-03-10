@@ -21,6 +21,9 @@ public class Faculty {
     @Column(name = "faculty_name", length = 255)
     private String facultyName;
 
+    @Column(name = "faculty_code", length = 50)
+    private String facultyCode;
+
     @Column(name = "deleted", nullable = false)
     @Builder.Default
     private boolean deleted = false;

@@ -19,17 +19,17 @@ public class ResponseData<T> {
 
     // ==================== Success ====================
 
-    public static <T> ResponseData<T> success(T data) {
-        return ResponseData.<T>builder()
-                .status(200)
-                .message("Success")
-                .data(data)
-                .build();
-    }
+//    public static <T> ResponseData<T> success(T data) {
+//        return ResponseData.<T>builder()
+//                .status(200)
+//                .message("Success")
+//                .data(data)
+//                .build();
+//    }
 
-    public static <T> ResponseData<T> success(String message, T data) {
+    public static <T> ResponseData<T> success(String message, T data, int status) {
         return ResponseData.<T>builder()
-                .status(200)
+                .status(status)
                 .message(message)
                 .data(data)
                 .build();

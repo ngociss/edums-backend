@@ -25,13 +25,13 @@ public class FacultyController {
     @GetMapping
     @Operation(summary = "Get all faculties")
     public ResponseEntity<ResponseData<List<FacultyResponse>>> getAll() {
-        return ResponseEntity.ok(ResponseData.success(facultyService.getAll()));
+        return ResponseEntity.ok(ResponseData.success("Success", facultyService.getAll(), 200));
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Get faculty by ID")
     public ResponseEntity<ResponseData<FacultyResponse>> getById(@PathVariable Integer id) {
-        return ResponseEntity.ok(ResponseData.success(facultyService.getById(id)));
+        return ResponseEntity.ok(ResponseData.success("Success", facultyService.getById(id), 200));
     }
 
     @PostMapping
@@ -40,7 +40,7 @@ public class FacultyController {
             @Valid @RequestBody FacultyRequest request) {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(ResponseData.success("Faculty created successfully", facultyService.create(request)));
+                .body(ResponseData.success("Faculty created successfully", facultyService.create(request), 201));
     }
 
     @PutMapping("/{id}")
@@ -49,14 +49,13 @@ public class FacultyController {
             @PathVariable Integer id,
             @Valid @RequestBody FacultyRequest request) {
         return ResponseEntity.ok(
-                ResponseData.success("Faculty updated successfully", facultyService.update(id, request)));
+                ResponseData.success("Faculty updated successfully", facultyService.update(id, request), 200));
     }
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Soft delete faculty")
     public ResponseEntity<ResponseData<Void>> delete(@PathVariable Integer id) {
         facultyService.delete(id);
-        return ResponseEntity.ok(ResponseData.success("Faculty deleted successfully", null));
+        return ResponseEntity.ok(ResponseData.success("Faculty deleted successfully", null, 200));
     }
 }
-

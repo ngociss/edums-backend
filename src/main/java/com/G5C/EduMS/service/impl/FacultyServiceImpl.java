@@ -41,6 +41,8 @@ public class FacultyServiceImpl implements FacultyService {
     public FacultyResponse create(FacultyRequest request) {
         if (facultyRepository.existsByFacultyNameAndDeletedFalse(request.getFacultyName())) {
             throw new ExistingResourcesException("Faculty already exists with name: " + request.getFacultyName());
+        } else if (facultyRepository.existsByFacultyCodeAndDeletedFalse(request.getFacultyCode())) {
+            throw new ExistingResourcesException("Faculty already exists with code: " + request.getFacultyCode());
         }
         Faculty faculty = facultyMapper.toEntity(request);
         return facultyMapper.toResponse(facultyRepository.save(faculty));
@@ -51,6 +53,11 @@ public class FacultyServiceImpl implements FacultyService {
     public FacultyResponse update(Integer id, FacultyRequest request) {
         Faculty faculty = facultyRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new NotFoundResourcesException("Faculty not found with id: " + id));
+        if (facultyRepository.existsByFacultyNameAndDeletedFalse(request.getFacultyName()) && !faculty.getFacultyName().equals(request.getFacultyName())) {
+            throw new ExistingResourcesException("Faculty already exists with name: " + request.getFacultyName());
+        } else if (facultyRepository.existsByFacultyCodeAndDeletedFalse(request.getFacultyCode()) && !faculty.getFacultyCode().equals(request.getFacultyCode())) {
+            throw new ExistingResourcesException("Faculty already exists with code: " + request.getFacultyCode());
+        }
         facultyMapper.updateEntity(request, faculty);
         return facultyMapper.toResponse(facultyRepository.save(faculty));
     }
