@@ -22,8 +22,12 @@ public class Major {
     @JoinColumn(name = "faculty_id")
     private Faculty faculty;
 
+
     @Column(name = "major_name", length = 255)
     private String majorName;
+
+    @Column(name = "major_code", length = 50)
+    private String majorCode;
 
     @Column(name = "deleted", nullable = false)
     @Builder.Default
