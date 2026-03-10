@@ -2,14 +2,16 @@ package com.G5C.EduMS.service.impl;
 
 import com.G5C.EduMS.dto.request.SpecializationRequest;
 import com.G5C.EduMS.dto.reponse.SpecializationResponse;
-import com.G5C.EduMS.exception.ExistingResourcesException;
+import com.G5C.EduMS.exception.CannotDeleteException;
 import com.G5C.EduMS.exception.NotFoundResourcesException;
 import com.G5C.EduMS.mapper.SpecializationMapper;
 import com.G5C.EduMS.model.Major;
 import com.G5C.EduMS.model.Specialization;
 import com.G5C.EduMS.repository.MajorRepository;
 import com.G5C.EduMS.repository.SpecializationRepository;
+import com.G5C.EduMS.repository.StudentRepository;
 import com.G5C.EduMS.service.SpecializationService;
+import com.G5C.EduMS.validator.SpecializationValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,7 +24,9 @@ public class SpecializationServiceImpl implements SpecializationService {
 
     private final SpecializationRepository specializationRepository;
     private final MajorRepository majorRepository;
+    private final StudentRepository studentRepository;
     private final SpecializationMapper specializationMapper;
+    private final SpecializationValidator specializationValidator;
 
     @Override
     public List<SpecializationResponse> getAll() {
@@ -55,10 +59,7 @@ public class SpecializationServiceImpl implements SpecializationService {
         Major major = majorRepository.findByIdAndDeletedFalse(request.getMajorId())
                 .orElseThrow(() -> new NotFoundResourcesException("Major not found with id: " + request.getMajorId()));
 
-        if (specializationRepository.existsBySpecializationNameAndMajorIdAndDeletedFalse(
-                request.getSpecializationName(), request.getMajorId())) {
-            throw new ExistingResourcesException("Specialization already exists with name: " + request.getSpecializationName());
-        }
+        specializationValidator.validateDuplicate(request.getSpecializationName(), request.getMajorId(), 0);
 
         Specialization specialization = specializationMapper.toEntity(request);
         specialization.setMajor(major);
@@ -74,10 +75,8 @@ public class SpecializationServiceImpl implements SpecializationService {
         Major major = majorRepository.findByIdAndDeletedFalse(request.getMajorId())
                 .orElseThrow(() -> new NotFoundResourcesException("Major not found with id: " + request.getMajorId()));
 
-        if (specializationRepository.existsBySpecializationNameAndMajorIdAndDeletedFalse(
-                request.getSpecializationName(), request.getMajorId()) && !specialization.getSpecializationName().equals(request.getSpecializationName())) {
-            throw new ExistingResourcesException("Specialization already exists with name: " + request.getSpecializationName());
-        }
+        specializationValidator.validateDuplicate(request.getSpecializationName(), request.getMajorId(), id);
+
         specializationMapper.updateEntity(request, specialization);
         specialization.setMajor(major);
         return specializationMapper.toResponse(specializationRepository.save(specialization));
@@ -88,6 +87,11 @@ public class SpecializationServiceImpl implements SpecializationService {
     public void delete(Integer id) {
         Specialization specialization = specializationRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new NotFoundResourcesException("Specialization not found with id: " + id));
+
+        if (studentRepository.existsBySpecializationIdAndDeletedFalse(id)) {
+            throw new CannotDeleteException("Cannot delete specialization because it still has active students");
+        }
+
         specialization.setDeleted(true);
         specializationRepository.save(specialization);
     }

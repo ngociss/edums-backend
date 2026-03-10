@@ -17,5 +17,14 @@ public interface SpecializationRepository extends JpaRepository<Specialization, 
     Optional<Specialization> findByIdAndDeletedFalse(Integer id);
 
     boolean existsBySpecializationNameAndMajorIdAndDeletedFalse(String specializationName, Integer majorId);
+
+    // Kiểm tra ràng buộc trước khi xóa Major
+    boolean existsByMajorIdAndDeletedFalse(Integer majorId);
+
+    boolean existsBySpecializationNameAndMajorIdAndIdNotAndDeletedFalse(
+            String specializationName,
+            Integer majorId,
+            Integer id
+    );
 }
 

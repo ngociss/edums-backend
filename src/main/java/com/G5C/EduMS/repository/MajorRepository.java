@@ -18,5 +18,19 @@ public interface MajorRepository extends JpaRepository<Major, Integer> {
 
     boolean existsByMajorNameAndFacultyIdAndDeletedFalse(String majorName, Integer facultyId);
     boolean existsByMajorCodeAndFacultyIdAndDeletedFalse(String majorCode, Integer facultyId);
+
+    boolean existsByMajorNameAndFacultyIdAndIdNotAndDeletedFalse(
+            String majorName,
+            Integer facultyId,
+            Integer id
+    );
+
+    boolean existsByMajorCodeAndFacultyIdAndIdNotAndDeletedFalse(
+            String majorCode,
+            Integer facultyId,
+            Integer id
+    );
+    // Kiểm tra ràng buộc trước khi xóa Faculty
+    boolean existsByFacultyIdAndDeletedFalse(Integer facultyId);
 }
 

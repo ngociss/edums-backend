@@ -17,5 +17,16 @@ public interface FacultyRepository extends JpaRepository<Faculty, Integer> {
     boolean existsByFacultyNameAndDeletedFalse(String facultyName);
 
     boolean existsByFacultyCodeAndDeletedFalse(String facultyCode);
+
+    boolean existsByFacultyNameAndIdNotAndDeletedFalse(
+            String facultyName,
+            Integer id
+    );
+
+    boolean existsByFacultyCodeAndIdNotAndDeletedFalse(
+            String facultyCode,
+            Integer id
+    );
+
 }
 

@@ -49,6 +49,12 @@ public class GlobalExceptionHandler {
         return handleBaseException(ex, request);
     }
 
+    @ExceptionHandler(CannotDeleteException.class)
+    public ResponseEntity<ResponseData<Object>> handleCannotDelete(
+            CannotDeleteException ex, HttpServletRequest request) {
+        return handleBaseException(ex, request);
+    }
+
     // ==================== Validation ====================
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
