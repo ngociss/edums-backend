@@ -1,0 +1,25 @@
+package com.G5C.EduMS.validator;
+
+import com.G5C.EduMS.exception.ExistingResourcesException;
+import com.G5C.EduMS.repository.CourseSectionRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
+@Component
+@RequiredArgsConstructor
+public class CourseSectionValidator {
+
+    private final CourseSectionRepository courseSectionRepository;
+
+    /**
+     * @param excludeId 0 khi create, id hiện tại khi update
+     */
+    public void validateDuplicate(String sectionCode, Integer semesterId, Integer excludeId) {
+        if (courseSectionRepository.existsBySectionCodeAndSemesterIdAndIdNotAndDeletedFalse(
+                sectionCode, semesterId, excludeId)) {
+            throw new ExistingResourcesException(
+                    "Section code '" + sectionCode + "' already exists in this semester");
+        }
+    }
+}
+
