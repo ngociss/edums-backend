@@ -3,6 +3,7 @@ package com.G5C.EduMS.controller;
 import com.G5C.EduMS.dto.request.CourseSectionRequest;
 import com.G5C.EduMS.dto.reponse.CourseSectionResponse;
 import com.G5C.EduMS.dto.reponse.ResponseData;
+import com.G5C.EduMS.dto.request.CourseSectionStatusRequest;
 import com.G5C.EduMS.service.CourseSectionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -63,6 +64,15 @@ public class CourseSectionController {
             @Valid @RequestBody CourseSectionRequest request) {
         return ResponseEntity.ok(
                 ResponseData.success("Course section updated successfully", courseSectionService.update(id, request), 200));
+    }
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<ResponseData<CourseSectionResponse>>  changeStatus(
+            @PathVariable Integer id,
+            @RequestBody CourseSectionStatusRequest request
+    ) {
+        return ResponseEntity.ok(
+                ResponseData.success("Course section updated successfully", courseSectionService.updateStatus(id, request), 200));
     }
 
     @DeleteMapping("/{id}")

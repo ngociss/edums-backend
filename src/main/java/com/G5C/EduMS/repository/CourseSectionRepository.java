@@ -21,8 +21,12 @@ public interface CourseSectionRepository extends JpaRepository<CourseSection, In
     // Duplicate check: section_code unique trong 1 semester
     boolean existsBySectionCodeAndSemesterIdAndDeletedFalse(String sectionCode, Integer semesterId);
 
-    boolean existsBySectionCodeAndSemesterIdAndIdNotAndDeletedFalse(String sectionCode, Integer semesterId, Integer id);
-
+    boolean existsBySectionCodeAndCourseIdAndSemesterIdAndIdNotAndDeletedFalse(
+            String sectionCode,
+            Integer courseId,
+            Integer semesterId,
+            Integer id
+    );
     // Ràng buộc xóa
     boolean existsByCourseIdAndDeletedFalse(Integer courseId);
 

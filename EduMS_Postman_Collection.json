@@ -1,0 +1,1076 @@
+{
+  "info": {
+    "name": "EduMS API Collection",
+    "description": "Postman collection for EduMS - Education Management System\nBase URL: http://localhost:8080/api/v1\n\nData hiện có (sau khi seed V1-V4):\n- Faculties: id=1(CNTT), id=2(KT), id=3(NN)\n- Majors: id=1(KTPM), id=2(HTTT), id=3(ATTT), id=4(KT), id=5(TCNH)\n- Specializations: id=1,2(KTPM), id=3(HTTT), id=4(ATTT)\n- Classrooms: id=1(A101), id=2(A102), id=3(B201), id=4(B202), id=5(C301)\n- Courses: id=1(CS101)..id=10(EC101)\n- Semesters: id=1(HK1 2023-2024)..id=4(HK2 2024-2025)\n- Lecturers: id=1(nguyenvana)..id=4(phamthid)\n- CourseSections: id=1(CS101-01 FINISHED)..id=13(EC101-01 DRAFT)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl",              "value": "http://localhost:8080/api/v1", "type": "string" },
+    { "key": "facultyId",            "value": "1",  "type": "string" },
+    { "key": "faculty2Id",           "value": "2",  "type": "string" },
+    { "key": "majorId",              "value": "1",  "type": "string" },
+    { "key": "major2Id",             "value": "2",  "type": "string" },
+    { "key": "specializationId",     "value": "1",  "type": "string" },
+    { "key": "classroomId",          "value": "1",  "type": "string" },
+    { "key": "courseId",             "value": "1",  "type": "string" },
+    { "key": "semesterId",           "value": "3",  "type": "string" },
+    { "key": "lecturerId",           "value": "1",  "type": "string" },
+    { "key": "sectionId",            "value": "12", "type": "string" },
+    { "key": "finishedSectionId",    "value": "1",  "type": "string" },
+    { "key": "ongoingSectionId",     "value": "8",  "type": "string" },
+    { "key": "draftSectionId",       "value": "12", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "🏛️ Faculty",
+      "description": "CRUD APIs cho Khoa\nData: id=1(CNTT), id=2(KT), id=3(NN)",
+      "item": [
+        {
+          "name": "Get All Faculties",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/faculties", "host": ["{{baseUrl}}"], "path": ["faculties"] },
+            "description": "Expect: 3 records (CNTT, KT, NN)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Faculty By ID - CNTT (id=1)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/faculties/{{facultyId}}", "host": ["{{baseUrl}}"], "path": ["faculties", "{{facultyId}}"] },
+            "description": "Lấy Khoa CNTT (id=1)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Faculty Not Found (Expect 404)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/faculties/9999", "host": ["{{baseUrl}}"], "path": ["faculties", "9999"] },
+            "description": "ID không tồn tại => Expect 404"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Faculty - New",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.data && jsonData.data.id) {",
+                  "        pm.collectionVariables.set('newFacultyId', jsonData.data.id);",
+                  "        console.log('newFacultyId set to: ' + jsonData.data.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"facultyName\": \"Khoa Kỹ thuật\",\n  \"facultyCode\": \"KTH\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/faculties", "host": ["{{baseUrl}}"], "path": ["faculties"] },
+            "description": "Tạo khoa KTH mới. Test script lưu newFacultyId."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Faculty - Duplicate Code CNTT (Expect 409)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"facultyName\": \"Khoa CNTT Mới\",\n  \"facultyCode\": \"CNTT\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/faculties", "host": ["{{baseUrl}}"], "path": ["faculties"] },
+            "description": "CNTT đã tồn tại => Expect 409 Conflict"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Faculty - Validation Error (Expect 400)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"facultyName\": \"\",\n  \"facultyCode\": \"\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/faculties", "host": ["{{baseUrl}}"], "path": ["faculties"] },
+            "description": "Tên và mã rỗng => Expect 400"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Faculty - CNTT",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"facultyName\": \"Khoa Công nghệ Thông tin (Updated)\",\n  \"facultyCode\": \"CNTT\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/faculties/{{facultyId}}", "host": ["{{baseUrl}}"], "path": ["faculties", "{{facultyId}}"] },
+            "description": "Cập nhật Khoa CNTT (id=1)"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Faculty - Has Majors (Expect 409)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/faculties/{{facultyId}}", "host": ["{{baseUrl}}"], "path": ["faculties", "{{facultyId}}"] },
+            "description": "CNTT còn KTPM, HTTT, ATTT => Expect 409 CANNOT_DELETE"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Faculty - Ngoai ngu id=3 (No Majors)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/faculties/3", "host": ["{{baseUrl}}"], "path": ["faculties", "3"] },
+            "description": "Khoa Ngoai ngu (id=3) không có major => Soft delete OK"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "📚 Major",
+      "description": "CRUD APIs cho Ngành học\nData: id=1(KTPM/f1), id=2(HTTT/f1), id=3(ATTT/f1), id=4(KT/f2), id=5(TCNH/f2)",
+      "item": [
+        {
+          "name": "Get All Majors",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/majors", "host": ["{{baseUrl}}"], "path": ["majors"] },
+            "description": "Expect: 5 records"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Majors By Faculty - CNTT (id=1)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/majors/faculty/{{facultyId}}", "host": ["{{baseUrl}}"], "path": ["majors", "faculty", "{{facultyId}}"] },
+            "description": "CNTT => Expect: KTPM, HTTT, ATTT"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Majors By Faculty - KT (id=2)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/majors/faculty/{{faculty2Id}}", "host": ["{{baseUrl}}"], "path": ["majors", "faculty", "{{faculty2Id}}"] },
+            "description": "KT => Expect: KT, TCNH"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Major By ID - KTPM (id=1)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/majors/{{majorId}}", "host": ["{{baseUrl}}"], "path": ["majors", "{{majorId}}"] },
+            "description": "Lấy ngành KTPM (id=1)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Major Not Found (Expect 404)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/majors/9999", "host": ["{{baseUrl}}"], "path": ["majors", "9999"] },
+            "description": "ID không tồn tại => Expect 404"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Major - New in CNTT",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.data && jsonData.data.id) {",
+                  "        pm.collectionVariables.set('newMajorId', jsonData.data.id);",
+                  "        console.log('newMajorId set to: ' + jsonData.data.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"facultyId\": 1,\n  \"majorName\": \"Khoa học Máy tính\",\n  \"majorCode\": \"KHMT\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/majors", "host": ["{{baseUrl}}"], "path": ["majors"] },
+            "description": "Tạo ngành KHMT trong Khoa CNTT. Test script lưu newMajorId."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Major - Duplicate Code KTPM (Expect 409)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"facultyId\": 1,\n  \"majorName\": \"Ngành Mới\",\n  \"majorCode\": \"KTPM\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/majors", "host": ["{{baseUrl}}"], "path": ["majors"] },
+            "description": "KTPM đã tồn tại => Expect 409"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Major - Invalid Faculty (Expect 404)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"facultyId\": 9999,\n  \"majorName\": \"Ngành không hợp lệ\",\n  \"majorCode\": \"NHV\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/majors", "host": ["{{baseUrl}}"], "path": ["majors"] },
+            "description": "Faculty 9999 không tồn tại => Expect 404"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Major - Validation Error (Expect 400)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"majorName\": \"Thiếu facultyId và majorCode\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/majors", "host": ["{{baseUrl}}"], "path": ["majors"] },
+            "description": "Thiếu facultyId, majorCode => Expect 400"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Major - KTPM",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"facultyId\": 1,\n  \"majorName\": \"Kỹ thuật Phần mềm (Updated)\",\n  \"majorCode\": \"KTPM\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/majors/{{majorId}}", "host": ["{{baseUrl}}"], "path": ["majors", "{{majorId}}"] },
+            "description": "Cập nhật KTPM (id=1)"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Major - Has Specializations (Expect 409)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/majors/{{majorId}}", "host": ["{{baseUrl}}"], "path": ["majors", "{{majorId}}"] },
+            "description": "KTPM còn specializations => Expect 409 CANNOT_DELETE"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Major - TCNH id=5 (No Specializations)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/majors/5", "host": ["{{baseUrl}}"], "path": ["majors", "5"] },
+            "description": "TCNH (id=5) không có specialization => Soft delete OK"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🎓 Specialization",
+      "description": "CRUD APIs cho Chuyên ngành\nData: id=1(Web/KTPM), id=2(Mobile/KTPM), id=3(Data/HTTT), id=4(Security/ATTT)",
+      "item": [
+        {
+          "name": "Get All Specializations",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/specializations", "host": ["{{baseUrl}}"], "path": ["specializations"] },
+            "description": "Expect: 4 records"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Specializations By Major - KTPM (id=1)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/specializations/major/{{majorId}}", "host": ["{{baseUrl}}"], "path": ["specializations", "major", "{{majorId}}"] },
+            "description": "KTPM => Expect: Web App, Mobile App"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Specializations By Major - HTTT (id=2)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/specializations/major/{{major2Id}}", "host": ["{{baseUrl}}"], "path": ["specializations", "major", "{{major2Id}}"] },
+            "description": "HTTT => Expect: Phan tich Du lieu"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Specialization By ID - Web (id=1)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/specializations/{{specializationId}}", "host": ["{{baseUrl}}"], "path": ["specializations", "{{specializationId}}"] },
+            "description": "Lấy chuyên ngành Web (id=1)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Specialization Not Found (Expect 404)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/specializations/9999", "host": ["{{baseUrl}}"], "path": ["specializations", "9999"] },
+            "description": "ID không tồn tại => Expect 404"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Specialization - AI in KTPM",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.data && jsonData.data.id) {",
+                  "        pm.collectionVariables.set('newSpecializationId', jsonData.data.id);",
+                  "        console.log('newSpecializationId set to: ' + jsonData.data.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"majorId\": 1,\n  \"specializationName\": \"Tri tue Nhan tao\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/specializations", "host": ["{{baseUrl}}"], "path": ["specializations"] },
+            "description": "Tạo chuyên ngành AI trong KTPM. Test script lưu newSpecializationId."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Specialization - Invalid Major (Expect 404)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"majorId\": 9999,\n  \"specializationName\": \"Chuyen nganh khong hop le\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/specializations", "host": ["{{baseUrl}}"], "path": ["specializations"] },
+            "description": "Major 9999 không tồn tại => Expect 404"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Specialization - Validation Error (Expect 400)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"specializationName\": \"\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/specializations", "host": ["{{baseUrl}}"], "path": ["specializations"] },
+            "description": "Thiếu majorId, tên rỗng => Expect 400"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Specialization - Web (id=1)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"majorId\": 1,\n  \"specializationName\": \"Phat trien Web va Mobile\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/specializations/{{specializationId}}", "host": ["{{baseUrl}}"], "path": ["specializations", "{{specializationId}}"] },
+            "description": "Cập nhật chuyên ngành Web (id=1)"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Specialization - Has Students (Expect 409)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/specializations/{{specializationId}}", "host": ["{{baseUrl}}"], "path": ["specializations", "{{specializationId}}"] },
+            "description": "Web (id=1) có sv 2200001, 2200002 => Expect 409 CANNOT_DELETE"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Specialization - Bao mat Mang id=4 (No Students)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/specializations/4", "host": ["{{baseUrl}}"], "path": ["specializations", "4"] },
+            "description": "Bao mat Mang (id=4) không có sinh viên => Soft delete OK"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🏫 Classroom",
+      "description": "CRUD APIs cho Phòng học\nData: id=1(A101 Theory), id=2(A102 Theory), id=3(B201 Lab), id=4(B202 Lab), id=5(C301 Auditorium)",
+      "item": [
+        {
+          "name": "Get All Classrooms",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/classrooms", "host": ["{{baseUrl}}"], "path": ["classrooms"] },
+            "description": "Expect: 5 records"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Classroom By ID - A101 (id=1)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/classrooms/{{classroomId}}", "host": ["{{baseUrl}}"], "path": ["classrooms", "{{classroomId}}"] },
+            "description": "Lấy phòng A101 (id=1)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Classroom Not Found (Expect 404)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/classrooms/9999", "host": ["{{baseUrl}}"], "path": ["classrooms", "9999"] },
+            "description": "ID không tồn tại => Expect 404"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Classroom - New Lab D401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.data && jsonData.data.id) {",
+                  "        pm.collectionVariables.set('newClassroomId', jsonData.data.id);",
+                  "        console.log('newClassroomId set to: ' + jsonData.data.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roomName\": \"D401\",\n  \"capacity\": 50,\n  \"roomType\": \"Lab\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/classrooms", "host": ["{{baseUrl}}"], "path": ["classrooms"] },
+            "description": "Tạo phòng D401. Test script lưu newClassroomId."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Classroom - Duplicate A101 (Expect 409)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roomName\": \"A101\",\n  \"capacity\": 40,\n  \"roomType\": \"Theory\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/classrooms", "host": ["{{baseUrl}}"], "path": ["classrooms"] },
+            "description": "A101 đã tồn tại => Expect 409"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Classroom - Validation Error (Expect 400)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roomName\": \"\",\n  \"capacity\": 0,\n  \"roomType\": \"\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/classrooms", "host": ["{{baseUrl}}"], "path": ["classrooms"] },
+            "description": "Dữ liệu không hợp lệ => Expect 400"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Classroom - A101 increase capacity",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roomName\": \"A101\",\n  \"capacity\": 45,\n  \"roomType\": \"Theory\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/classrooms/{{classroomId}}", "host": ["{{baseUrl}}"], "path": ["classrooms", "{{classroomId}}"] },
+            "description": "Tăng capacity A101 từ 40 => 45"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Classroom - Has Schedule (Expect 409)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/classrooms/{{classroomId}}", "host": ["{{baseUrl}}"], "path": ["classrooms", "{{classroomId}}"] },
+            "description": "A101 có recurring_schedule & class_session => Expect 409 CANNOT_DELETE"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Classroom - C301 id=5 (No Schedule)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/classrooms/5", "host": ["{{baseUrl}}"], "path": ["classrooms", "5"] },
+            "description": "C301 (id=5) không có lịch => Soft delete OK"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "📖 Course",
+      "description": "CRUD APIs cho Môn học\nData:\n- id=1 CS101 (no prereq)\n- id=2 CS102 (prereq CS101)\n- id=3 CS201 (prereq CS101)\n- id=4 CS301 (no prereq)\n- id=5 CS302 (prereq CS301)\n- id=6 CS401 (prereq CS201)\n- id=7 CS402 (prereq CS201)\n- id=8 MT101 (no prereq)\n- id=9 MT102 (no prereq)\n- id=10 EC101 faculty=2",
+      "item": [
+        {
+          "name": "Get All Courses",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/courses", "host": ["{{baseUrl}}"], "path": ["courses"] },
+            "description": "Expect: 10 records"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Courses By Faculty - CNTT (id=1)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/courses/faculty/{{facultyId}}", "host": ["{{baseUrl}}"], "path": ["courses", "faculty", "{{facultyId}}"] },
+            "description": "Expect: 9 mon CS101..MT102"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Courses By Faculty - KT (id=2)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/courses/faculty/{{faculty2Id}}", "host": ["{{baseUrl}}"], "path": ["courses", "faculty", "{{faculty2Id}}"] },
+            "description": "Expect: EC101"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Course By ID - CS101 (id=1)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/courses/{{courseId}}", "host": ["{{baseUrl}}"], "path": ["courses", "{{courseId}}"] },
+            "description": "CS101 không có prerequisite"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Course By ID - CS102 (id=2) Has Prerequisite",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/courses/2", "host": ["{{baseUrl}}"], "path": ["courses", "2"] },
+            "description": "CS102 có prereq=CS101 => Expect object prerequisiteCourse"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Course Not Found (Expect 404)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/courses/9999", "host": ["{{baseUrl}}"], "path": ["courses", "9999"] },
+            "description": "ID không tồn tại => Expect 404"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Course - No Prerequisite",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.data && jsonData.data.id) {",
+                  "        pm.collectionVariables.set('newCourseId', jsonData.data.id);",
+                  "        console.log('newCourseId set to: ' + jsonData.data.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseCode\": \"CS501\",\n  \"courseName\": \"Tri tue Nhan tao\",\n  \"credits\": 3,\n  \"facultyId\": 1,\n  \"prerequisiteCourseId\": null,\n  \"status\": \"ACTIVE\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/courses", "host": ["{{baseUrl}}"], "path": ["courses"] },
+            "description": "Tạo mon AI. Test script lưu newCourseId."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Course - With Prerequisite CS201 (id=3)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.data && jsonData.data.id) {",
+                  "        pm.collectionVariables.set('newCourseId', jsonData.data.id);",
+                  "        console.log('newCourseId set to: ' + jsonData.data.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseCode\": \"CS502\",\n  \"courseName\": \"Machine Learning\",\n  \"credits\": 3,\n  \"facultyId\": 1,\n  \"prerequisiteCourseId\": 3,\n  \"status\": \"ACTIVE\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/courses", "host": ["{{baseUrl}}"], "path": ["courses"] },
+            "description": "Tạo Machine Learning, prereq=CS201 (id=3). Test script lưu newCourseId."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Course - Duplicate Code CS101 (Expect 409)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseCode\": \"CS101\",\n  \"courseName\": \"Mon trung code\",\n  \"credits\": 3,\n  \"facultyId\": 1,\n  \"prerequisiteCourseId\": null,\n  \"status\": \"ACTIVE\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/courses", "host": ["{{baseUrl}}"], "path": ["courses"] },
+            "description": "CS101 da ton tai => Expect 409"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Course - Invalid Faculty (Expect 404)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseCode\": \"CS999\",\n  \"courseName\": \"Mon khong hop le\",\n  \"credits\": 3,\n  \"facultyId\": 9999,\n  \"prerequisiteCourseId\": null,\n  \"status\": \"ACTIVE\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/courses", "host": ["{{baseUrl}}"], "path": ["courses"] },
+            "description": "Faculty 9999 khong ton tai => Expect 404"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Course - Invalid Prerequisite (Expect 404)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseCode\": \"CS503\",\n  \"courseName\": \"Mon tien quyet sai\",\n  \"credits\": 3,\n  \"facultyId\": 1,\n  \"prerequisiteCourseId\": 9999,\n  \"status\": \"ACTIVE\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/courses", "host": ["{{baseUrl}}"], "path": ["courses"] },
+            "description": "Prerequisite 9999 khong ton tai => Expect 404"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Course - Validation Error (Expect 400)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseCode\": \"\",\n  \"courseName\": \"\",\n  \"credits\": 0\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/courses", "host": ["{{baseUrl}}"], "path": ["courses"] },
+            "description": "Du lieu khong hop le => Expect 400"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Course - CS101",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseCode\": \"CS101\",\n  \"courseName\": \"Nhap mon Lap trinh (Updated)\",\n  \"credits\": 3,\n  \"facultyId\": 1,\n  \"prerequisiteCourseId\": null,\n  \"status\": \"ACTIVE\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/courses/{{courseId}}", "host": ["{{baseUrl}}"], "path": ["courses", "{{courseId}}"] },
+            "description": "Cap nhat CS101 (id=1)"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Course - Is Prerequisite (Expect 409)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/courses/{{courseId}}", "host": ["{{baseUrl}}"], "path": ["courses", "{{courseId}}"] },
+            "description": "CS101 la tien quyet cua CS102, CS201 => Expect 409 CANNOT_DELETE"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Course - EC101 id=10",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/courses/10", "host": ["{{baseUrl}}"], "path": ["courses", "10"] },
+            "description": "EC101 chi co section DRAFT => xem logic delete"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "📋 Course Section",
+      "description": "CRUD APIs cho Lop hoc phan\nData:\n- id=1..7  FINISHED (HK1+HK2 2023-2024)\n- id=8,9   ONGOING  (HK1 2024-2025)\n- id=10,11 OPEN     (HK1 2024-2025)\n- id=12,13 DRAFT    (HK2 2024-2025)",
+      "item": [
+        {
+          "name": "Get All Course Sections",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/course-sections", "host": ["{{baseUrl}}"], "path": ["course-sections"] },
+            "description": "Expect: 13 records"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Sections By Course - CS101 (id=1)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/course-sections/course/1", "host": ["{{baseUrl}}"], "path": ["course-sections", "course", "1"] },
+            "description": "CS101 => Expect: CS101-01, CS101-02 (FINISHED)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Sections By Course - CS302 (id=5)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/course-sections/course/5", "host": ["{{baseUrl}}"], "path": ["course-sections", "course", "5"] },
+            "description": "CS302 => Expect: CS302-01 ONGOING, CS302-02 DRAFT"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Sections By Semester - HK1 2024-2025 (id=3)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/course-sections/semester/3", "host": ["{{baseUrl}}"], "path": ["course-sections", "semester", "3"] },
+            "description": "HK1 2024-2025 => Expect: CS102-01, CS302-01, CS401-01, CS402-01"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Sections By Semester - HK2 2024-2025 (id=4)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/course-sections/semester/4", "host": ["{{baseUrl}}"], "path": ["course-sections", "semester", "4"] },
+            "description": "HK2 2024-2025 => Expect: CS302-02, EC101-01 (DRAFT)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Course Section - CS102-01 ONGOING (id=8)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/course-sections/{{ongoingSectionId}}", "host": ["{{baseUrl}}"], "path": ["course-sections", "{{ongoingSectionId}}"] },
+            "description": "Lop dang hoc CS102-01 (id=8)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Course Section - CS302-02 DRAFT (id=12)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/course-sections/{{draftSectionId}}", "host": ["{{baseUrl}}"], "path": ["course-sections", "{{draftSectionId}}"] },
+            "description": "Lop DRAFT CS302-02 (id=12)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Course Section Not Found (Expect 404)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/course-sections/9999", "host": ["{{baseUrl}}"], "path": ["course-sections", "9999"] },
+            "description": "ID khong ton tai => Expect 404"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Course Section - DRAFT HK2 2024-2025",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.data && jsonData.data.id) {",
+                  "        pm.collectionVariables.set('newSectionId', jsonData.data.id);",
+                  "        console.log('newSectionId set to: ' + jsonData.data.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sectionCode\": \"CS401-02\",\n  \"displayName\": \"Lap trinh Web - Nhom 2\",\n  \"courseId\": 6,\n  \"lecturerId\": null,\n  \"semesterId\": 4,\n  \"maxCapacity\": 35,\n  \"status\": \"DRAFT\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/course-sections", "host": ["{{baseUrl}}"], "path": ["course-sections"] },
+            "description": "Tao lop CS401 Nhom 2 trong HK2 2024-2025. Test script luu newSectionId."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Course Section - OPEN with GV Tran Thi Binh (id=2)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.data && jsonData.data.id) {",
+                  "        pm.collectionVariables.set('newSectionId', jsonData.data.id);",
+                  "        console.log('newSectionId set to: ' + jsonData.data.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sectionCode\": \"MT101-02\",\n  \"displayName\": \"Toan roi rac - Nhom 2\",\n  \"courseId\": 8,\n  \"lecturerId\": 2,\n  \"semesterId\": 4,\n  \"maxCapacity\": 40,\n  \"status\": \"OPEN\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/course-sections", "host": ["{{baseUrl}}"], "path": ["course-sections"] },
+            "description": "Tao lop MT101 Nhom 2 HK2 2024-2025, GV=Tran Thi Binh (id=2). Test script luu newSectionId."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Course Section - Duplicate CS302-02 in HK2 (Expect 409)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sectionCode\": \"CS302-02\",\n  \"courseId\": 5,\n  \"semesterId\": 4,\n  \"maxCapacity\": 40,\n  \"status\": \"DRAFT\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/course-sections", "host": ["{{baseUrl}}"], "path": ["course-sections"] },
+            "description": "CS302-02 da co trong HK2 2024-2025 (semester_id=4) => Expect 409"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Course Section - Invalid Course (Expect 404)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sectionCode\": \"XX999-01\",\n  \"courseId\": 9999,\n  \"semesterId\": 4,\n  \"maxCapacity\": 40,\n  \"status\": \"DRAFT\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/course-sections", "host": ["{{baseUrl}}"], "path": ["course-sections"] },
+            "description": "Course 9999 khong ton tai => Expect 404"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Course Section - Invalid Semester (Expect 404)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sectionCode\": \"CS101-99\",\n  \"courseId\": 1,\n  \"semesterId\": 9999,\n  \"maxCapacity\": 40,\n  \"status\": \"DRAFT\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/course-sections", "host": ["{{baseUrl}}"], "path": ["course-sections"] },
+            "description": "Semester 9999 khong ton tai => Expect 404"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Course Section - Validation Error (Expect 400)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sectionCode\": \"\",\n  \"maxCapacity\": 0\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/course-sections", "host": ["{{baseUrl}}"], "path": ["course-sections"] },
+            "description": "Du lieu khong hop le => Expect 400"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Course Section - CS302-02 DRAFT => OPEN + GV",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sectionCode\": \"CS302-02\",\n  \"displayName\": \"Cong nghe Phan mem - Nhom 2\",\n  \"courseId\": 5,\n  \"lecturerId\": 1,\n  \"semesterId\": 4,\n  \"maxCapacity\": 40,\n  \"status\": \"OPEN\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/course-sections/{{draftSectionId}}", "host": ["{{baseUrl}}"], "path": ["course-sections", "{{draftSectionId}}"] },
+            "description": "Cap nhat CS302-02 (id=12): gan GV Nguyen Van An (id=1), doi DRAFT => OPEN"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Course Section - CS302-02 => CANCELLED",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sectionCode\": \"CS302-02\",\n  \"courseId\": 5,\n  \"lecturerId\": null,\n  \"semesterId\": 4,\n  \"maxCapacity\": 40,\n  \"status\": \"CANCELLED\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/course-sections/{{draftSectionId}}", "host": ["{{baseUrl}}"], "path": ["course-sections", "{{draftSectionId}}"] },
+            "description": "Huy lop CS302-02 (id=12)"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Course Section - DRAFT CS302-02 (id=12)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/course-sections/{{draftSectionId}}", "host": ["{{baseUrl}}"], "path": ["course-sections", "{{draftSectionId}}"] },
+            "description": "Xoa lop DRAFT CS302-02 (id=12) => Soft delete OK"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Course Section - ONGOING CS102-01 (Expect 409)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/course-sections/{{ongoingSectionId}}", "host": ["{{baseUrl}}"], "path": ["course-sections", "{{ongoingSectionId}}"] },
+            "description": "CS102-01 dang ONGOING (id=8) => Expect 409 CANNOT_DELETE"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Course Section - FINISHED CS101-01 (Expect 409)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/course-sections/{{finishedSectionId}}", "host": ["{{baseUrl}}"], "path": ["course-sections", "{{finishedSectionId}}"] },
+            "description": "CS101-01 da FINISHED (id=1) => Expect 409 CANNOT_DELETE"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
+
