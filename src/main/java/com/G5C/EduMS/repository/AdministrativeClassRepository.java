@@ -9,5 +9,7 @@ public interface AdministrativeClassRepository extends JpaRepository<Administrat
 
     // Kiểm tra ràng buộc trước khi xóa Major
     boolean existsByMajorIdAndDeletedFalse(Integer majorId);
+
+    boolean existsByCohortIdAndDeletedFalse(Integer cohortId)
 }
 
