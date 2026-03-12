@@ -14,9 +14,9 @@ public class CourseSectionValidator {
     /**
      * @param excludeId 0 khi create, id hiện tại khi update
      */
-    public void validateDuplicate(String sectionCode, Integer semesterId, Integer excludeId) {
-        if (courseSectionRepository.existsBySectionCodeAndSemesterIdAndIdNotAndDeletedFalse(
-                sectionCode, semesterId, excludeId)) {
+    public void validateDuplicate(String sectionCode, Integer courseId, Integer semesterId, Integer excludeId) {
+        if (courseSectionRepository.existsBySectionCodeAndCourseIdAndSemesterIdAndIdNotAndDeletedFalse(
+                sectionCode,courseId, semesterId, excludeId)) {
             throw new ExistingResourcesException(
                     "Section code '" + sectionCode + "' already exists in this semester");
         }
