@@ -28,6 +28,10 @@ public class ClassSession {
     @JoinColumn(name = "room_id")
     private Classroom room;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "recurring_schedule_id")
+    private RecurringSchedule recurringSchedule;
+
     @Column(name = "session_date")
     private LocalDate sessionDate;
 
@@ -44,6 +48,10 @@ public class ClassSession {
     @Column(name = "status", length = 20)
     @Builder.Default
     private SessionStatus status = SessionStatus.NORMAL;
+
+    @Column(name = "deleted", nullable = false)
+    @Builder.Default
+    private boolean deleted = false;
 
     @OneToMany(mappedBy = "session", fetch = FetchType.LAZY)
     private List<Attendance> attendances;
