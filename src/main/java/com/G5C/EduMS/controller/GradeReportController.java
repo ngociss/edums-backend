@@ -22,8 +22,6 @@ public class GradeReportController {
 
     private final GradeReportService gradeReportService;
 
-    // ===== KAN-42: Giảng viên quản lý điểm =====
-
     @PostMapping("/grade-reports")
     @Operation(summary = "Create grade report for a registration")
     public ResponseEntity<ResponseData<GradeReportResponse>> create(
@@ -60,7 +58,6 @@ public class GradeReportController {
                 gradeReportService.getBySection(sectionId), 200));
     }
 
-    // ===== KAN-24: Sinh viên / Phụ huynh xem điểm =====
 
     @GetMapping("/students/{studentId}/grade-reports")
     @Operation(summary = "Student views their grade reports")

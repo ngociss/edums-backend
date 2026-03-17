@@ -56,11 +56,11 @@ public class AdministrativeClassController {
                 administrativeClassService.update(id, request), 200));
     }
 
-    // @DeleteMapping("/{id}")
-    // @Operation(summary = "Soft delete administrative class")
-    // public ResponseEntity<ResponseData<Void>> delete(@PathVariable Integer id) {
-    //     administrativeClassService.delete(id);
-    //     return ResponseEntity.ok(
-    //         ResponseData.success("Administrative class deleted successfully", null, 200));
-    // }
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Soft delete administrative class")
+    public ResponseEntity<ResponseData<Void>> delete(@PathVariable Integer id) {
+        administrativeClassService.delete(id);
+        return ResponseEntity.ok(
+            ResponseData.success("Administrative class deleted successfully", null, 200));
+    }
 }

@@ -56,8 +56,8 @@ public class AttendanceServiceImpl implements AttendanceService {
                         "Course registration not found with id: " + item.getCourseRegistrationId()));
 
             Attendance attendance = Attendance.builder()
-                    .session(session)               // ← đổi từ classSession
-                    .registration(registration)     // ← đổi từ courseRegistration
+                    .session(session)
+                    .registration(registration)
                     .attendanceStatus(item.getStatus())
                     .note(item.getNote())
                     .deleted(false)

@@ -2,7 +2,6 @@ package com.G5C.EduMS.repository;
 
 import com.G5C.EduMS.model.Attendance;
 import org.springframework.data.jpa.repository.JpaRepository;
-<<<<<<< HEAD
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -25,8 +24,4 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Integer>
     boolean existsBySessionIdAndRegistrationId(
         @Param("sessionId") Integer sessionId,
         @Param("registrationId") Integer registrationId);
-=======
-
-public interface AttendanceRepository extends JpaRepository<Attendance, Integer> {
->>>>>>> e3d7b05c505ca1e3d262f52d9549553fb7b2f3c1
 }

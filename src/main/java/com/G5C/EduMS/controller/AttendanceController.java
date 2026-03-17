@@ -61,8 +61,6 @@ public class AttendanceController {
             ResponseData.success("Attendance deleted successfully", null, 200));
     }
 
-    // ===== KAN-45: Sinh viên / Phụ huynh xem =====
-
     @GetMapping("/api/v1/students/{studentId}/attendances")
     @Operation(summary = "Student views their own attendance")
     public ResponseEntity<ResponseData<List<AttendanceResponse>>> getByStudent(
