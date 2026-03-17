@@ -20,6 +20,10 @@ public class AdmissionApplication {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "period_id", nullable = false)
+    private AdmissionPeriod admissionPeriod;
+
     @Column(name = "full_name", length = 255)
     private String fullName;
 
@@ -45,8 +49,9 @@ public class AdmissionApplication {
     @Column(name = "total_score")
     private Float totalScore;
 
-    @Column(name = "exam_group", length = 5)
-    private String examGroup; // e.g., A00, D01
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "block_id")
+    private AdmissionBlock admissionBlock;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 20)
