@@ -30,7 +30,6 @@ public class RecurringSchedule {
     @JoinColumn(name = "room_id")
     private Classroom room;
 
-    /** 1 = Thứ Hai (Monday) → 7 = Chủ Nhật (Sunday), theo chuẩn ISO */
     @Column(name = "day_of_week")
     private Integer dayOfWeek;
 
@@ -39,6 +38,12 @@ public class RecurringSchedule {
 
     @Column(name = "end_period")
     private Integer endPeriod;
+
+    @Column(name = "start_week")
+    private Integer startWeek;
+
+    @Column(name = "end_week")
+    private Integer endWeek;
 
     @Column(name = "deleted", nullable = false)
     @Builder.Default

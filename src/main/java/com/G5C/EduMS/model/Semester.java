@@ -25,13 +25,14 @@ public class Semester {
     @Column(name = "academic_year", length = 50)
     private String academicYear;
 
-    /** Ngày bắt đầu học kỳ — dùng để sinh ClassSession tự động */
     @Column(name = "start_date")
     private LocalDate startDate;
 
-    /** Ngày kết thúc học kỳ — dùng để sinh ClassSession tự động */
     @Column(name = "end_date")
     private LocalDate endDate;
+
+    @Column(name = "total_weeks")
+    private Integer totalWeeks;
 
     @Column(name = "deleted", nullable = false)
     @Builder.Default

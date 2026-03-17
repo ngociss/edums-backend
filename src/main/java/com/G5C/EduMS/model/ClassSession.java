@@ -28,7 +28,6 @@ public class ClassSession {
     @JoinColumn(name = "room_id")
     private Classroom room;
 
-    /** Liên kết về RecurringSchedule đã sinh ra buổi học này */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "recurring_schedule_id")
     private RecurringSchedule recurringSchedule;
