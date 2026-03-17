@@ -21,10 +21,6 @@ public class Role {
     @Column(name = "role_name", length = 255)
     private String roleName;
 
-    @Column(name = "status")
-    @Builder.Default
-    private Integer status = 1;
-
     @Column(name = "deleted", nullable = false)
     @Builder.Default
     private boolean deleted = false;

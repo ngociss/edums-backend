@@ -20,10 +20,19 @@ public class BenchmarkScore {
     @JoinColumn(name = "major_id")
     private Major major;
 
-    @Column(name = "admission_year")
-    private Integer admissionYear;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "block_id")
+    private AdmissionBlock admissionBlock;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "period_id", nullable = false)
+    private AdmissionPeriod admissionPeriod;
 
     @Column(name = "score")
     private Float score;
+
+    @Column(name = "deleted", nullable = false)
+    @Builder.Default
+    private boolean deleted = false;
 }
 
