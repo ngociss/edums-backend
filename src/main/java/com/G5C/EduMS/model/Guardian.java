@@ -22,10 +22,10 @@ public class Guardian {
     @JoinColumn(name = "account_id", unique = true)
     private Account account;
 
-    @Column(name = "full_name", length = 50)
+    @Column(name = "full_name", length = 50, nullable = false)
     private String fullName;
 
-    @Column(name = "phone", length = 10)
+    @Column(name = "phone", length = 10, nullable = false)
     private String phone;
 
     @Column(name = "relationship", length = 50)
