@@ -31,6 +31,10 @@ public class Student {
     private AdministrativeClass administrativeClass;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "major_id")
+    private Major major;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "specialization_id")
     private Specialization specialization;
 
