@@ -2,6 +2,10 @@ package com.G5C.EduMS.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "recurring_schedules",
@@ -26,13 +30,24 @@ public class RecurringSchedule {
     @JoinColumn(name = "room_id")
     private Classroom room;
 
+    /** 1 = Thứ Hai (Monday) → 7 = Chủ Nhật (Sunday), theo chuẩn ISO */
     @Column(name = "day_of_week")
-    private Integer dayOfWeek; // 2 (Mon) to 8 (Sun)
+    private Integer dayOfWeek;
 
     @Column(name = "start_period")
     private Integer startPeriod;
 
     @Column(name = "end_period")
     private Integer endPeriod;
-}
 
+    @Column(name = "deleted", nullable = false)
+    @Builder.Default
+    private boolean deleted = false;
+
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @OneToMany(mappedBy = "recurringSchedule", fetch = FetchType.LAZY)
+    private List<ClassSession> classSessions;
+}
