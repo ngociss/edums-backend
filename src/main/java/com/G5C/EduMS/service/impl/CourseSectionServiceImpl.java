@@ -11,6 +11,8 @@ import com.G5C.EduMS.mapper.CourseSectionMapper;
 import com.G5C.EduMS.model.CourseSection;
 import com.G5C.EduMS.repository.*;
 import com.G5C.EduMS.service.CourseSectionService;
+import com.G5C.EduMS.model.ClassSession;
+import com.G5C.EduMS.model.RecurringSchedule;
 import com.G5C.EduMS.validator.CourseSectionValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,8 @@ public class CourseSectionServiceImpl implements CourseSectionService {
     private final CourseRepository courseRepository;
     private final SemesterRepository semesterRepository;
     private final LecturerRepository lecturerRepository;
+    private final RecurringScheduleRepository recurringScheduleRepository;
+    private final ClassSessionRepository classSessionRepository;
     private final CourseSectionMapper courseSectionMapper;
     private final CourseSectionValidator courseSectionValidator;
 
@@ -99,10 +103,7 @@ public class CourseSectionServiceImpl implements CourseSectionService {
 
 
         var lecturer = lecturerRepository.findByIdAndDeletedFalse(request.getLecturerId())
-                    .orElseThrow(() -> new NotFoundResourcesException("Lecturer not found with id: " + request.getLecturerId()));
-
-
-
+                .orElseThrow(() -> new NotFoundResourcesException("Lecturer not found with id: " + request.getLecturerId()));
 
 
         if (section.getStatus() == CourseSectionStatus.FINISHED ||
@@ -135,8 +136,7 @@ public class CourseSectionServiceImpl implements CourseSectionService {
 
         if (!section.getLecturer().getId().equals(request.getLecturerId()) &&
                 section.getStatus() != CourseSectionStatus.DRAFT &&
-                section.getStatus() != CourseSectionStatus.OPEN)
-        {
+                section.getStatus() != CourseSectionStatus.OPEN) {
             throw new InvalidDataException(
                     "Lecturer can only be changed when section is DRAFT or OPEN "
             );
@@ -150,13 +150,10 @@ public class CourseSectionServiceImpl implements CourseSectionService {
         );
 
 
-
-
         courseSectionMapper.updateEntity(request, section);
         section.setCourse(course);
         section.setSemester(semester);
         section.setLecturer(lecturer);
-
 
 
         return courseSectionMapper.toResponse(courseSectionRepository.save(section));
@@ -217,13 +214,10 @@ public class CourseSectionServiceImpl implements CourseSectionService {
                 }
             }
 
-            case FINISHED, CANCELLED ->
-                    throw new InvalidDataException(
-                            "Cannot change status from " + current);
+            case FINISHED, CANCELLED -> throw new InvalidDataException(
+                    "Cannot change status from " + current);
         }
     }
-
-
 
 
     @Override
@@ -242,6 +236,16 @@ public class CourseSectionServiceImpl implements CourseSectionService {
 
         section.setDeleted(true);
         courseSectionRepository.save(section);
+
+        // Cascade soft-delete: xóa toàn bộ RecurringSchedule và ClassSession của section
+        List<RecurringSchedule> schedules =
+                recurringScheduleRepository.findAllBySectionIdAndDeletedFalse(id);
+        schedules.forEach(s -> s.setDeleted(true));
+        recurringScheduleRepository.saveAll(schedules);
+
+        List<ClassSession> sessions =
+                classSessionRepository.findAllBySectionIdAndDeletedFalse(id);
+        sessions.forEach(s -> s.setDeleted(true));
+        classSessionRepository.saveAll(sessions);
     }
 }
-
