@@ -22,13 +22,13 @@ public class Lecturer {
     @JoinColumn(name = "account_id", unique = true)
     private Account account;
 
-    @Column(name = "full_name", length = 50)
+    @Column(name = "full_name", length = 50, nullable = false)
     private String fullName;
 
     @Column(name = "academic_degree", length = 50)
     private String academicDegree;
 
-    @Column(name = "email", length = 50)
+    @Column(name = "email", length = 50, nullable = false)
     private String email;
 
     @Column(name = "phone", length = 10)

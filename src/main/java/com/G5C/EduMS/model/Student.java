@@ -27,28 +27,28 @@ public class Student {
     private Account account;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "class_id")
+    @JoinColumn(name = "class_id", nullable = false)
     private AdministrativeClass administrativeClass;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "major_id")
+    @JoinColumn(name = "major_id", nullable = false)
     private Major major;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "specialization_id")
+    @JoinColumn(name = "specialization_id", nullable = true)
     private Specialization specialization;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "guardian_id")
     private Guardian guardian;
 
-    @Column(name = "student_code", length = 10, unique = true)
+    @Column(name = "student_code", length = 10, unique = true, nullable = false)
     private String studentCode;
 
-    @Column(name = "full_name", length = 50)
+    @Column(name = "full_name", length = 50, nullable = false)
     private String fullName;
 
-    @Column(name = "email", length = 50, unique = true)
+    @Column(name = "email", length = 50, unique = true, nullable = false)
     private String email;
 
     @Column(name = "address", length = 250)
@@ -63,7 +63,7 @@ public class Student {
     @Column(name = "phone", length = 10)
     private String phone;
 
-    @Column(name = "national_id", length = 12, unique = true)
+    @Column(name = "national_id", length = 12, unique = true, nullable = false)
     private String nationalId;
 
     @Column(name = "ethnicity", length = 20)
@@ -79,7 +79,7 @@ public class Student {
     private String nationality;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", length = 20)
+    @Column(name = "status", length = 20, nullable = false)
     @Builder.Default
     private StudentStatus status = StudentStatus.ACTIVE;
 
