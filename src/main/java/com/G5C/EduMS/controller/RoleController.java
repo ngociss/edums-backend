@@ -4,6 +4,7 @@ import com.G5C.EduMS.dto.reponse.ResponseData;
 import com.G5C.EduMS.dto.reponse.RoleResponse;
 import com.G5C.EduMS.dto.request.RoleRequest;
 import com.G5C.EduMS.service.RoleService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/roles")
 @RequiredArgsConstructor
+@Tag(name = "Role and permission", description = "APIs for managing role and permission")
 public class RoleController {
 
     private final RoleService roleService;

@@ -3,6 +3,7 @@ package com.G5C.EduMS.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Entity
@@ -23,6 +24,15 @@ public class Semester {
 
     @Column(name = "academic_year", length = 50)
     private String academicYear;
+
+    @Column(name = "start_date")
+    private LocalDate startDate;
+
+    @Column(name = "end_date")
+    private LocalDate endDate;
+
+    @Column(name = "total_weeks")
+    private Integer totalWeeks;
 
     @Column(name = "deleted", nullable = false)
     @Builder.Default

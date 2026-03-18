@@ -5,6 +5,7 @@ import com.G5C.EduMS.dto.reponse.ResponseData;
 import com.G5C.EduMS.dto.reponse.AccountResponse;
 import com.G5C.EduMS.dto.reponse.PageResponse;
 import com.G5C.EduMS.service.AccountService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/accounts")
 @RequiredArgsConstructor
+@Tag(name = "Account", description = "APIs for managing accounts")
 public class AccountController {
 
     private final AccountService accountService;
