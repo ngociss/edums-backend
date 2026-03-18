@@ -9,9 +9,8 @@ import java.util.Optional;
 
 @Repository
 public interface CohortRepository extends JpaRepository<Cohort, Integer> {
-
     List<Cohort> findAllByDeletedFalse();
-
     Optional<Cohort> findByIdAndDeletedFalse(Integer id);
+    boolean existsByCohortNameAndDeletedFalse(String cohortName);
+    boolean existsByCohortNameAndDeletedFalseAndIdNot(String cohortName, Integer id);
 }
-
