@@ -1,6 +1,6 @@
 package com.G5C.EduMS.service.impl;
 
-import com.G5C.EduMS.dto.reponse.LecturerScheduleResponse;
+import com.G5C.EduMS.dto.response.LecturerScheduleResponse;
 import com.G5C.EduMS.exception.NotFoundResourcesException;
 import com.G5C.EduMS.mapper.ScheduleMapper;
 import com.G5C.EduMS.model.ClassSession;

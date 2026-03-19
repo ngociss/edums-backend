@@ -1,6 +1,5 @@
 package com.G5C.EduMS.controller;
 
-import com.G5C.EduMS.dto.reponse.LecturerScheduleResponse;
 import com.G5C.EduMS.dto.request.LecturerCreateRequest;
 import com.G5C.EduMS.dto.request.LecturerUpdateRequest;
 import com.G5C.EduMS.dto.response.ResponseData;
