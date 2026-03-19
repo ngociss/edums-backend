@@ -39,5 +39,7 @@ public interface StudentRepository extends JpaRepository<Student, Integer> {
                                  @Param("majorId") Integer majorId,
                                  @Param("status") StudentStatus status,
                                  Pageable pageable);
+
+
 }
 

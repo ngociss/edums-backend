@@ -1,6 +1,6 @@
 package com.G5C.EduMS.mapper;
 
-import com.G5C.EduMS.dto.reponse.AdministrativeClassResponse;
+import com.G5C.EduMS.dto.response.AdministrativeClassResponse;
 import com.G5C.EduMS.dto.request.AdministrativeClassRequest;
 import com.G5C.EduMS.model.AdministrativeClass;
 import org.mapstruct.*;

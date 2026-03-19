@@ -1,4 +1,4 @@
-package com.G5C.EduMS.dto.reponse;
+package com.G5C.EduMS.dto.response;
 
 import com.G5C.EduMS.common.enums.SessionStatus;
 import lombok.*;

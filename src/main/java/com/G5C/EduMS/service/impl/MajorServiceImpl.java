@@ -1,7 +1,7 @@
 package com.G5C.EduMS.service.impl;
 
 import com.G5C.EduMS.dto.request.MajorRequest;
-import com.G5C.EduMS.dto.reponse.MajorResponse;
+import com.G5C.EduMS.dto.response.MajorResponse;
 import com.G5C.EduMS.exception.CannotDeleteException;
 import com.G5C.EduMS.exception.ExistingResourcesException;
 import com.G5C.EduMS.exception.NotFoundResourcesException;

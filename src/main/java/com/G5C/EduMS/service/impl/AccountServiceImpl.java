@@ -1,7 +1,7 @@
 package com.G5C.EduMS.service.impl;
 
-import com.G5C.EduMS.dto.reponse.AccountResponse;
-import com.G5C.EduMS.dto.reponse.PageResponse;
+import com.G5C.EduMS.dto.response.AccountResponse;
+import com.G5C.EduMS.dto.response.PageResponse;
 import com.G5C.EduMS.dto.request.*;
 import com.G5C.EduMS.mapper.AccountMapper;
 import com.G5C.EduMS.model.Account;

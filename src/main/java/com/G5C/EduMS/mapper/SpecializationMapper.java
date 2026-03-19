@@ -1,7 +1,7 @@
 package com.G5C.EduMS.mapper;
 
 import com.G5C.EduMS.dto.request.SpecializationRequest;
-import com.G5C.EduMS.dto.reponse.SpecializationResponse;
+import com.G5C.EduMS.dto.response.SpecializationResponse;
 import com.G5C.EduMS.model.Specialization;
 import org.mapstruct.*;
 

@@ -2,7 +2,7 @@ package com.G5C.EduMS.mapper;
 
 import com.G5C.EduMS.common.enums.DayOfWeek;
 import com.G5C.EduMS.common.enums.SchoolPeriod;
-import com.G5C.EduMS.dto.reponse.RecurringScheduleResponse;
+import com.G5C.EduMS.dto.response.RecurringScheduleResponse;
 import com.G5C.EduMS.model.RecurringSchedule;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

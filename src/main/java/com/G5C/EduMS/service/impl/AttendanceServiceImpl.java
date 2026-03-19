@@ -1,7 +1,6 @@
 package com.G5C.EduMS.service.impl;
 
-import com.G5C.EduMS.common.enums.AttendanceStatus;
-import com.G5C.EduMS.dto.reponse.AttendanceResponse;
+import com.G5C.EduMS.dto.response.AttendanceResponse;
 import com.G5C.EduMS.dto.request.AttendanceBatchRequest;
 import com.G5C.EduMS.dto.request.AttendanceUpdateRequest;
 import com.G5C.EduMS.exception.NotFoundResourcesException;

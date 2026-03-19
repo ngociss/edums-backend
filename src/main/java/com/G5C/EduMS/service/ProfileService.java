@@ -1,7 +1,7 @@
 package com.G5C.EduMS.service;
 
-import com.G5C.EduMS.dto.reponse.LecturerResponse;
-import com.G5C.EduMS.dto.reponse.StudentResponse;
+import com.G5C.EduMS.dto.response.LecturerResponse;
+import com.G5C.EduMS.dto.response.StudentResponse;
 
 public interface ProfileService {
 

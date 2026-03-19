@@ -2,7 +2,7 @@ package com.G5C.EduMS.service.impl;
 
 import com.G5C.EduMS.dto.request.LecturerCreateRequest;
 import com.G5C.EduMS.dto.request.LecturerUpdateRequest;
-import com.G5C.EduMS.dto.reponse.LecturerResponse;
+import com.G5C.EduMS.dto.response.LecturerResponse;
 import com.G5C.EduMS.exception.NotFoundResourcesException;
 import com.G5C.EduMS.mapper.LecturerMapper;
 import com.G5C.EduMS.model.Lecturer;

@@ -1,7 +1,7 @@
 package com.G5C.EduMS.service;
 
 import com.G5C.EduMS.dto.request.SpecializationRequest;
-import com.G5C.EduMS.dto.reponse.SpecializationResponse;
+import com.G5C.EduMS.dto.response.SpecializationResponse;
 
 import java.util.List;
 

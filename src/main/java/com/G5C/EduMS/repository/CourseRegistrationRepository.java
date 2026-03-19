@@ -1,5 +1,6 @@
 package com.G5C.EduMS.repository;
 
+import com.G5C.EduMS.common.enums.RegistrationStatus;
 import com.G5C.EduMS.model.CourseRegistration;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -19,5 +20,32 @@ public interface CourseRegistrationRepository extends JpaRepository<CourseRegist
 
     @Query("SELECT cr FROM CourseRegistration cr WHERE cr.student.id = :studentId AND cr.deleted = false")
     List<CourseRegistration> findAllByStudentId(@Param("studentId") Integer studentId);
+
+    boolean existsByStudent_IdAndSection_IdAndDeletedFalse(Integer studentId, Integer sectionId);
+
+    boolean existsByStudent_IdAndSection_IdAndStatusInAndDeletedFalse(
+            Integer studentId,
+            Integer sectionId,
+            List<RegistrationStatus> statuses
+    );
+
+    long countBySection_IdAndStatusAndDeletedFalse(Integer sectionId, RegistrationStatus status);
+
+    List<CourseRegistration> findByStudent_IdAndDeletedFalse(Integer studentId);
+
+    @Query("""
+        SELECT cr
+        FROM CourseRegistration cr
+        WHERE cr.student.id = :studentId
+          AND cr.section.semester.id = :semesterId
+          AND cr.deleted = false
+          AND cr.status IN :statuses
+    """)
+    List<CourseRegistration> findActiveByStudentIdAndSemesterId(
+            Integer studentId,
+            Integer semesterId,
+            List<RegistrationStatus> statuses
+    );
 }
+
 

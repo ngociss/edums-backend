@@ -3,7 +3,7 @@ package com.G5C.EduMS.mapper;
 import com.G5C.EduMS.dto.request.GuardianCreateRequest; // Đổi import
 import com.G5C.EduMS.dto.request.GuardianProfileUpdateRequest;
 import com.G5C.EduMS.dto.request.GuardianUpdateRequest; // Đổi import
-import com.G5C.EduMS.dto.reponse.GuardianResponse;
+import com.G5C.EduMS.dto.response.GuardianResponse;
 import com.G5C.EduMS.model.Guardian;
 import com.G5C.EduMS.model.Student;
 import org.mapstruct.*;

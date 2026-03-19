@@ -2,7 +2,7 @@ package com.G5C.EduMS.service.impl;
 
 import com.G5C.EduMS.dto.request.GuardianCreateRequest;
 import com.G5C.EduMS.dto.request.GuardianUpdateRequest;
-import com.G5C.EduMS.dto.reponse.GuardianResponse;
+import com.G5C.EduMS.dto.response.GuardianResponse;
 import com.G5C.EduMS.exception.NotFoundResourcesException;
 import com.G5C.EduMS.mapper.GuardianMapper;
 import com.G5C.EduMS.model.Guardian;
