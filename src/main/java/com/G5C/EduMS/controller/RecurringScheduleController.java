@@ -1,8 +1,8 @@
 package com.G5C.EduMS.controller;
 
-import com.G5C.EduMS.dto.reponse.ClassSessionResponse;
-import com.G5C.EduMS.dto.reponse.RecurringScheduleResponse;
-import com.G5C.EduMS.dto.reponse.ResponseData;
+import com.G5C.EduMS.dto.response.ClassSessionResponse;
+import com.G5C.EduMS.dto.response.RecurringScheduleResponse;
+import com.G5C.EduMS.dto.response.ResponseData;
 import com.G5C.EduMS.dto.request.RecurringScheduleRequest;
 import com.G5C.EduMS.service.RecurringScheduleService;
 import io.swagger.v3.oas.annotations.Operation;

@@ -1,7 +1,7 @@
 package com.G5C.EduMS.controller;
 
-import com.G5C.EduMS.dto.reponse.AdministrativeClassResponse;
-import com.G5C.EduMS.dto.reponse.ResponseData;
+import com.G5C.EduMS.dto.response.AdministrativeClassResponse;
+import com.G5C.EduMS.dto.response.ResponseData;
 import com.G5C.EduMS.dto.request.AdministrativeClassRequest;
 import com.G5C.EduMS.service.AdministrativeClassService;
 import io.swagger.v3.oas.annotations.Operation;

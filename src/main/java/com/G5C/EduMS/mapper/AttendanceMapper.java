@@ -1,6 +1,6 @@
 package com.G5C.EduMS.mapper;
 
-import com.G5C.EduMS.dto.reponse.AttendanceResponse;
+import com.G5C.EduMS.dto.response.AttendanceResponse;
 import com.G5C.EduMS.model.Attendance;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

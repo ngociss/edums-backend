@@ -2,8 +2,8 @@ package com.G5C.EduMS.controller;
 
 import com.G5C.EduMS.dto.request.GuardianCreateRequest;
 import com.G5C.EduMS.dto.request.GuardianUpdateRequest;
-import com.G5C.EduMS.dto.reponse.ResponseData;
-import com.G5C.EduMS.dto.reponse.GuardianResponse;
+import com.G5C.EduMS.dto.response.ResponseData;
+import com.G5C.EduMS.dto.response.GuardianResponse;
 import com.G5C.EduMS.service.GuardianService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

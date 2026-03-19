@@ -1,7 +1,7 @@
 package com.G5C.EduMS.controller;
 
-import com.G5C.EduMS.dto.reponse.GradeReportResponse;
-import com.G5C.EduMS.dto.reponse.ResponseData;
+import com.G5C.EduMS.dto.response.GradeReportResponse;
+import com.G5C.EduMS.dto.response.ResponseData;
 import com.G5C.EduMS.dto.request.GradeReportRequest;
 import com.G5C.EduMS.service.GradeReportService;
 import io.swagger.v3.oas.annotations.Operation;

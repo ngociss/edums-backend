@@ -1,6 +1,6 @@
 package com.G5C.EduMS.service;
 
-import com.G5C.EduMS.dto.reponse.RoleResponse;
+import com.G5C.EduMS.dto.response.RoleResponse;
 import com.G5C.EduMS.dto.request.RoleRequest;
 
 import java.util.List;

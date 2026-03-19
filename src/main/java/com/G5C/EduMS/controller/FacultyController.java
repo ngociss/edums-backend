@@ -1,8 +1,8 @@
 package com.G5C.EduMS.controller;
 
 import com.G5C.EduMS.dto.request.FacultyRequest;
-import com.G5C.EduMS.dto.reponse.FacultyResponse;
-import com.G5C.EduMS.dto.reponse.ResponseData;
+import com.G5C.EduMS.dto.response.FacultyResponse;
+import com.G5C.EduMS.dto.response.ResponseData;
 import com.G5C.EduMS.service.FacultyService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

@@ -1,6 +1,6 @@
 package com.G5C.EduMS.service;
 
-import com.G5C.EduMS.dto.reponse.GuardianResponse;
+import com.G5C.EduMS.dto.response.GuardianResponse;
 import com.G5C.EduMS.dto.request.GuardianCreateRequest;
 import com.G5C.EduMS.dto.request.GuardianUpdateRequest;
 import org.springframework.data.domain.Page;

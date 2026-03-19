@@ -1,6 +1,6 @@
 package com.G5C.EduMS.service;
 
-import com.G5C.EduMS.dto.reponse.GradeReportResponse;
+import com.G5C.EduMS.dto.response.GradeReportResponse;
 import com.G5C.EduMS.dto.request.GradeReportRequest;
 
 import java.util.List;

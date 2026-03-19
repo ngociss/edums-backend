@@ -1,7 +1,7 @@
 package com.G5C.EduMS.mapper;
 
 import com.G5C.EduMS.dto.request.CourseSectionRequest;
-import com.G5C.EduMS.dto.reponse.CourseSectionResponse;
+import com.G5C.EduMS.dto.response.CourseSectionResponse;
 import com.G5C.EduMS.model.CourseSection;
 import org.mapstruct.*;
 

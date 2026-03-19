@@ -1,7 +1,7 @@
 package com.G5C.EduMS.mapper;
 
-import com.G5C.EduMS.dto.reponse.GradeDetailResponse;
-import com.G5C.EduMS.dto.reponse.GradeReportResponse;
+import com.G5C.EduMS.dto.response.GradeDetailResponse;
+import com.G5C.EduMS.dto.response.GradeReportResponse;
 import com.G5C.EduMS.model.GradeDetail;
 import com.G5C.EduMS.model.GradeReport;
 import org.mapstruct.Mapper;

@@ -1,7 +1,7 @@
 package com.G5C.EduMS.service.impl;
 
 import com.G5C.EduMS.dto.request.CohortRequest;
-import com.G5C.EduMS.dto.reponse.CohortResponse;
+import com.G5C.EduMS.dto.response.CohortResponse;
 import com.G5C.EduMS.exception.NotFoundResourcesException;
 import com.G5C.EduMS.mapper.CohortMapper;
 import com.G5C.EduMS.model.Cohort;

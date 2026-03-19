@@ -1,6 +1,6 @@
 package com.G5C.EduMS.service;
 
-import com.G5C.EduMS.dto.reponse.AdministrativeClassResponse;
+import com.G5C.EduMS.dto.response.AdministrativeClassResponse;
 import com.G5C.EduMS.dto.request.AdministrativeClassRequest;
 
 import java.util.List;
