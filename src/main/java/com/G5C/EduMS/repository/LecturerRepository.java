@@ -27,5 +27,7 @@ public interface LecturerRepository extends JpaRepository<Lecturer, Integer> {
             "(LOWER(l.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
             "LOWER(l.email) LIKE LOWER(CONCAT('%', :keyword, '%')))")
     Page<Lecturer> searchLecturers(@Param("keyword") String keyword, Pageable pageable);
+
+    Optional<Lecturer> findByAccount_UsernameAndDeletedFalse(String username);
 }
 
