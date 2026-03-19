@@ -1,7 +1,7 @@
 package com.G5C.EduMS.service.impl;
 
 import com.G5C.EduMS.dto.request.SpecializationRequest;
-import com.G5C.EduMS.dto.reponse.SpecializationResponse;
+import com.G5C.EduMS.dto.response.SpecializationResponse;
 import com.G5C.EduMS.exception.CannotDeleteException;
 import com.G5C.EduMS.exception.NotFoundResourcesException;
 import com.G5C.EduMS.mapper.SpecializationMapper;

@@ -1,6 +1,6 @@
 package com.G5C.EduMS.mapper;
 
-import com.G5C.EduMS.dto.reponse.ClassSessionResponse;
+import com.G5C.EduMS.dto.response.ClassSessionResponse;
 import com.G5C.EduMS.model.ClassSession;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

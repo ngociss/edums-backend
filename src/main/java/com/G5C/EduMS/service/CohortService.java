@@ -1,7 +1,7 @@
 package com.G5C.EduMS.service;
 
 import com.G5C.EduMS.dto.request.CohortRequest;
-import com.G5C.EduMS.dto.reponse.CohortResponse;
+import com.G5C.EduMS.dto.response.CohortResponse;
 import java.util.List;
 
 public interface CohortService {

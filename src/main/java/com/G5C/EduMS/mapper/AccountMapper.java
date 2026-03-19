@@ -1,6 +1,6 @@
 package com.G5C.EduMS.mapper;
 
-import com.G5C.EduMS.dto.reponse.AccountResponse;
+import com.G5C.EduMS.dto.response.AccountResponse;
 import com.G5C.EduMS.model.Account;
 import com.G5C.EduMS.model.Role;
 import com.G5C.EduMS.model.RolePermission;

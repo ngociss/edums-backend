@@ -1,6 +1,6 @@
 package com.G5C.EduMS.service;
 
-import com.G5C.EduMS.dto.reponse.AttendanceResponse;
+import com.G5C.EduMS.dto.response.AttendanceResponse;
 import com.G5C.EduMS.dto.request.AttendanceBatchRequest;
 import com.G5C.EduMS.dto.request.AttendanceUpdateRequest;
 

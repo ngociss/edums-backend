@@ -1,7 +1,7 @@
 package com.G5C.EduMS.mapper;
 
 import com.G5C.EduMS.dto.request.ClassroomRequest;
-import com.G5C.EduMS.dto.reponse.ClassroomResponse;
+import com.G5C.EduMS.dto.response.ClassroomResponse;
 import com.G5C.EduMS.model.Classroom;
 import org.mapstruct.*;
 

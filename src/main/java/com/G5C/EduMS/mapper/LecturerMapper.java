@@ -3,7 +3,7 @@ package com.G5C.EduMS.mapper;
 import com.G5C.EduMS.dto.request.LecturerCreateRequest;
 import com.G5C.EduMS.dto.request.LecturerProfileUpdateRequest;
 import com.G5C.EduMS.dto.request.LecturerUpdateRequest;
-import com.G5C.EduMS.dto.reponse.LecturerResponse;
+import com.G5C.EduMS.dto.response.LecturerResponse;
 import com.G5C.EduMS.model.Lecturer;
 import org.mapstruct.*;
 

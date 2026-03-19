@@ -2,7 +2,7 @@ package com.G5C.EduMS.service.impl;
 
 import com.G5C.EduMS.common.enums.CourseSectionStatus;
 import com.G5C.EduMS.dto.request.CourseSectionRequest;
-import com.G5C.EduMS.dto.reponse.CourseSectionResponse;
+import com.G5C.EduMS.dto.response.CourseSectionResponse;
 import com.G5C.EduMS.dto.request.CourseSectionStatusRequest;
 import com.G5C.EduMS.exception.CannotDeleteException;
 import com.G5C.EduMS.exception.InvalidDataException;

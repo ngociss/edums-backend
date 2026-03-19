@@ -1,6 +1,6 @@
 package com.G5C.EduMS.service.impl;
 
-import com.G5C.EduMS.dto.reponse.RoleResponse;
+import com.G5C.EduMS.dto.response.RoleResponse;
 import com.G5C.EduMS.dto.request.RoleRequest;
 import com.G5C.EduMS.mapper.RoleMapper;
 import com.G5C.EduMS.model.Role;

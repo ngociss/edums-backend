@@ -45,6 +45,10 @@ public class CourseRegistration {
     @OneToMany(mappedBy = "registration", fetch = FetchType.LAZY)
     private List<Attendance> attendances;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "registration_period_id", nullable = false)
+    private RegistrationPeriod registrationPeriod;
+
     @OneToOne(mappedBy = "registration", fetch = FetchType.LAZY)
     private GradeReport gradeReport;
 }

@@ -3,7 +3,7 @@ package com.G5C.EduMS.mapper;
 import com.G5C.EduMS.dto.request.StudentCreateRequest;
 import com.G5C.EduMS.dto.request.StudentProfileUpdateRequest;
 import com.G5C.EduMS.dto.request.StudentUpdateRequest;
-import com.G5C.EduMS.dto.reponse.StudentResponse;
+import com.G5C.EduMS.dto.response.StudentResponse;
 import com.G5C.EduMS.model.Student;
 import org.mapstruct.*;
 

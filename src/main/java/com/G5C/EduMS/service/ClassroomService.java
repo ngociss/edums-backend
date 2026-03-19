@@ -1,7 +1,7 @@
 package com.G5C.EduMS.service;
 
 import com.G5C.EduMS.dto.request.ClassroomRequest;
-import com.G5C.EduMS.dto.reponse.ClassroomResponse;
+import com.G5C.EduMS.dto.response.ClassroomResponse;
 
 import java.util.List;
 

@@ -1,7 +1,7 @@
 package com.G5C.EduMS.service.impl;
 
 import com.G5C.EduMS.common.enums.StudentStatus;
-import com.G5C.EduMS.dto.reponse.StudentResponse;
+import com.G5C.EduMS.dto.response.StudentResponse;
 import com.G5C.EduMS.dto.request.StudentCreateRequest;
 import com.G5C.EduMS.dto.request.StudentStatusUpdateRequest;
 import com.G5C.EduMS.dto.request.StudentUpdateRequest;

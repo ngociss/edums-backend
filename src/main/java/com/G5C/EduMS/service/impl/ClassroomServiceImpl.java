@@ -1,7 +1,7 @@
 package com.G5C.EduMS.service.impl;
 
 import com.G5C.EduMS.dto.request.ClassroomRequest;
-import com.G5C.EduMS.dto.reponse.ClassroomResponse;
+import com.G5C.EduMS.dto.response.ClassroomResponse;
 import com.G5C.EduMS.exception.CannotDeleteException;
 import com.G5C.EduMS.exception.NotFoundResourcesException;
 import com.G5C.EduMS.mapper.ClassroomMapper;

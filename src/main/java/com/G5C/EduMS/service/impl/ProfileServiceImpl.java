@@ -1,7 +1,7 @@
 package com.G5C.EduMS.service.impl;
 
-import com.G5C.EduMS.dto.reponse.LecturerResponse;
-import com.G5C.EduMS.dto.reponse.StudentResponse;
+import com.G5C.EduMS.dto.response.LecturerResponse;
+import com.G5C.EduMS.dto.response.StudentResponse;
 import com.G5C.EduMS.exception.NotFoundResourcesException;
 import com.G5C.EduMS.mapper.LecturerMapper;
 import com.G5C.EduMS.mapper.StudentMapper;
