@@ -1,5 +1,6 @@
 package com.G5C.EduMS.controller;
 
+import com.G5C.EduMS.dto.reponse.LecturerScheduleResponse;
 import com.G5C.EduMS.dto.request.LecturerCreateRequest;
 import com.G5C.EduMS.dto.request.LecturerUpdateRequest;
 import com.G5C.EduMS.dto.reponse.ResponseData;
@@ -13,6 +14,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/lecturers")

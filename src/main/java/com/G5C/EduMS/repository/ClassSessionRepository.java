@@ -40,4 +40,19 @@ public interface ClassSessionRepository extends JpaRepository<ClassSession, Inte
           )
     """)
     boolean existsSessionWithAttendanceByScheduleId(@Param("scheduleId") Integer scheduleId);
+
+    // Lấy thời khóa biểu cho giảng viên theo khoảng thời gian
+    @Query("SELECT cs FROM ClassSession cs " +
+            "JOIN FETCH cs.section sec " +
+            "JOIN FETCH sec.course c " +
+            "LEFT JOIN FETCH cs.room r " +
+            "WHERE sec.lecturer.id = :lecturerId " +
+            "AND cs.sessionDate BETWEEN :startDate AND :endDate " +
+            "AND cs.deleted = false " +
+            "AND sec.deleted = false " +
+            "ORDER BY cs.sessionDate ASC, cs.startPeriod ASC")
+    List<ClassSession> findScheduleByLecturerAndDateRange(
+            @Param("lecturerId") Integer lecturerId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate);
 }
