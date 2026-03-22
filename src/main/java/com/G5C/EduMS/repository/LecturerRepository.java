@@ -1,5 +1,6 @@
 package com.G5C.EduMS.repository;
 
+import com.G5C.EduMS.model.Guardian;
 import com.G5C.EduMS.model.Lecturer;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +19,8 @@ public interface LecturerRepository extends JpaRepository<Lecturer, Integer> {
 
     // Tìm chi tiết 1 giảng viên đang hoạt động
     Optional<Lecturer> findByIdAndDeletedFalse(Integer id);
+
+    Optional<Lecturer> findByAccountIdAndDeletedFalse(Integer id);
 
     // Kiểm tra trùng lặp Email
     boolean existsByEmailAndDeletedFalse(String email);
