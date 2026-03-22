@@ -25,7 +25,7 @@ public class AdmissionBlock {
     @Column(name = "description", length = 50)
     private String description;
 
+    @Column(name = "deleted", nullable = false)
     @Builder.Default
-    @Column(name = "deleted", nullable = false, columnDefinition = "INT DEFAULT 0")
-    private int deleted = 0;
+    private boolean deleted = false;
 }

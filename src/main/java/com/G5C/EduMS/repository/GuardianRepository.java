@@ -6,15 +6,19 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
+@Repository
 public interface GuardianRepository extends JpaRepository<Guardian, Integer> {
     // Lấy tất cả phụ huynh chưa bị xóa
     Page<Guardian> findAllByDeletedFalse(Pageable pageable);
 
     // Tìm phụ huynh theo ID và chưa bị xóa
     Optional<Guardian> findByIdAndDeletedFalse(Integer id);
+
+    Optional<Guardian> findByAccountIdAndDeletedFalse(Integer id);
 
     // Kiểm tra số điện thoại có tồn tại không (dùng khi Create/Update)
     boolean existsByPhoneAndDeletedFalse(String phone);

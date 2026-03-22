@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -116,5 +117,17 @@ public class GlobalExceptionHandler {
                         "An unexpected error occurred. Please contact support.",
                         request.getRequestURI()
                 ));
+    }
+
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ResponseData<Void>> handleBadCredentialsException(BadCredentialsException ex) {
+        ResponseData<Void> response = ResponseData.<Void>builder()
+                .status(HttpStatus.UNAUTHORIZED.value()) // 401 Unauthorized
+                .message("Tên đăng nhập hoặc mật khẩu không chính xác!")
+                .data(null)
+                .build();
+
+        return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
     }
 }

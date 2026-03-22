@@ -4,14 +4,19 @@ import com.G5C.EduMS.common.enums.AccountStatus;
 import com.G5C.EduMS.model.Account;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
+@Repository
 public interface AccountRepository extends JpaRepository<Account, Integer> {
     boolean existsByUsername(String username);
+
+    boolean existsByUsernameAndDeletedFalse(String username);
 
     @Query("SELECT a FROM Account a WHERE " +
             "(:keyword IS NULL OR LOWER(a.username) LIKE LOWER(CONCAT('%', :keyword, '%'))) AND " +
@@ -26,5 +31,6 @@ public interface AccountRepository extends JpaRepository<Account, Integer> {
 
     boolean existsByRoleId(Integer roleId);
 
+    @EntityGraph(attributePaths = {"role"})
     Optional<Account> findByUsernameAndDeletedFalse(String username);
 }
