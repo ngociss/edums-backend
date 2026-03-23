@@ -41,7 +41,9 @@ public class CourseRegistrationServiceImpl implements CourseRegistrationService 
     @Override
     @Transactional
     public CourseRegistrationResponse register(CourseRegistrationRequest request) {
-        Student student = getCurrentStudent();
+//        Student student = getCurrentStudent();
+        Student student =  studentRepository.findByIdAndDeletedFalse(request.getStudentId())
+                .orElseThrow(() -> new NotFoundResourcesException("Student not found for current account"));
 
         CourseSection courseSection = courseSectionRepository
                 .findByIdAndDeletedFalse(request.getCourseSectionId())
