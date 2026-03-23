@@ -125,7 +125,7 @@ public class DataInitializer implements CommandLineRunner {
                             .status(AccountStatus.ACTIVE).deleted(false).createdAt(LocalDateTime.now()).build());
                     studentRepository.save(Student.builder()
                             .account(acc).studentCode("sv_26001").fullName("Do Minh Khoa").email("sv_26001" + "@sv.edums.edu.vn")
-                            .nationalId("012345678901").major(major).administrativeClass(aClass)
+                            .nationalId("012345678900").major(major).administrativeClass(aClass)
                             .status(StudentStatus.ACTIVE).dateOfBirth(LocalDate.of(2005, 2, 14)).deleted(false).build());
                     log.info(">> Đã TẠO MỚI Sinh viên: {}", "sv_26001");
                 }

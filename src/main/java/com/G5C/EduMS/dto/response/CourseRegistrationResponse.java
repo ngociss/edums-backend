@@ -13,6 +13,6 @@ public class CourseRegistrationResponse {
     private Integer studentId;
     private Integer courseSectionId;
     private Integer registrationPeriodId;
-    private LocalDateTime registeredAt;
+    private LocalDateTime registrationTime;
     private RegistrationStatus status;
 }

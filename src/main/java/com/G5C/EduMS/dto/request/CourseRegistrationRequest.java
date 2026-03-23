@@ -10,4 +10,5 @@ public class CourseRegistrationRequest {
 
     @NotNull(message = "Course section id must not be null")
     private Integer courseSectionId;
+    private Integer studentId; // Optional: if not provided, will use the authenticated student's ID
 }
