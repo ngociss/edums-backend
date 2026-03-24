@@ -6,12 +6,14 @@ import com.G5C.EduMS.common.enums.RegistrationStatus;
 import com.G5C.EduMS.common.enums.StudentStatus;
 import com.G5C.EduMS.exception.ExistingResourcesException;
 import com.G5C.EduMS.exception.InvalidDataException;
+import com.G5C.EduMS.model.CourseRegistration;
 import com.G5C.EduMS.model.CourseSection;
 import com.G5C.EduMS.model.Student;
 import com.G5C.EduMS.repository.CourseRegistrationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Component
@@ -50,6 +52,21 @@ public class CourseRegistrationValidator {
 
         if (registeredCount >= courseSection.getMaxCapacity()) {
             throw new InvalidDataException("Course section is full");
+        }
+    }
+
+    public void validateRegistrationActive(CourseRegistration registration) {
+        if (!List.of(RegistrationStatus.PENDING, RegistrationStatus.CONFIRMED).contains(registration.getStatus())) {
+            throw new InvalidDataException("Only active registrations can be modified");
+        }
+    }
+
+    public void validateCanModifyDuringOpenPeriod(CourseRegistration registration, LocalDateTime now) {
+        if (registration.getRegistrationPeriod() == null
+                || registration.getRegistrationPeriod().getStatus() != com.G5C.EduMS.common.enums.RegistrationPeriodStatus.OPEN
+                || registration.getRegistrationPeriod().getStartTime().isAfter(now)
+                || registration.getRegistrationPeriod().getEndTime().isBefore(now)) {
+            throw new InvalidDataException("This registration can only be changed during an open registration period");
         }
     }
 }

@@ -11,7 +11,13 @@ import java.time.LocalDateTime;
 public class CourseRegistrationResponse {
     private Integer id;
     private Integer studentId;
+    private String studentCode;
     private Integer courseSectionId;
+    private String sectionCode;
+    private Integer courseId;
+    private String courseCode;
+    private String courseName;
+    private Integer semesterId;
     private Integer registrationPeriodId;
     private LocalDateTime registrationTime;
     private RegistrationStatus status;
