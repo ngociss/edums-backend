@@ -7,6 +7,7 @@ import com.G5C.EduMS.dto.request.OnboardingRequest;
 import com.G5C.EduMS.model.*;
 import com.G5C.EduMS.repository.*;
 import com.G5C.EduMS.service.AdmissionOnboardingService;
+import com.G5C.EduMS.service.MailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -17,6 +18,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,6 +35,7 @@ public class AdmissionOnboardingServiceImpl implements AdmissionOnboardingServic
     private final RoleRepository roleRepository;
     private final AdmissionPeriodRepository periodRepository;
     private final GuardianRepository guardianRepository;
+    private final MailService mailService;
 
     // Dùng để mã hóa mật khẩu mặc định
     private final PasswordEncoder passwordEncoder;
@@ -118,13 +121,26 @@ public class AdmissionOnboardingServiceImpl implements AdmissionOnboardingServic
         Role guardianRole = roleRepository.findByRoleNameAndDeletedFalse("GUARDIAN")
                 .orElseThrow(() -> new IllegalStateException("Hệ thống chưa cấu hình Role: GUARDIAN"));
 
+        Set<String> nationalIdsToCheck = approvedApps.stream()
+                .map(AdmissionApplication::getNationalId)
+                .collect(Collectors.toSet());
+
+        Set<String> existingNationalIds = studentRepository
+                .findAllByNationalIdInAndDeletedFalse(nationalIdsToCheck)
+                .stream()
+                .map(Student::getNationalId)
+                .collect(Collectors.toSet());
+
         List<Student> newStudents = new ArrayList<>();
+
+        List<AdmissionApplication> successfullyProcessedApps = new ArrayList<>();
+
         LocalDateTime now = LocalDateTime.now();
 
         for (AdmissionApplication app : approvedApps) {
 
             // Chặn tạo trùng dữ liệu
-            if (studentRepository.existsByNationalIdAndDeletedFalse(app.getNationalId())) {
+            if (existingNationalIds.contains(app.getNationalId())) {
                 log.warn("Thí sinh có CCCD {} đã tồn tại. Bỏ qua.", app.getNationalId());
                 continue;
             }
@@ -133,13 +149,15 @@ public class AdmissionOnboardingServiceImpl implements AdmissionOnboardingServic
             String studentCode = generateUserCode("sv", app.getId());
             String guardianCode = generateUserCode("ph", app.getId());
 
+            String rawPassword = app.getDateOfBirth().toString();
+            String encodedPassword = passwordEncoder.encode(rawPassword);
             // -----------------------------------------------------------------
             // BƯỚC A: TẠO TÀI KHOẢN VÀ HỒ SƠ PHỤ HUYNH TRƯỚC
             // -----------------------------------------------------------------
             Account guardianAccount = new Account();
             guardianAccount.setRole(guardianRole);
             guardianAccount.setUsername(guardianCode);
-            guardianAccount.setPassword(passwordEncoder.encode(app.getDateOfBirth().toString()));
+            guardianAccount.setPassword(encodedPassword);
             guardianAccount.setStatus(AccountStatus.ACTIVE);
             guardianAccount.setCreatedAt(now);
             guardianAccount.setDeleted(false);
@@ -160,7 +178,7 @@ public class AdmissionOnboardingServiceImpl implements AdmissionOnboardingServic
             Account studentAccount = new Account();
             studentAccount.setRole(studentRole);
             studentAccount.setUsername(studentCode);
-            studentAccount.setPassword(passwordEncoder.encode(app.getDateOfBirth().toString()));
+            studentAccount.setPassword(encodedPassword);
             studentAccount.setStatus(AccountStatus.ACTIVE);
             studentAccount.setCreatedAt(now);
             studentAccount.setDeleted(false);
@@ -187,11 +205,27 @@ public class AdmissionOnboardingServiceImpl implements AdmissionOnboardingServic
             // BƯỚC C: CẬP NHẬT TRẠNG THÁI HỒ SƠ
             // -----------------------------------------------------------------
             app.setStatus(ApplicationStatus.ENROLLED);
+            successfullyProcessedApps.add(app);
         }
 
         // Batch save toàn bộ sinh viên
         studentRepository.saveAll(newStudents);
-        applicationRepository.saveAll(approvedApps);
+        applicationRepository.saveAll(successfullyProcessedApps);
+
+        for (AdmissionApplication app : successfullyProcessedApps) {
+            // Tính toán lại mã và pass nguyên thủy để gửi mail
+            String studentCode = generateUserCode("sv", app.getId());
+            String rawPassword = app.getDateOfBirth().toString(); // Mật khẩu chưa mã hóa (VD: 2005-10-15)
+
+            // Hàm này chạy @Async nên vòng lặp sẽ trôi qua cực nhanh, không làm đứng hệ thống
+            mailService.sendAdmissionResult(
+                    app.getEmail(),
+                    app.getFullName(),
+                    studentCode,
+                    studentCode,
+                    rawPassword
+            );
+        }
 
         log.info("Onboarding thành công! Đã tạo {} cặp tài khoản Sinh viên & Phụ huynh.", newStudents.size());
     }
