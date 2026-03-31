@@ -24,29 +24,29 @@ public class AdminAdmissionConfigController {
     // =========================================================================
 
     @GetMapping("/periods")
-        public ResponseEntity<ResponseData<PageResponse<PeriodAdminResponse>>> getPeriods(@ModelAttribute BaseFilterRequest filter) {
-        PageResponse<PeriodAdminResponse> result = masterDataService.getPeriods(filter);
+        public ResponseEntity<ResponseData<PageResponse<AdmissionPeriodAdminResponse>>> getPeriods(@ModelAttribute BaseFilterRequest filter) {
+        PageResponse<AdmissionPeriodAdminResponse> result = masterDataService.getPeriods(filter);
         return ResponseEntity.ok(ResponseData.success("Lấy danh sách đợt tuyển sinh thành công", result, HttpStatus.OK.value()));
     }
 
     @GetMapping("/periods/{id}")
-    public ResponseEntity<ResponseData<PeriodAdminResponse>> getPeriodById(@PathVariable Integer id) {
-        PeriodAdminResponse result = masterDataService.getPeriodById(id);
+    public ResponseEntity<ResponseData<AdmissionPeriodAdminResponse>> getPeriodById(@PathVariable Integer id) {
+        AdmissionPeriodAdminResponse result = masterDataService.getPeriodById(id);
         return ResponseEntity.ok(ResponseData.success("Lấy thông tin đợt tuyển sinh thành công", result, HttpStatus.OK.value()));
     }
 
     @PostMapping("/periods")
-    public ResponseEntity<ResponseData<PeriodAdminResponse>> createPeriod(@Valid @RequestBody PeriodRequest request) {
-        PeriodAdminResponse result = masterDataService.createPeriod(request);
+    public ResponseEntity<ResponseData<AdmissionPeriodAdminResponse>> createPeriod(@Valid @RequestBody AdmissionPeriodRequest request) {
+        AdmissionPeriodAdminResponse result = masterDataService.createPeriod(request);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ResponseData.success("Tạo đợt tuyển sinh mới thành công", result, HttpStatus.CREATED.value()));
     }
 
     @PutMapping("/periods/{id}")
-    public ResponseEntity<ResponseData<PeriodAdminResponse>> updatePeriod(
+    public ResponseEntity<ResponseData<AdmissionPeriodAdminResponse>> updatePeriod(
             @PathVariable Integer id,
-            @Valid @RequestBody PeriodRequest request) {
-        PeriodAdminResponse result = masterDataService.updatePeriod(id, request);
+            @Valid @RequestBody AdmissionPeriodRequest request) {
+        AdmissionPeriodAdminResponse result = masterDataService.updatePeriod(id, request);
         return ResponseEntity.ok(ResponseData.success("Cập nhật đợt tuyển sinh thành công", result, HttpStatus.OK.value()));
     }
 
@@ -55,6 +55,15 @@ public class AdminAdmissionConfigController {
         masterDataService.deletePeriod(id);
         return ResponseEntity.ok(ResponseData.success("Xóa đợt tuyển sinh thành công", null, HttpStatus.OK.value()));
     }
+
+    @PostMapping("/periods/campaign")
+    public ResponseEntity<?> createCampaign(@RequestBody CreateAdmissionCampaignRequest request) {
+        // Gọi service xử lý logic all-in-one
+        masterDataService.createFullAdmissionCampaign(request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ResponseData.success("Tạo đợt tuyển sinh mới thành công", null, HttpStatus.CREATED.value()));
+    }
+
 
     // =========================================================================
     // 2. QUẢN LÝ KHỐI XÉT TUYỂN (ADMISSION BLOCKS)

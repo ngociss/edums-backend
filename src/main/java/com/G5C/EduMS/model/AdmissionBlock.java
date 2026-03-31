@@ -19,7 +19,7 @@ public class AdmissionBlock {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "block_name", length = 5, nullable = false, unique = true)
+    @Column(name = "block_name", length = 5, nullable = false)
     private String blockName;
 
     @Column(name = "description", length = 50)

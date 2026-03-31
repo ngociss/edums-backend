@@ -20,4 +20,27 @@ public interface AdmissionPeriodRepository extends JpaRepository<AdmissionPeriod
     List<AdmissionPeriod> findActivePeriods(@Param("status") AdmissionPeriodStatus status);
 
     boolean existsByIdAndStatusAndEndTimeAfterAndDeletedFalse(Integer id, AdmissionPeriodStatus status, LocalDateTime now);
+
+    // 1. Kiểm tra trùng tên
+    @Query("SELECT CASE WHEN COUNT(a) > 0 THEN true ELSE false END FROM AdmissionPeriod a " +
+            "WHERE a.deleted = false AND a.periodName = :name " +
+            "AND (:currentId IS NULL OR a.id != :currentId)")
+    boolean existsByNameAndNotId(@Param("name") String name, @Param("currentId") Integer currentId);
+
+    // 2. Kiểm tra trùng thời gian (Overlap)
+    @Query("SELECT CASE WHEN COUNT(a) > 0 THEN true ELSE false END FROM AdmissionPeriod a " +
+            "WHERE a.deleted = false " +
+            "AND a.startTime < :newEndTime " +
+            "AND a.endTime > :newStartTime " +
+            "AND (:currentId IS NULL OR a.id != :currentId)")
+    boolean existsOverlappingPeriod(@Param("newStartTime") LocalDateTime newStartTime,
+                                    @Param("newEndTime") LocalDateTime newEndTime,
+                                    @Param("currentId") Integer currentId);
+
+    boolean existsByPeriodNameAndDeletedFalse(String periodName);
+
+    @Query("SELECT CASE WHEN COUNT(a) > 0 THEN true ELSE false END FROM AdmissionPeriod a " +
+            "WHERE a.deleted = false AND a.startTime < :newEndTime AND a.endTime > :newStartTime")
+    boolean existsOverlappingPeriod(@Param("newStartTime") LocalDateTime newStartTime,
+                                    @Param("newEndTime") LocalDateTime newEndTime);
 }
