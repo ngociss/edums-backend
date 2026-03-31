@@ -5,11 +5,20 @@ package com.G5C.EduMS.repository;
 import com.G5C.EduMS.model.RegistrationPeriod;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
+@Repository
 public interface RegistrationPeriodRepository extends JpaRepository<RegistrationPeriod, Integer> {
+
+    List<RegistrationPeriod> findAllByDeletedFalse();
+
+    List<RegistrationPeriod> findAllBySemester_IdAndDeletedFalse(Integer semesterId);
+
+    Optional<RegistrationPeriod> findByIdAndDeletedFalse(Integer id);
 
     @Query("""
         SELECT rp
@@ -37,5 +46,21 @@ public interface RegistrationPeriodRepository extends JpaRepository<Registration
             Integer semesterId,
             LocalDateTime startTime,
             LocalDateTime endTime
+    );
+
+    @Query("""
+    SELECT COUNT(rp) > 0
+    FROM RegistrationPeriod rp
+    WHERE rp.semester.id = :semesterId
+      AND rp.deleted = false
+      AND (:excludeId IS NULL OR rp.id <> :excludeId)
+      AND rp.startTime <= :endTime
+      AND rp.endTime >= :startTime
+""")
+    boolean existsOverlappingPeriodExcludingId(
+            Integer semesterId,
+            LocalDateTime startTime,
+            LocalDateTime endTime,
+            Integer excludeId
     );
 }

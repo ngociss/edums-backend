@@ -13,16 +13,19 @@ import com.G5C.EduMS.repository.*;
 import com.G5C.EduMS.service.CourseSectionService;
 import com.G5C.EduMS.model.ClassSession;
 import com.G5C.EduMS.model.RecurringSchedule;
-import com.G5C.EduMS.validator.CourseSectionValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
 public class CourseSectionServiceImpl implements CourseSectionService {
+
+    private static final Pattern TRAILING_NUMBER_PATTERN = Pattern.compile("(\\d+)$");
 
     private final CourseSectionRepository courseSectionRepository;
     private final CourseRepository courseRepository;
@@ -31,7 +34,6 @@ public class CourseSectionServiceImpl implements CourseSectionService {
     private final RecurringScheduleRepository recurringScheduleRepository;
     private final ClassSessionRepository classSessionRepository;
     private final CourseSectionMapper courseSectionMapper;
-    private final CourseSectionValidator courseSectionValidator;
 
     @Override
     public List<CourseSectionResponse> getAll() {
@@ -74,17 +76,11 @@ public class CourseSectionServiceImpl implements CourseSectionService {
         var lecturer = lecturerRepository.findByIdAndDeletedFalse(request.getLecturerId())
                 .orElseThrow(() -> new NotFoundResourcesException("Lecturer not found with id: " + request.getLecturerId()));
 
-        courseSectionValidator.validateDuplicate(
-                request.getSectionCode(),
-                request.getCourseId(),
-                request.getSemesterId(),
-                0
-        );
-
         CourseSection section = courseSectionMapper.toEntity(request);
         section.setCourse(course);
         section.setSemester(semester);
         section.setLecturer(lecturer);
+        section.setSectionCode(generateNextSectionCode(request.getCourseId(), request.getSemesterId()));
 
         return courseSectionMapper.toResponse(courseSectionRepository.save(section));
     }
@@ -142,18 +138,17 @@ public class CourseSectionServiceImpl implements CourseSectionService {
             );
         }
 
-        courseSectionValidator.validateDuplicate(
-                request.getSectionCode(),
-                request.getCourseId(),
-                request.getSemesterId(),
-                id
-        );
+        boolean courseChanged = !section.getCourse().getId().equals(request.getCourseId());
+        boolean semesterChanged = !section.getSemester().getId().equals(request.getSemesterId());
 
 
         courseSectionMapper.updateEntity(request, section);
         section.setCourse(course);
         section.setSemester(semester);
         section.setLecturer(lecturer);
+        if (courseChanged || semesterChanged) {
+            section.setSectionCode(generateNextSectionCode(request.getCourseId(), request.getSemesterId()));
+        }
 
 
         return courseSectionMapper.toResponse(courseSectionRepository.save(section));
@@ -247,5 +242,32 @@ public class CourseSectionServiceImpl implements CourseSectionService {
                 classSessionRepository.findAllBySectionIdAndDeletedFalse(id);
         sessions.forEach(s -> s.setDeleted(true));
         classSessionRepository.saveAll(sessions);
+    }
+
+    private String generateNextSectionCode(Integer courseId, Integer semesterId) {
+        List<CourseSection> existingSections = courseSectionRepository
+                .findAllByCourseIdAndSemesterIdAndDeletedFalseForUpdate(courseId, semesterId);
+
+        int nextGroupNumber = existingSections.stream()
+                .map(CourseSection::getSectionCode)
+                .map(this::extractTrailingNumber)
+                .mapToInt(Integer::intValue)
+                .max()
+                .orElse(0) + 1;
+
+        return String.format("%02d", nextGroupNumber);
+    }
+
+    private int extractTrailingNumber(String sectionCode) {
+        if (sectionCode == null || sectionCode.isBlank()) {
+            return 0;
+        }
+
+        Matcher matcher = TRAILING_NUMBER_PATTERN.matcher(sectionCode.trim());
+        if (!matcher.find()) {
+            return 0;
+        }
+
+        return Integer.parseInt(matcher.group(1));
     }
 }

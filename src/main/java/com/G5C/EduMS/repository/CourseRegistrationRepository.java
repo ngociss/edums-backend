@@ -29,6 +29,8 @@ public interface CourseRegistrationRepository extends JpaRepository<CourseRegist
 
     boolean existsByStudent_IdAndSection_IdAndDeletedFalse(Integer studentId, Integer sectionId);
 
+    boolean existsByRegistrationPeriod_IdAndDeletedFalse(Integer registrationPeriodId);
+
     boolean existsByStudent_IdAndSection_IdAndStatusInAndDeletedFalse(
             Integer studentId,
             Integer sectionId,

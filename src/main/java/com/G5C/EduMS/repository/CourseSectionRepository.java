@@ -26,8 +26,18 @@ public interface CourseSectionRepository extends JpaRepository<CourseSection, In
     @Query("SELECT cs FROM CourseSection cs WHERE cs.id = :id AND cs.deleted = false")
     Optional<CourseSection> findByIdAndDeletedFalseForUpdate(@Param("id") Integer id);
 
-    // Duplicate check: section_code unique trong 1 semester
-    boolean existsBySectionCodeAndSemesterIdAndDeletedFalse(String sectionCode, Integer semesterId);
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+        SELECT cs
+        FROM CourseSection cs
+        WHERE cs.course.id = :courseId
+          AND cs.semester.id = :semesterId
+          AND cs.deleted = false
+    """)
+    List<CourseSection> findAllByCourseIdAndSemesterIdAndDeletedFalseForUpdate(
+            @Param("courseId") Integer courseId,
+            @Param("semesterId") Integer semesterId
+    );
 
     boolean existsBySectionCodeAndCourseIdAndSemesterIdAndIdNotAndDeletedFalse(
             String sectionCode,
