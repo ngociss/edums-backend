@@ -20,6 +20,8 @@ public interface RegistrationPeriodRepository extends JpaRepository<Registration
 
     Optional<RegistrationPeriod> findByIdAndDeletedFalse(Integer id);
 
+    boolean existsBySemester_IdAndDeletedFalse(Integer semesterId);
+
     @Query("""
         SELECT rp
         FROM RegistrationPeriod rp
@@ -33,6 +35,16 @@ public interface RegistrationPeriodRepository extends JpaRepository<Registration
             Integer semesterId,
             LocalDateTime now
     );
+
+    @Query("""
+        SELECT rp
+        FROM RegistrationPeriod rp
+        WHERE rp.deleted = false
+          AND rp.status = com.G5C.EduMS.common.enums.RegistrationPeriodStatus.OPEN
+          AND rp.startTime <= :now
+          AND rp.endTime >= :now
+    """)
+    List<RegistrationPeriod> findAllOpenPeriods(LocalDateTime now);
 
     @Query("""
     SELECT COUNT(rp) > 0

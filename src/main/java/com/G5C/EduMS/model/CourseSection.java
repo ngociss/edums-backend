@@ -64,8 +64,5 @@ public class CourseSection {
     private List<RecurringSchedule> recurringSchedules;
 
     @OneToMany(mappedBy = "section", fetch = FetchType.LAZY)
-    private List<ClassSession> classSessions;
-
-    @OneToMany(mappedBy = "section", fetch = FetchType.LAZY)
     private List<CourseRegistration> courseRegistrations;
 }

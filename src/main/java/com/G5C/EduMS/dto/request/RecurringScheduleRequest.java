@@ -32,5 +32,11 @@ public class RecurringScheduleRequest {
     @Min(value = 1, message = "Tiết học phải từ 1 đến 4")
     @Max(value = 4, message = "Tiết học phải từ 1 đến 4")
     private Integer endPeriod;
+
+    @Min(value = 1, message = "Tuần bắt đầu phải lớn hơn hoặc bằng 1")
+    private Integer startWeek;
+
+    @Min(value = 1, message = "Tuần kết thúc phải lớn hơn hoặc bằng 1")
+    private Integer endWeek;
 }
 

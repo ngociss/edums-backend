@@ -3,6 +3,7 @@ package com.G5C.EduMS.controller;
 
 import com.G5C.EduMS.dto.request.CourseRegistrationRequest;
 import com.G5C.EduMS.dto.request.CourseRegistrationSwitchRequest;
+import com.G5C.EduMS.dto.response.AvailableCourseSectionResponse;
 import com.G5C.EduMS.dto.response.CourseRegistrationResponse;
 import com.G5C.EduMS.service.CourseRegistrationService;
 import com.G5C.EduMS.dto.response.ResponseData;
@@ -21,6 +22,22 @@ public class CourseRegistrationController {
 
     private final CourseRegistrationService courseRegistrationService;
 
+    @GetMapping("/available-sections")
+    public ResponseEntity<ResponseData<List<AvailableCourseSectionResponse>>> getAvailableSections(
+            @RequestParam(required = false) Integer facultyId,
+            @RequestParam(required = false) Integer courseId,
+            @RequestParam(required = false) Integer semesterId,
+            @RequestParam(required = false) String keyword
+    ) {
+        return ResponseEntity.ok(
+                ResponseData.success(
+                        "Lấy danh sách lớp học phần có thể đăng ký thành công",
+                        courseRegistrationService.getAvailableSections(facultyId, courseId, semesterId, keyword),
+                        200
+                )
+        );
+    }
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<ResponseData<CourseRegistrationResponse>> register(
@@ -28,7 +45,7 @@ public class CourseRegistrationController {
     ) {
 
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ResponseData.success("Course registration successful", courseRegistrationService.register(request), 201));
+                .body(ResponseData.success("Đăng ký học phần thành công", courseRegistrationService.register(request), 201));
     }
 
     @GetMapping("/me")
@@ -37,7 +54,7 @@ public class CourseRegistrationController {
     ) {
         return ResponseEntity.ok(
                 ResponseData.success(
-                        "Fetched current student registrations successfully",
+                        "Lấy danh sách học phần đã đăng ký của sinh viên hiện tại thành công",
                         courseRegistrationService.getCurrentStudentRegistrations(semesterId),
                         200
                 )
@@ -51,7 +68,7 @@ public class CourseRegistrationController {
     ) {
         return ResponseEntity.ok(
                 ResponseData.success(
-                        "Fetched student registrations successfully",
+                        "Lấy danh sách học phần đã đăng ký của sinh viên thành công",
                         courseRegistrationService.getStudentRegistrations(studentId, semesterId),
                         200
                 )
@@ -62,7 +79,7 @@ public class CourseRegistrationController {
     public ResponseEntity<ResponseData<CourseRegistrationResponse>> cancel(@PathVariable Integer registrationId) {
         return ResponseEntity.ok(
                 ResponseData.success(
-                        "Course registration cancelled successfully",
+                        "Hủy đăng ký học phần thành công",
                         courseRegistrationService.cancel(registrationId),
                         200
                 )
@@ -76,7 +93,7 @@ public class CourseRegistrationController {
     ) {
         return ResponseEntity.ok(
                 ResponseData.success(
-                        "Course registration switched successfully",
+                        "Chuyển lớp học phần thành công",
                         courseRegistrationService.switchSection(registrationId, request),
                         200
                 )

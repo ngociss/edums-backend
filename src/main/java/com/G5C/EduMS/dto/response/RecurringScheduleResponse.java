@@ -2,6 +2,7 @@ package com.G5C.EduMS.dto.response;
 
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter
@@ -29,6 +30,17 @@ public class RecurringScheduleResponse {
 
     private Integer endPeriod;
     private String endPeriodTime;
+
+    private Integer semesterId;
+    private Integer semesterNumber;
+    private String academicYear;
+    private LocalDate semesterStartDate;
+    private LocalDate semesterEndDate;
+
+    private Integer startWeek;
+    private Integer endWeek;
+    private LocalDate effectiveStartDate;
+    private LocalDate effectiveEndDate;
 
     private LocalDateTime createdAt;
 }

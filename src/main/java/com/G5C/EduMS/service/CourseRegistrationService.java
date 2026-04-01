@@ -2,11 +2,19 @@ package com.G5C.EduMS.service;
 
 import com.G5C.EduMS.dto.request.CourseRegistrationRequest;
 import com.G5C.EduMS.dto.request.CourseRegistrationSwitchRequest;
+import com.G5C.EduMS.dto.response.AvailableCourseSectionResponse;
 import com.G5C.EduMS.dto.response.CourseRegistrationResponse;
 
 import java.util.List;
 
 public interface CourseRegistrationService {
+
+    List<AvailableCourseSectionResponse> getAvailableSections(
+            Integer facultyId,
+            Integer courseId,
+            Integer semesterId,
+            String keyword
+    );
 
     CourseRegistrationResponse register(CourseRegistrationRequest request);
 

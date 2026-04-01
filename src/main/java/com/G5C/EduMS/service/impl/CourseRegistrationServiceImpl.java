@@ -5,6 +5,8 @@ import com.G5C.EduMS.common.enums.GradeStatus;
 import com.G5C.EduMS.common.enums.RegistrationStatus;
 import com.G5C.EduMS.dto.request.CourseRegistrationRequest;
 import com.G5C.EduMS.dto.request.CourseRegistrationSwitchRequest;
+import com.G5C.EduMS.dto.response.AvailableCourseSectionResponse;
+import com.G5C.EduMS.dto.response.AvailableCourseSectionScheduleResponse;
 import com.G5C.EduMS.dto.response.CourseRegistrationResponse;
 import com.G5C.EduMS.exception.InvalidDataException;
 import com.G5C.EduMS.exception.NotFoundResourcesException;
@@ -32,7 +34,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -60,6 +64,34 @@ public class CourseRegistrationServiceImpl implements CourseRegistrationService 
     private int maxCreditsPerSemester;
 
     @Override
+    @Transactional(readOnly = true)
+    public List<AvailableCourseSectionResponse> getAvailableSections(
+            Integer facultyId,
+            Integer courseId,
+            Integer semesterId,
+            String keyword
+    ) {
+        LocalDateTime now = LocalDateTime.now();
+        List<RegistrationPeriod> openPeriods = registrationPeriodRepository.findAllOpenPeriods(now);
+
+        if (openPeriods.isEmpty()) {
+            return List.of();
+        }
+
+        var openPeriodBySemesterId = openPeriods.stream()
+                .collect(java.util.stream.Collectors.toMap(
+                        period -> period.getSemester().getId(),
+                        period -> period,
+                        (first, second) -> first
+                ));
+
+        return courseSectionRepository.findAvailableForRegistration(now, facultyId, courseId, semesterId, keyword)
+                .stream()
+                .map(section -> toAvailableSectionResponse(section, openPeriodBySemesterId.get(section.getSemester().getId())))
+                .toList();
+    }
+
+    @Override
     @Transactional
     public CourseRegistrationResponse register(CourseRegistrationRequest request) {
         Student student = resolveStudentForWrite(request.getStudentId());
@@ -80,7 +112,7 @@ public class CourseRegistrationServiceImpl implements CourseRegistrationService 
     @Transactional(readOnly = true)
     public List<CourseRegistrationResponse> getStudentRegistrations(Integer studentId, Integer semesterId) {
         studentRepository.findByIdAndDeletedFalse(studentId)
-                .orElseThrow(() -> new NotFoundResourcesException("Student not found with id: " + studentId));
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy sinh viên với id: " + studentId));
 
         return getRegistrations(studentId, semesterId);
     }
@@ -89,7 +121,7 @@ public class CourseRegistrationServiceImpl implements CourseRegistrationService 
     @Transactional
     public CourseRegistrationResponse cancel(Integer registrationId) {
         CourseRegistration registration = courseRegistrationRepository.findByIdAndDeletedFalseForUpdate(registrationId)
-                .orElseThrow(() -> new NotFoundResourcesException("Course registration not found with id: " + registrationId));
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy đăng ký học phần với id: " + registrationId));
 
         assertCanManageRegistration(registration);
         LocalDateTime now = LocalDateTime.now();
@@ -104,7 +136,7 @@ public class CourseRegistrationServiceImpl implements CourseRegistrationService 
     @Transactional
     public CourseRegistrationResponse switchSection(Integer registrationId, CourseRegistrationSwitchRequest request) {
         CourseRegistration currentRegistration = courseRegistrationRepository.findByIdAndDeletedFalseForUpdate(registrationId)
-                .orElseThrow(() -> new NotFoundResourcesException("Course registration not found with id: " + registrationId));
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy đăng ký học phần với id: " + registrationId));
 
         assertCanManageRegistration(currentRegistration);
         LocalDateTime now = LocalDateTime.now();
@@ -114,15 +146,15 @@ public class CourseRegistrationServiceImpl implements CourseRegistrationService 
         CourseSection newSection = getCourseSectionForUpdate(request.getNewCourseSectionId());
 
         if (currentRegistration.getSection().getId().equals(newSection.getId())) {
-            throw new InvalidDataException("Please choose a different course section to switch");
+            throw new InvalidDataException("Vui lòng chọn lớp học phần khác để chuyển");
         }
 
         if (!currentRegistration.getSection().getSemester().getId().equals(newSection.getSemester().getId())) {
-            throw new InvalidDataException("Only sections in the same semester can be switched");
+            throw new InvalidDataException("Chỉ được chuyển sang lớp học phần trong cùng học kỳ");
         }
 
         if (!currentRegistration.getSection().getCourse().getId().equals(newSection.getCourse().getId())) {
-            throw new InvalidDataException("Only sections of the same course can be switched");
+            throw new InvalidDataException("Chỉ được chuyển sang lớp học phần của cùng một môn học");
         }
 
         CourseRegistration newRegistration = prepareRegistration(
@@ -153,7 +185,7 @@ public class CourseRegistrationServiceImpl implements CourseRegistrationService 
 
         RegistrationPeriod registrationPeriod = registrationPeriodRepository
                 .findOpenPeriodBySemesterId(courseSection.getSemester().getId(), now)
-                .orElseThrow(() -> new InvalidDataException("Registration period is not open"));
+                .orElseThrow(() -> new InvalidDataException("Đợt đăng ký học phần hiện không mở"));
 
         List<CourseRegistration> activeRegistrations = getActiveRegistrations(
                 student.getId(),
@@ -194,15 +226,15 @@ public class CourseRegistrationServiceImpl implements CourseRegistrationService 
         courseRegistrationValidator.validateSectionOpen(courseSection);
 
         if (courseSection.getCourse() == null || courseSection.getCourse().getStatus() != CourseStatus.ACTIVE) {
-            throw new InvalidDataException("Course is not active for registration");
+            throw new InvalidDataException("Môn học hiện không được phép đăng ký");
         }
 
         if (courseSection.getMaxCapacity() == null || courseSection.getMaxCapacity() <= 0) {
-            throw new InvalidDataException("Course section capacity is invalid");
+            throw new InvalidDataException("Sĩ số tối đa của lớp học phần không hợp lệ");
         }
 
         if (courseSection.getCourse().getCredits() == null || courseSection.getCourse().getCredits() <= 0) {
-            throw new InvalidDataException("Course credits are invalid");
+            throw new InvalidDataException("Số tín chỉ của môn học không hợp lệ");
         }
     }
 
@@ -211,7 +243,7 @@ public class CourseRegistrationServiceImpl implements CourseRegistrationService 
                 .anyMatch(registration -> registration.getSection().getId().equals(courseSectionId));
 
         if (duplicatedSection) {
-            throw new InvalidDataException("Student has already registered for this course section");
+            throw new InvalidDataException("Sinh viên đã đăng ký lớp học phần này");
         }
     }
 
@@ -220,7 +252,7 @@ public class CourseRegistrationServiceImpl implements CourseRegistrationService 
                 .anyMatch(registration -> registration.getSection().getCourse().getId().equals(courseId));
 
         if (duplicatedCourse) {
-            throw new InvalidDataException("Student has already registered for this course in another section");
+            throw new InvalidDataException("Sinh viên đã đăng ký môn học này ở lớp học phần khác");
         }
     }
 
@@ -240,7 +272,7 @@ public class CourseRegistrationServiceImpl implements CourseRegistrationService 
                 for (RecurringSchedule newSchedule : newSchedules) {
                     if (hasScheduleConflict(existingSchedule, newSchedule)) {
                         throw new InvalidDataException(
-                                "Course section schedule conflicts with section " + activeRegistration.getSection().getSectionCode()
+                                "Lịch học của lớp học phần bị trùng với lớp " + activeRegistration.getSection().getSectionCode()
                         );
                     }
                 }
@@ -262,6 +294,107 @@ public class CourseRegistrationServiceImpl implements CourseRegistrationService 
         return sameDay && overlapPeriod && overlapWeek;
     }
 
+    private AvailableCourseSectionResponse toAvailableSectionResponse(CourseSection section, RegistrationPeriod registrationPeriod) {
+        long registeredCount = courseRegistrationRepository.countBySection_IdAndStatusAndDeletedFalse(
+                section.getId(),
+                RegistrationStatus.CONFIRMED
+        );
+
+        long remainingCapacity = section.getMaxCapacity() == null
+                ? 0
+                : Math.max(section.getMaxCapacity() - registeredCount, 0);
+
+        List<AvailableCourseSectionScheduleResponse> schedules = recurringScheduleRepository
+                .findAllBySectionIdAndDeletedFalse(section.getId())
+                .stream()
+                .map(schedule -> {
+                    int startWeek = resolveScheduleStartWeek(schedule);
+                    int endWeek = resolveScheduleEndWeek(schedule);
+
+                    return AvailableCourseSectionScheduleResponse.builder()
+                        .roomId(schedule.getRoom() == null ? null : schedule.getRoom().getId())
+                        .roomName(schedule.getRoom() == null ? null : schedule.getRoom().getRoomName())
+                        .dayOfWeek(schedule.getDayOfWeek())
+                        .startPeriod(schedule.getStartPeriod())
+                        .endPeriod(schedule.getEndPeriod())
+                        .startWeek(startWeek)
+                        .endWeek(endWeek)
+                        .effectiveStartDate(resolveEffectiveDate(schedule, startWeek))
+                        .effectiveEndDate(resolveEffectiveDate(schedule, endWeek))
+                        .build();
+                })
+                .toList();
+
+        return AvailableCourseSectionResponse.builder()
+                .courseSectionId(section.getId())
+                .sectionCode(section.getSectionCode())
+                .displayName(section.getDisplayName())
+                .courseId(section.getCourse().getId())
+                .courseCode(section.getCourse().getCourseCode())
+                .courseName(section.getCourse().getCourseName())
+                .credits(section.getCourse().getCredits())
+                .facultyId(section.getCourse().getFaculty() == null ? null : section.getCourse().getFaculty().getId())
+                .facultyName(section.getCourse().getFaculty() == null ? null : section.getCourse().getFaculty().getFacultyName())
+                .prerequisiteCourseId(section.getCourse().getPrerequisiteCourse() == null ? null : section.getCourse().getPrerequisiteCourse().getId())
+                .prerequisiteCourseCode(section.getCourse().getPrerequisiteCourse() == null ? null : section.getCourse().getPrerequisiteCourse().getCourseCode())
+                .prerequisiteCourseName(section.getCourse().getPrerequisiteCourse() == null ? null : section.getCourse().getPrerequisiteCourse().getCourseName())
+                .lecturerId(section.getLecturer() == null ? null : section.getLecturer().getId())
+                .lecturerName(section.getLecturer() == null ? null : section.getLecturer().getFullName())
+                .semesterId(section.getSemester().getId())
+                .semesterNumber(section.getSemester().getSemesterNumber())
+                .academicYear(section.getSemester().getAcademicYear())
+                .registrationPeriodId(registrationPeriod == null ? null : registrationPeriod.getId())
+                .registrationPeriodName(registrationPeriod == null ? null : registrationPeriod.getName())
+                .registrationStartTime(registrationPeriod == null ? null : registrationPeriod.getStartTime())
+                .registrationEndTime(registrationPeriod == null ? null : registrationPeriod.getEndTime())
+                .maxCapacity(section.getMaxCapacity())
+                .registeredCount(registeredCount)
+                .remainingCapacity(remainingCapacity)
+                .status(section.getStatus())
+                .schedules(schedules)
+                .build();
+    }
+
+    private LocalDate resolveEffectiveDate(RecurringSchedule schedule, Integer weekNumber) {
+        if (schedule == null
+                || weekNumber == null
+                || schedule.getDayOfWeek() == null
+                || schedule.getSection() == null
+                || schedule.getSection().getSemester() == null
+                || schedule.getSection().getSemester().getStartDate() == null) {
+            return null;
+        }
+
+        LocalDate semesterStart = schedule.getSection().getSemester().getStartDate();
+        LocalDate weekStart = semesterStart.plusWeeks(Math.max(weekNumber - 1L, 0L));
+        java.time.DayOfWeek targetDay = com.G5C.EduMS.common.enums.DayOfWeek
+                .fromValue(schedule.getDayOfWeek())
+                .toJavaDayOfWeek();
+
+        long daysOffset = targetDay.getValue() - weekStart.getDayOfWeek().getValue();
+        if (daysOffset < 0) {
+            daysOffset += 7;
+        }
+
+        return weekStart.plusDays(daysOffset);
+    }
+
+    private int resolveScheduleStartWeek(RecurringSchedule schedule) {
+        return schedule.getStartWeek() == null ? 1 : schedule.getStartWeek();
+    }
+
+    private int resolveScheduleEndWeek(RecurringSchedule schedule) {
+        if (schedule.getEndWeek() != null) {
+            return schedule.getEndWeek();
+        }
+        if (schedule.getSection() != null
+                && schedule.getSection().getSemester() != null
+                && schedule.getSection().getSemester().getTotalWeeks() != null) {
+            return schedule.getSection().getSemester().getTotalWeeks();
+        }
+        return resolveScheduleStartWeek(schedule);
+    }
+
     private void validatePrerequisite(Student student, CourseSection courseSection) {
         if (courseSection.getCourse().getPrerequisiteCourse() == null) {
             return;
@@ -275,7 +408,7 @@ public class CourseRegistrationServiceImpl implements CourseRegistrationService 
         );
 
         if (!passedPrerequisite) {
-            throw new InvalidDataException("Student has not passed the prerequisite course");
+            throw new InvalidDataException("Sinh viên chưa đạt môn học tiên quyết");
         }
     }
 
@@ -289,7 +422,7 @@ public class CourseRegistrationServiceImpl implements CourseRegistrationService 
         int totalCredits = currentCredits + courseSection.getCourse().getCredits();
         if (totalCredits > maxCreditsPerSemester) {
             throw new InvalidDataException(
-                    "Credit load exceeds the semester limit of " + maxCreditsPerSemester + " credits"
+                    "Tổng số tín chỉ vượt quá giới hạn " + maxCreditsPerSemester + " tín chỉ trong học kỳ"
             );
         }
     }
@@ -297,11 +430,11 @@ public class CourseRegistrationServiceImpl implements CourseRegistrationService 
     private Student resolveStudentForWrite(Integer requestedStudentId) {
         if (hasAnyRole("ADMIN", "MANAGER")) {
             if (requestedStudentId == null) {
-                throw new InvalidDataException("studentId is required for admin or manager registrations");
+                throw new InvalidDataException("Admin hoặc quản lý phải truyền studentId khi đăng ký hộ");
             }
 
             return studentRepository.findByIdAndDeletedFalse(requestedStudentId)
-                    .orElseThrow(() -> new NotFoundResourcesException("Student not found with id: " + requestedStudentId));
+                    .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy sinh viên với id: " + requestedStudentId));
         }
 
         return getCurrentStudent();
@@ -314,31 +447,31 @@ public class CourseRegistrationServiceImpl implements CourseRegistrationService 
 
         Student currentStudent = getCurrentStudent();
         if (!registration.getStudent().getId().equals(currentStudent.getId())) {
-            throw new InvalidDataException("You can only manage your own course registrations");
+            throw new InvalidDataException("Bạn chỉ có thể thao tác trên đăng ký học phần của chính mình");
         }
     }
 
     private CourseSection getCourseSectionForUpdate(Integer courseSectionId) {
         return courseSectionRepository.findByIdAndDeletedFalseForUpdate(courseSectionId)
                 .orElseThrow(() -> new NotFoundResourcesException(
-                        "Course section not found with id: " + courseSectionId
+                        "Không tìm thấy lớp học phần với id: " + courseSectionId
                 ));
     }
 
     private Student getCurrentStudent() {
         Account account = getAuthenticatedAccount();
         return studentRepository.findByAccount_IdAndDeletedFalse(account.getId())
-                .orElseThrow(() -> new NotFoundResourcesException("Student not found for current account"));
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy sinh viên tương ứng với tài khoản hiện tại"));
     }
 
     private Account getAuthenticatedAccount() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || authentication.getName() == null) {
-            throw new InvalidDataException("Authentication information is missing");
+            throw new InvalidDataException("Thiếu thông tin xác thực");
         }
 
         return accountRepository.findByUsernameAndDeletedFalse(authentication.getName())
-                .orElseThrow(() -> new NotFoundResourcesException("Account not found with username: " + authentication.getName()));
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy tài khoản với username: " + authentication.getName()));
     }
 
     private boolean hasAnyRole(String... roles) {

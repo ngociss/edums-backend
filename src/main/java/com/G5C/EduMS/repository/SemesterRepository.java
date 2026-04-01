@@ -13,5 +13,16 @@ public interface SemesterRepository extends JpaRepository<Semester, Integer> {
     List<Semester> findAllByDeletedFalse();
 
     Optional<Semester> findByIdAndDeletedFalse(Integer id);
+
+    boolean existsBySemesterNumberAndAcademicYearAndDeletedFalse(
+            Integer semesterNumber,
+            String academicYear
+    );
+
+    boolean existsBySemesterNumberAndAcademicYearAndIdNotAndDeletedFalse(
+            Integer semesterNumber,
+            String academicYear,
+            Integer id
+    );
 }
 

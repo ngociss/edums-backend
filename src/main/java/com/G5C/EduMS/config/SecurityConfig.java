@@ -44,6 +44,7 @@ public class SecurityConfig {
                                 "/api/v1/students/*/grade-reports",
                                 "/api/v1/students/*/attendances"
                         ).hasAnyRole("STUDENT", "ADMIN", "MANAGER")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/course-registrations/available-sections").hasAnyRole("STUDENT", "ADMIN", "MANAGER")
                         .requestMatchers(HttpMethod.GET, "/api/v1/course-registrations/me").hasRole("STUDENT")
                         .requestMatchers(HttpMethod.POST, "/api/v1/course-registrations").hasAnyRole("STUDENT", "ADMIN", "MANAGER")
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/course-registrations/*/cancel").hasAnyRole("STUDENT", "ADMIN", "MANAGER")
@@ -69,6 +70,7 @@ public class SecurityConfig {
                                 "/api/v1/majors/**",
                                 "/api/v1/specializations/**",
                                 "/api/v1/cohorts/**",
+                                "/api/v1/semesters/**",
                                 "/api/v1/classrooms/**",
                                 "/api/v1/administrative-classes/**",
                                 "/api/v1/courses/**",
