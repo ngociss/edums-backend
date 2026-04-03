@@ -22,6 +22,8 @@ public interface RegistrationPeriodRepository extends JpaRepository<Registration
 
     boolean existsBySemester_IdAndDeletedFalse(Integer semesterId);
 
+    boolean existsBySemester_IdAndIdNotAndDeletedFalse(Integer semesterId, Integer id);
+
     @Query("""
         SELECT rp
         FROM RegistrationPeriod rp
