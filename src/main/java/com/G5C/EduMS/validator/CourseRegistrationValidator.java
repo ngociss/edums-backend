@@ -6,12 +6,14 @@ import com.G5C.EduMS.common.enums.RegistrationStatus;
 import com.G5C.EduMS.common.enums.StudentStatus;
 import com.G5C.EduMS.exception.ExistingResourcesException;
 import com.G5C.EduMS.exception.InvalidDataException;
+import com.G5C.EduMS.model.CourseRegistration;
 import com.G5C.EduMS.model.CourseSection;
 import com.G5C.EduMS.model.Student;
 import com.G5C.EduMS.repository.CourseRegistrationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Component
@@ -22,13 +24,13 @@ public class CourseRegistrationValidator {
 
     public void validateStudentActive(Student student) {
         if (student.getStatus() != StudentStatus.ACTIVE) {
-            throw new InvalidDataException("Student is not active");
+            throw new InvalidDataException("Sinh viên không ở trạng thái đang học");
         }
     }
 
     public void validateSectionOpen(CourseSection courseSection) {
         if (courseSection.getStatus() != CourseSectionStatus.OPEN) {
-            throw new InvalidDataException("Course section is not open for registration");
+            throw new InvalidDataException("Lớp học phần chưa mở đăng ký");
         }
     }
 
@@ -37,7 +39,7 @@ public class CourseRegistrationValidator {
                 .existsByStudent_IdAndSection_IdAndStatusInAndDeletedFalse(studentId, courseSectionId, List.of(RegistrationStatus.PENDING, RegistrationStatus.CONFIRMED));
 
         if (exists) {
-            throw new ExistingResourcesException("Student has already registered for this course section");
+            throw new ExistingResourcesException("Sinh viên đã đăng ký lớp học phần này");
         }
     }
 
@@ -49,7 +51,22 @@ public class CourseRegistrationValidator {
                 );
 
         if (registeredCount >= courseSection.getMaxCapacity()) {
-            throw new InvalidDataException("Course section is full");
+            throw new InvalidDataException("Lớp học phần đã đủ sĩ số");
+        }
+    }
+
+    public void validateRegistrationActive(CourseRegistration registration) {
+        if (!List.of(RegistrationStatus.PENDING, RegistrationStatus.CONFIRMED).contains(registration.getStatus())) {
+            throw new InvalidDataException("Chỉ có thể thao tác với đăng ký còn hiệu lực");
+        }
+    }
+
+    public void validateCanModifyDuringOpenPeriod(CourseRegistration registration, LocalDateTime now) {
+        if (registration.getRegistrationPeriod() == null
+                || registration.getRegistrationPeriod().getStatus() != com.G5C.EduMS.common.enums.RegistrationPeriodStatus.OPEN
+                || registration.getRegistrationPeriod().getStartTime().isAfter(now)
+                || registration.getRegistrationPeriod().getEndTime().isBefore(now)) {
+            throw new InvalidDataException("Chỉ có thể thay đổi đăng ký trong thời gian đợt đăng ký đang mở");
         }
     }
 }

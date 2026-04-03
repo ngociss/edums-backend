@@ -21,10 +21,6 @@ public class ClassSession {
     private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "section_id")
-    private CourseSection section;
-
-    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id")
     private Classroom room;
 

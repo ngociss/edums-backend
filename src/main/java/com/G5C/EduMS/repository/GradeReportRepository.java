@@ -1,5 +1,6 @@
 package com.G5C.EduMS.repository;
 
+import com.G5C.EduMS.common.enums.GradeStatus;
 import com.G5C.EduMS.model.GradeReport;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -23,4 +24,21 @@ public interface GradeReportRepository extends JpaRepository<GradeReport, Intege
     List<GradeReport> findAllBySectionId(@Param("sectionId") Integer sectionId);
 
     boolean existsByRegistrationIdAndDeletedFalse(Integer registrationId);
+
+    @Query("""
+        SELECT COUNT(gr) > 0
+        FROM GradeReport gr
+        WHERE gr.registration.student.id = :studentId
+          AND gr.registration.section.course.id = :courseId
+          AND gr.deleted = false
+          AND gr.status = :status
+          AND gr.finalScore IS NOT NULL
+          AND gr.finalScore >= :minimumScore
+    """)
+    boolean existsPassedCourseByStudentIdAndCourseId(
+            @Param("studentId") Integer studentId,
+            @Param("courseId") Integer courseId,
+            @Param("status") GradeStatus status,
+            @Param("minimumScore") float minimumScore
+    );
 }

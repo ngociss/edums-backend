@@ -15,7 +15,14 @@ public interface ClassSessionRepository extends JpaRepository<ClassSession, Inte
 
     Optional<ClassSession> findByIdAndDeletedFalse(Integer id);
 
-    List<ClassSession> findAllBySectionIdAndDeletedFalse(Integer sectionId);
+    @Query("""
+        SELECT cs FROM ClassSession cs
+        JOIN cs.recurringSchedule rs
+        WHERE rs.section.id = :sectionId
+          AND cs.deleted = false
+          AND rs.deleted = false
+    """)
+    List<ClassSession> findAllBySectionIdAndDeletedFalse(@Param("sectionId") Integer sectionId);
 
     List<ClassSession> findAllByRecurringScheduleIdAndDeletedFalse(Integer recurringScheduleId);
 
@@ -23,7 +30,10 @@ public interface ClassSessionRepository extends JpaRepository<ClassSession, Inte
     boolean existsByRoomId(Integer roomId);
 
     /** Kiểm tra trùng ngày trong cùng section (tránh sinh trùng ClassSession) */
-    boolean existsBySectionIdAndSessionDateAndDeletedFalse(Integer sectionId, LocalDate sessionDate);
+    boolean existsByRecurringScheduleIdAndSessionDateAndDeletedFalse(
+            Integer recurringScheduleId,
+            LocalDate sessionDate
+    );
 
     /**
      * Kiểm tra xem có buổi học nào của schedule này đã có điểm danh chưa.
@@ -43,12 +53,14 @@ public interface ClassSessionRepository extends JpaRepository<ClassSession, Inte
 
     // Lấy thời khóa biểu cho giảng viên theo khoảng thời gian
     @Query("SELECT cs FROM ClassSession cs " +
-            "JOIN FETCH cs.section sec " +
+            "JOIN FETCH cs.recurringSchedule rs " +
+            "JOIN FETCH rs.section sec " +
             "JOIN FETCH sec.course c " +
             "LEFT JOIN FETCH cs.room r " +
             "WHERE sec.lecturer.id = :lecturerId " +
             "AND cs.sessionDate BETWEEN :startDate AND :endDate " +
             "AND cs.deleted = false " +
+            "AND rs.deleted = false " +
             "AND sec.deleted = false " +
             "ORDER BY cs.sessionDate ASC, cs.startPeriod ASC")
     List<ClassSession> findScheduleByLecturerAndDateRange(
