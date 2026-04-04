@@ -5,6 +5,8 @@ import com.G5C.EduMS.dto.response.StudentResponse;
 import com.G5C.EduMS.dto.request.StudentCreateRequest;
 import com.G5C.EduMS.dto.request.StudentStatusUpdateRequest;
 import com.G5C.EduMS.dto.request.StudentUpdateRequest;
+import com.G5C.EduMS.exception.ExistingResourcesException;
+import com.G5C.EduMS.exception.InvalidDataException;
 import com.G5C.EduMS.exception.NotFoundResourcesException;
 import com.G5C.EduMS.mapper.StudentMapper;
 import com.G5C.EduMS.model.*;
@@ -15,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,8 +37,8 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public Page<StudentResponse> getAllStudents(int page, int size, String keyword, Integer classId, Integer majorId, StudentStatus status) {
-        Pageable pageable = PageRequest.of(page, size);
-
+        int safePage = page > 0 ? page - 1 : 0;
+        Pageable pageable = PageRequest.of(safePage, size, Sort.by(Sort.Direction.DESC, "id"));
         // Gọi hàm custom query trong Repository để lọc đa chiều
         Page<Student> studentPage = studentRepository.searchStudents(keyword, classId, majorId, status, pageable);
 
@@ -89,6 +92,9 @@ public class StudentServiceImpl implements StudentService {
     @Override
     @Transactional
     public void updateStudentStatus(Integer id, StudentStatusUpdateRequest request) {
+        if (request.getStatus() == null) {
+            throw new InvalidDataException("Trạng thái không được để trống.");
+        }
         Student student = studentRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy sinh viên với ID: " + id));
 
@@ -111,40 +117,54 @@ public class StudentServiceImpl implements StudentService {
     // ================== CÁC HÀM PRIVATE HỖ TRỢ LOGIC ==================
 
     private void checkUniqueFieldsForCreate(String studentCode, String email, String nationalId) {
+        if (studentCode == null || studentCode.trim().isEmpty() ||
+                email == null || email.trim().isEmpty() ||
+                nationalId == null || nationalId.trim().isEmpty()) {
+            throw new InvalidDataException("Mã SV, Email và CCCD không được để trống.");
+        }
         if (studentRepository.existsByStudentCodeAndDeletedFalse(studentCode))
-            throw new IllegalArgumentException("Mã sinh viên đã tồn tại trong hệ thống.");
+            throw new ExistingResourcesException("Mã sinh viên đã tồn tại trong hệ thống.");
         if (studentRepository.existsByEmailAndDeletedFalse(email))
-            throw new IllegalArgumentException("Email đã được sử dụng.");
+            throw new ExistingResourcesException("Email đã được sử dụng.");
         if (studentRepository.existsByNationalIdAndDeletedFalse(nationalId))
-            throw new IllegalArgumentException("Số CCCD đã được sử dụng.");
+            throw new ExistingResourcesException("Số CCCD đã được sử dụng.");
     }
 
     private void checkUniqueFieldsForUpdate(Student existingStudent, String newEmail, String newNationalId) {
+        if (newEmail == null || newNationalId == null) {
+            throw new InvalidDataException("Email và CCCD không được để trống.");
+        }
         if (!existingStudent.getEmail().equals(newEmail) && studentRepository.existsByEmailAndDeletedFalse(newEmail)) {
-            throw new IllegalArgumentException("Email mới đã được sử dụng bởi người khác.");
+            throw new ExistingResourcesException("Email mới đã được sử dụng bởi người khác.");
         }
         if (!existingStudent.getNationalId().equals(newNationalId) && studentRepository.existsByNationalIdAndDeletedFalse(newNationalId)) {
-            throw new IllegalArgumentException("Số CCCD mới đã được sử dụng bởi người khác.");
+            throw new ExistingResourcesException("Số CCCD mới đã được sử dụng bởi người khác.");
         }
     }
 
     private void bindForeignKeys(Student student, Integer classId, Integer majorId, Integer specializationId, Integer guardianId) {
-        // Ràng buộc Lớp và Ngành (Bắt buộc)
-        AdministrativeClass adminClass = classRepository.findById(classId)
+        if (classId == null || majorId == null) {
+            throw new InvalidDataException("Sinh viên bắt buộc phải thuộc một Lớp hành chính và một Ngành học.");
+        }
+
+        AdministrativeClass adminClass = classRepository.findByIdAndDeletedFalse(classId)
                 .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy Lớp với ID: " + classId));
         student.setAdministrativeClass(adminClass);
 
-        Major major = majorRepository.findById(majorId)
+        Major major = majorRepository.findByIdAndDeletedFalse(majorId)
                 .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy Ngành với ID: " + majorId));
         student.setMajor(major);
 
         // Ràng buộc Chuyên ngành (Tùy chọn)
         if (specializationId != null) {
-            Specialization spec = specializationRepository.findById(specializationId)
+            Specialization spec = specializationRepository.findByIdAndDeletedFalse(specializationId)
                     .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy Chuyên ngành với ID: " + specializationId));
+            if(!spec.getMajor().getId().equals(majorId)){
+                throw new InvalidDataException("Chuyên ngành đã chọn không thuộc ngành học này");
+            }
             student.setSpecialization(spec);
         } else {
-            student.setSpecialization(null); // Xóa liên kết nếu frontend gửi lên null
+            student.setSpecialization(null);
         }
 
         // Ràng buộc Phụ huynh (Tùy chọn)

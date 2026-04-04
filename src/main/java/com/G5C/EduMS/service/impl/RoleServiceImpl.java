@@ -2,6 +2,9 @@ package com.G5C.EduMS.service.impl;
 
 import com.G5C.EduMS.dto.response.RoleResponse;
 import com.G5C.EduMS.dto.request.RoleRequest;
+import com.G5C.EduMS.exception.ExistingResourcesException;
+import com.G5C.EduMS.exception.InvalidDataException;
+import com.G5C.EduMS.exception.NotFoundResourcesException;
 import com.G5C.EduMS.mapper.RoleMapper;
 import com.G5C.EduMS.model.Role;
 import com.G5C.EduMS.model.RolePermission;
@@ -49,33 +52,30 @@ public class RoleServiceImpl implements RoleService {
     @Transactional(readOnly = true)
     public List<RoleResponse> getAllRoles() {
         // Chỉ lấy những Role chưa bị xóa mềm
-        List<Role> roles = roleRepository.findAll().stream()
-                .filter(role -> !role.isDeleted())
-                .collect(Collectors.toList());
+        List<Role> roles = roleRepository.findAllByDeletedFalse();
         return roleMapper.toResponseList(roles);
     }
 
     @Override
     @Transactional(readOnly = true)
     public RoleResponse getRoleById(Integer id) {
-        Role role = roleRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy Vai trò với ID: " + id));
+        Role role = roleRepository.findByIdAndDeletedFalse(id)
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy Vai trò với ID: " + id));
 
-        if (role.isDeleted()) {
-            throw new RuntimeException("Vai trò này đã bị xóa!");
-        }
         return roleMapper.toResponse(role);
     }
     @Override
     @Transactional
     public RoleResponse createRole(RoleRequest request) {
-        // 1. Dùng Mapper để tạo Entity Role cơ bản (đã ignore id và permissions)
+        if (request.getFunctionCodes() == null || request.getFunctionCodes().isEmpty()) {
+            throw new InvalidDataException("Danh sách quyền không được để trống");
+        }
+        if (roleRepository.existsByRoleNameAndDeletedFalse(request.getRoleName())) {
+            throw new ExistingResourcesException("Tên Vai trò này đã tồn tại trong hệ thống!");
+        }
         Role newRole = roleMapper.toEntity(request);
-
-        // 2. Lưu Role vào Database TRƯỚC để lấy ID
         Role savedRole = roleRepository.save(newRole);
 
-        // 3. Xử lý danh sách quyền (functionCodes)
         if (request.getFunctionCodes() != null && !request.getFunctionCodes().isEmpty()) {
             List<RolePermission> permissions = new ArrayList<>();
             for (String code : request.getFunctionCodes()) {
@@ -97,10 +97,17 @@ public class RoleServiceImpl implements RoleService {
     @Override
     @Transactional
     public RoleResponse updateRole(Integer id, RoleRequest request) {
+        if (request.getFunctionCodes() == null || request.getFunctionCodes().isEmpty()) {
+            throw new InvalidDataException("Danh sách quyền không được để trống");
+        }
         // 1. Tìm Role cũ trong DB
-        Role existingRole = roleRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy Vai trò để cập nhật!"));
+        Role existingRole = roleRepository.findByIdAndDeletedFalse(id)
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy Vai trò để cập nhật!"));
 
+        if (!existingRole.getRoleName().equals(request.getRoleName()) &&
+                roleRepository.existsByRoleNameAndDeletedFalse(request.getRoleName())) {
+            throw new ExistingResourcesException("Tên Vai trò này đã tồn tại trong hệ thống!");
+        }
         // 2. Cập nhật tên Vai trò
         existingRole.setRoleName(request.getRoleName());
         Role savedRole = roleRepository.save(existingRole);
@@ -130,12 +137,11 @@ public class RoleServiceImpl implements RoleService {
     @Override
     @Transactional
     public void deleteRole(Integer id) {
-        Role existingRole = roleRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy Vai trò để xóa!"));
+        Role existingRole = roleRepository.findByIdAndDeletedFalse(id)
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy Vai trò để xóa!"));
 
-        // 🚨 CHỐT CHẶN AN TOÀN: Kiểm tra xem có Account nào đang dùng Role này không
-        if (accountRepository.existsByRoleId(id)) {
-            throw new RuntimeException("Không thể xóa Vai trò này vì đang có Tài khoản sử dụng!");
+        if (accountRepository.existsByRoleIdAndDeletedFalse(id)) {
+            throw new InvalidDataException("Không thể xóa Vai trò này vì đang có Tài khoản sử dụng!");
         }
 
         // Thực hiện xóa mềm

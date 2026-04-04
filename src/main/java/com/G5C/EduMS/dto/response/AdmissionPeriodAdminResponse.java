@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PeriodAdminResponse {
+public class AdmissionPeriodAdminResponse {
     private Integer id;
     private String periodName;
     private LocalDateTime startTime;

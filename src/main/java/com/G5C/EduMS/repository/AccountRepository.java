@@ -10,7 +10,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public interface AccountRepository extends JpaRepository<Account, Integer> {
@@ -29,8 +31,12 @@ public interface AccountRepository extends JpaRepository<Account, Integer> {
                                  @Param("prefix") String prefix,
                                  Pageable pageable);
 
-    boolean existsByRoleId(Integer roleId);
+    boolean existsByRoleIdAndDeletedFalse(Integer roleId);
 
     @EntityGraph(attributePaths = {"role"})
     Optional<Account> findByUsernameAndDeletedFalse(String username);
+
+    List<Account> findAllByUsernameIn(Set<String> usernames);
+
+    Optional<Account> findByIdAndDeletedFalse(Integer integer);
 }

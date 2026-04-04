@@ -19,7 +19,11 @@ public interface StudentRepository extends JpaRepository<Student, Integer> {
     // Kiểm tra ràng buộc trước khi xóa Specialization
     boolean existsBySpecializationIdAndDeletedFalse(Integer specializationId);
 
+    boolean existsByGuardianIdAndDeletedFalse(Integer id);
+
     Optional<Student> findByAccount_IdAndDeletedFalse(Integer accountId);
+
+    Optional<Student> findByAccountIdAndDeletedFalse(Integer accountId);
 
     // Kiểm tra ràng buộc trước khi xóa AdministrativeClass
     @Query("SELECT COUNT(s) > 0 FROM Student s WHERE s.administrativeClass.id = :classId AND s.deleted = false")

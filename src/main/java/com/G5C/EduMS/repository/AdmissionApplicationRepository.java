@@ -36,7 +36,7 @@ public interface AdmissionApplicationRepository extends JpaRepository<AdmissionA
     Page<AdmissionApplication> searchApplications(
             @Param("periodId") Integer periodId,
             @Param("majorId") Integer majorId,
-            @Param("status") ApplicationStatus status, // Đổi String sang Enum
+            @Param("status") ApplicationStatus status,
             @Param("keyword") String keyword,
             Pageable pageable);
 

@@ -24,29 +24,22 @@ public class AdminAdmissionConfigController {
     // =========================================================================
 
     @GetMapping("/periods")
-        public ResponseEntity<ResponseData<PageResponse<PeriodAdminResponse>>> getPeriods(@ModelAttribute BaseFilterRequest filter) {
-        PageResponse<PeriodAdminResponse> result = masterDataService.getPeriods(filter);
+        public ResponseEntity<ResponseData<PageResponse<AdmissionPeriodAdminResponse>>> getPeriods(@ModelAttribute BaseFilterRequest filter) {
+        PageResponse<AdmissionPeriodAdminResponse> result = masterDataService.getPeriods(filter);
         return ResponseEntity.ok(ResponseData.success("Lấy danh sách đợt tuyển sinh thành công", result, HttpStatus.OK.value()));
     }
 
     @GetMapping("/periods/{id}")
-    public ResponseEntity<ResponseData<PeriodAdminResponse>> getPeriodById(@PathVariable Integer id) {
-        PeriodAdminResponse result = masterDataService.getPeriodById(id);
+    public ResponseEntity<ResponseData<AdmissionPeriodAdminResponse>> getPeriodById(@PathVariable Integer id) {
+        AdmissionPeriodAdminResponse result = masterDataService.getPeriodById(id);
         return ResponseEntity.ok(ResponseData.success("Lấy thông tin đợt tuyển sinh thành công", result, HttpStatus.OK.value()));
     }
 
-    @PostMapping("/periods")
-    public ResponseEntity<ResponseData<PeriodAdminResponse>> createPeriod(@Valid @RequestBody PeriodRequest request) {
-        PeriodAdminResponse result = masterDataService.createPeriod(request);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ResponseData.success("Tạo đợt tuyển sinh mới thành công", result, HttpStatus.CREATED.value()));
-    }
-
     @PutMapping("/periods/{id}")
-    public ResponseEntity<ResponseData<PeriodAdminResponse>> updatePeriod(
+    public ResponseEntity<ResponseData<AdmissionPeriodAdminResponse>> updatePeriod(
             @PathVariable Integer id,
-            @Valid @RequestBody PeriodRequest request) {
-        PeriodAdminResponse result = masterDataService.updatePeriod(id, request);
+            @Valid @RequestBody AdmissionPeriodRequest request) {
+        AdmissionPeriodAdminResponse result = masterDataService.updatePeriod(id, request);
         return ResponseEntity.ok(ResponseData.success("Cập nhật đợt tuyển sinh thành công", result, HttpStatus.OK.value()));
     }
 
@@ -56,28 +49,37 @@ public class AdminAdmissionConfigController {
         return ResponseEntity.ok(ResponseData.success("Xóa đợt tuyển sinh thành công", null, HttpStatus.OK.value()));
     }
 
+    @PostMapping("/periods/campaign")
+    public ResponseEntity<ResponseData<Void>> createCampaign(@Valid @RequestBody CreateAdmissionCampaignRequest request) {
+        // Gọi service xử lý logic all-in-one
+        masterDataService.createFullAdmissionCampaign(request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ResponseData.success("Tạo đợt tuyển sinh mới thành công", null, HttpStatus.CREATED.value()));
+    }
+
+
     // =========================================================================
     // 2. QUẢN LÝ KHỐI XÉT TUYỂN (ADMISSION BLOCKS)
     // =========================================================================
 
     @GetMapping("/blocks")
-    public ResponseEntity<ResponseData<List<AdmissionBlock>>> getAllBlocks() {
-        List<AdmissionBlock> result = masterDataService.getAllBlocks();
+    public ResponseEntity<ResponseData<List<AdmissionBlockResponse>>> getAllBlocks() {
+        List<AdmissionBlockResponse> result = masterDataService.getAllBlocks();
         return ResponseEntity.ok(ResponseData.success("Lấy danh sách khối xét tuyển thành công", result, HttpStatus.OK.value()));
     }
 
     @PostMapping("/blocks")
-    public ResponseEntity<ResponseData<AdmissionBlock>> createBlock(@Valid @RequestBody BlockRequest request) {
-        AdmissionBlock result = masterDataService.createBlock(request);
+    public ResponseEntity<ResponseData<AdmissionBlockResponse>> createBlock(@Valid @RequestBody BlockRequest request) {
+        AdmissionBlockResponse result = masterDataService.createBlock(request);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ResponseData.success("Tạo khối xét tuyển thành công", result, HttpStatus.CREATED.value()));
     }
 
     @PutMapping("/blocks/{id}")
-    public ResponseEntity<ResponseData<AdmissionBlock>> updateBlock(
+    public ResponseEntity<ResponseData<AdmissionBlockResponse>> updateBlock(
             @PathVariable Integer id,
             @Valid @RequestBody BlockRequest request) {
-        AdmissionBlock result = masterDataService.updateBlock(id, request);
+        AdmissionBlockResponse result = masterDataService.updateBlock(id, request);
         return ResponseEntity.ok(ResponseData.success("Cập nhật khối xét tuyển thành công", result, HttpStatus.OK.value()));
     }
 
