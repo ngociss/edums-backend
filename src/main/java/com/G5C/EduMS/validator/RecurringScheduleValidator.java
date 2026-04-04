@@ -5,6 +5,7 @@ import com.G5C.EduMS.common.enums.SchoolPeriod;
 import com.G5C.EduMS.exception.InvalidDataException;
 import com.G5C.EduMS.model.Classroom;
 import com.G5C.EduMS.model.CourseSection;
+import com.G5C.EduMS.model.Semester;
 import com.G5C.EduMS.repository.RecurringScheduleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -35,6 +36,23 @@ public class RecurringScheduleValidator {
         if (startPeriod >= endPeriod) {
             throw new InvalidDataException("INVALID_PERIOD_RANGE",
                     "Tiết bắt đầu phải nhỏ hơn tiết kết thúc (startPeriod < endPeriod)");
+        }
+    }
+
+    public void validateWeekRange(Semester semester, Integer startWeek, Integer endWeek) {
+        if (startWeek == null || endWeek == null) {
+            throw new InvalidDataException("INVALID_WEEK_RANGE",
+                    "Tuần bắt đầu và tuần kết thúc không được để trống");
+        }
+        if (startWeek > endWeek) {
+            throw new InvalidDataException("INVALID_WEEK_RANGE",
+                    "Tuần bắt đầu phải nhỏ hơn hoặc bằng tuần kết thúc");
+        }
+        if (semester != null && semester.getTotalWeeks() != null) {
+            if (startWeek > semester.getTotalWeeks() || endWeek > semester.getTotalWeeks()) {
+                throw new InvalidDataException("INVALID_WEEK_RANGE",
+                        "Khoảng tuần học phải nằm trong phạm vi học kỳ (tối đa " + semester.getTotalWeeks() + " tuần)");
+            }
         }
     }
 

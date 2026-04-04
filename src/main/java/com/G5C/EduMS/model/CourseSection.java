@@ -11,8 +11,8 @@ import java.util.List;
 @Entity
 @Table(name = "course_sections",
         uniqueConstraints = @UniqueConstraint(
-                name = "uk_section_code_semester",
-                columnNames = {"section_code", "semester_id"}
+                name = "uk_course_section_group",
+                columnNames = {"course_id", "semester_id", "section_code"}
         ))
 @Getter
 @Setter
@@ -62,9 +62,6 @@ public class CourseSection {
 
     @OneToMany(mappedBy = "section", fetch = FetchType.LAZY)
     private List<RecurringSchedule> recurringSchedules;
-
-    @OneToMany(mappedBy = "section", fetch = FetchType.LAZY)
-    private List<ClassSession> classSessions;
 
     @OneToMany(mappedBy = "section", fetch = FetchType.LAZY)
     private List<CourseRegistration> courseRegistrations;
