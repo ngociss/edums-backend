@@ -3,6 +3,8 @@ package com.G5C.EduMS.service.impl;
 import com.G5C.EduMS.dto.request.ChangePasswordRequest;
 import com.G5C.EduMS.dto.request.UpdateProfileRequest;
 import com.G5C.EduMS.dto.response.ProfileResponse;
+import com.G5C.EduMS.exception.InvalidDataException;
+import com.G5C.EduMS.exception.NotFoundResourcesException;
 import com.G5C.EduMS.model.Account;
 import com.G5C.EduMS.model.Student;
 import com.G5C.EduMS.model.Lecturer;
@@ -36,35 +38,32 @@ public class ProfileServiceImpl implements ProfileService {
     public ProfileResponse getMyProfile(String username) {
         Account account = getAccountByUsername(username);
         String roleName = account.getRole().getRoleName().toUpperCase();
-
-        switch (roleName) {
-            case "STUDENT":
-                Student student = studentRepository.findByAccount_IdAndDeletedFalse(account.getId())
-                        .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy hồ sơ Sinh viên."));
-                return mapStudentToProfile(account, student);
-
-            case "LECTURER":
+        return switch (roleName) {
+            case "STUDENT" -> {
+                Student student = studentRepository.findByAccountIdAndDeletedFalse(account.getId())
+                        .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy hồ sơ Sinh viên."));
+                yield mapStudentToProfile(account, student);
+            }
+            case "LECTURER" -> {
                 Lecturer lecturer = lecturerRepository.findByAccountIdAndDeletedFalse(account.getId())
-                        .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy hồ sơ Giảng viên."));
-                return mapLecturerToProfile(account, lecturer);
-
-            case "GUARDIAN":
+                        .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy hồ sơ Giảng viên."));
+                yield mapLecturerToProfile(account, lecturer);
+            }
+            case "GUARDIAN" -> {
                 Guardian guardian = guardianRepository.findByAccountIdAndDeletedFalse(account.getId())
-                        .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy hồ sơ Phụ huynh."));
-                return mapGuardianToProfile(account, guardian);
-
-            case "ADMIN":
-            case "MANAGER":
+                        .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy hồ sơ Phụ huynh."));
+                yield mapGuardianToProfile(account, guardian);
+            }
+            case "ADMIN", "MANAGER" ->
                 // Admin thường chỉ cần hiển thị thông tin Account cơ bản
-                return ProfileResponse.builder()
-                        .username(account.getUsername())
-                        .role(roleName)
-                        .fullName("Quản trị viên Hệ thống")
-                        .build();
-
-            default:
-                throw new IllegalArgumentException("Vai trò người dùng (" + roleName + ") không hợp lệ trên hệ thống.");
-        }
+                    ProfileResponse.builder()
+                            .username(account.getUsername())
+                            .role(roleName)
+                            .fullName("Quản trị viên Hệ thống")
+                            .build();
+            default ->
+                    throw new InvalidDataException("Vai trò người dùng (" + roleName + ") không hợp lệ trên hệ thống.");
+        };
     }
 
     // =========================================================================
@@ -78,8 +77,8 @@ public class ProfileServiceImpl implements ProfileService {
 
         switch (roleName) {
             case "STUDENT":
-                Student student = studentRepository.findByAccount_IdAndDeletedFalse(account.getId())
-                        .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy hồ sơ Sinh viên."));
+                Student student = studentRepository.findByAccountIdAndDeletedFalse(account.getId())
+                        .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy hồ sơ Sinh viên."));
 
                 updateCommonFields(student, request);
                 studentRepository.save(student);
@@ -89,7 +88,7 @@ public class ProfileServiceImpl implements ProfileService {
 
             case "LECTURER":
                 Lecturer lecturer = lecturerRepository.findByAccountIdAndDeletedFalse(account.getId())
-                        .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy hồ sơ Giảng viên."));
+                        .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy hồ sơ Giảng viên."));
 
                 updateCommonFields(lecturer, request);
                 lecturerRepository.save(lecturer);
@@ -99,7 +98,7 @@ public class ProfileServiceImpl implements ProfileService {
 
             case "GUARDIAN":
                 Guardian guardian = guardianRepository.findByAccountIdAndDeletedFalse(account.getId())
-                        .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy hồ sơ Phụ huynh."));
+                        .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy hồ sơ Phụ huynh."));
 
                 updateCommonFields(guardian, request);
                 guardianRepository.save(guardian);
@@ -122,18 +121,22 @@ public class ProfileServiceImpl implements ProfileService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void changePassword(String username, ChangePasswordRequest request) {
+        if (request.getOldPassword() == null || request.getNewPassword() == null || request.getConfirmPassword() == null) {
+            throw new InvalidDataException("Vui lòng điền đầy đủ các trường mật khẩu!");
+        }
+
         Account account = getAccountByUsername(username);
 
         if (!passwordEncoder.matches(request.getOldPassword(), account.getPassword())) {
-            throw new IllegalArgumentException("Mật khẩu hiện tại không chính xác!");
+            throw new InvalidDataException("Mật khẩu hiện tại không chính xác!");
         }
 
         if (!request.getNewPassword().equals(request.getConfirmPassword())) {
-            throw new IllegalArgumentException("Mật khẩu xác nhận không trùng khớp!");
+            throw new InvalidDataException("Mật khẩu xác nhận không trùng khớp!");
         }
 
         if (passwordEncoder.matches(request.getNewPassword(), account.getPassword())) {
-            throw new IllegalArgumentException("Mật khẩu mới không được trùng với mật khẩu cũ!");
+            throw new InvalidDataException("Mật khẩu mới không được trùng với mật khẩu cũ!");
         }
 
         account.setPassword(passwordEncoder.encode(request.getNewPassword()));
@@ -148,13 +151,18 @@ public class ProfileServiceImpl implements ProfileService {
 
     private Account getAccountByUsername(String username) {
         return accountRepository.findByUsernameAndDeletedFalse(username)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy tài khoản."));
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy tài khoản."));
     }
 
     /**
      * Hàm dùng chung để cập nhật các trường thông tin cơ bản cho mọi đối tượng
      */
     private void updateCommonFields(Object entity, UpdateProfileRequest request) {
+        if (request.getFullName() == null || request.getFullName().trim().isEmpty()) {
+            throw new InvalidDataException("Họ và tên không được để trống.");
+        }
+        String safePhone = request.getPhone() != null ? request.getPhone().trim() : null;
+        String safeAddress = request.getAddress() != null ? request.getAddress().trim() : null;
         if (entity instanceof Student s) {
             s.setFullName(request.getFullName().trim());
             s.setPhone(request.getPhone() != null ? request.getPhone().trim() : null);

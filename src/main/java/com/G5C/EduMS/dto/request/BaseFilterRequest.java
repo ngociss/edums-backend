@@ -1,6 +1,7 @@
 package com.G5C.EduMS.dto.request;
 
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,5 +19,6 @@ public class BaseFilterRequest {
 
     private String sortBy = "id"; // Sắp xếp theo cột nào
 
+    @Pattern(regexp = "^(ASC|DESC|asc|desc)$", message = "Chiều sắp xếp chỉ được là ASC hoặc DESC")
     private String sortDirection = "DESC"; // Chiều sắp xếp (ASC hoặc DESC)
 }

@@ -4,6 +4,8 @@ import com.G5C.EduMS.common.enums.AccountStatus;
 import com.G5C.EduMS.common.enums.ApplicationStatus;
 import com.G5C.EduMS.common.enums.StudentStatus;
 import com.G5C.EduMS.dto.request.OnboardingRequest;
+import com.G5C.EduMS.exception.InvalidDataException;
+import com.G5C.EduMS.exception.NotFoundResourcesException;
 import com.G5C.EduMS.model.*;
 import com.G5C.EduMS.repository.*;
 import com.G5C.EduMS.service.AdmissionOnboardingService;
@@ -15,10 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,7 +32,7 @@ public class AdmissionOnboardingServiceImpl implements AdmissionOnboardingServic
     private final AccountRepository accountRepository;
     private final StudentRepository studentRepository;
     private final RoleRepository roleRepository;
-    private final AdmissionPeriodRepository periodRepository;
+    private final AdmissionPeriodRepository admissionPeriodRepository;
     private final GuardianRepository guardianRepository;
     private final MailService mailService;
 
@@ -49,6 +48,9 @@ public class AdmissionOnboardingServiceImpl implements AdmissionOnboardingServic
     public void autoScreenApplications(Integer periodId) {
         log.info("Bắt đầu chạy Auto-Screening cho Đợt tuyển sinh ID: {}", periodId);
 
+        AdmissionPeriod admissionPeriod = admissionPeriodRepository.findByIdAndDeletedFalse(periodId)
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy Đợt tuyển sinh với ID: " + periodId));
+
         // 1. Lấy tất cả hồ sơ đang chờ duyệt (PENDING) của đợt này
         List<AdmissionApplication> pendingApps = applicationRepository
                 .findAllByAdmissionPeriodIdAndStatusAndDeletedFalse(periodId, ApplicationStatus.PENDING);
@@ -59,10 +61,8 @@ public class AdmissionOnboardingServiceImpl implements AdmissionOnboardingServic
         }
 
         // 2. Lấy bảng điểm chuẩn của đợt này
-        // (Bạn cần thêm hàm findAllByAdmissionPeriodIdAndDeletedFalse vào BenchmarkScoreRepository)
         List<BenchmarkScore> benchmarks = benchmarkRepository.findAllByAdmissionPeriodIdAndDeletedFalse(periodId);
 
-        // Biến list điểm chuẩn thành Map (Key = MajorId_BlockId, Value = Score) để tra cứu cực nhanh (O(1))
         Map<String, Float> benchmarkMap = benchmarks.stream()
                 .collect(Collectors.toMap(
                         b -> b.getMajor().getId() + "_" + b.getAdmissionBlock().getId(),
@@ -75,6 +75,12 @@ public class AdmissionOnboardingServiceImpl implements AdmissionOnboardingServic
 
         // 3. Tiến hành quét từng hồ sơ
         for (AdmissionApplication app : pendingApps) {
+
+            if (app.getMajor() == null || app.getAdmissionBlock() == null || app.getTotalScore() == null) {
+                log.warn("Hồ sơ ID {} bị thiếu Ngành, Khối hoặc Điểm xét tuyển. Bỏ qua Auto-Screening.", app.getId());
+                continue;
+            }
+
             String key = app.getMajor().getId() + "_" + app.getAdmissionBlock().getId();
             Float requireScore = benchmarkMap.get(key);
 
@@ -108,27 +114,52 @@ public class AdmissionOnboardingServiceImpl implements AdmissionOnboardingServic
     public void processOnboarding(OnboardingRequest request) {
         log.info("Bắt đầu tiến trình Onboarding cho Đợt ID: {}", request.getPeriodId());
 
+        AdmissionPeriod period = admissionPeriodRepository.findByIdAndDeletedFalse(request.getPeriodId())
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy Đợt tuyển sinh với ID: " + request.getPeriodId()));
+
         List<AdmissionApplication> approvedApps = applicationRepository
                 .findAllByAdmissionPeriodIdAndStatusAndDeletedFalse(request.getPeriodId(), ApplicationStatus.APPROVED);
 
         if (approvedApps.isEmpty()) {
-            throw new IllegalArgumentException("Không có thí sinh nào trúng tuyển để chốt nhập học.");
+            throw new NotFoundResourcesException("Không có thí sinh nào trúng tuyển để chốt nhập học.");
         }
 
         // 1. Lấy Roles từ DB
         Role studentRole = roleRepository.findByRoleNameAndDeletedFalse("STUDENT")
-                .orElseThrow(() -> new IllegalStateException("Hệ thống chưa cấu hình Role: STUDENT"));
+                .orElseThrow(() -> new NotFoundResourcesException("Hệ thống chưa cấu hình Role: STUDENT"));
         Role guardianRole = roleRepository.findByRoleNameAndDeletedFalse("GUARDIAN")
-                .orElseThrow(() -> new IllegalStateException("Hệ thống chưa cấu hình Role: GUARDIAN"));
+                .orElseThrow(() -> new NotFoundResourcesException("Hệ thống chưa cấu hình Role: GUARDIAN"));
 
-        Set<String> nationalIdsToCheck = approvedApps.stream()
-                .map(AdmissionApplication::getNationalId)
-                .collect(Collectors.toSet());
+        Set<String> nationalIdsToCheck = new HashSet<>();
+        Set<String> usernamesToCheck = new HashSet<>();
+        Map<Integer, String> cachedStudentCodes = new HashMap<>();
+        Map<Integer, String> cachedGuardianCodes = new HashMap<>();
+
+        for (AdmissionApplication app : approvedApps) {
+            if (app.getNationalId() != null) {
+                nationalIdsToCheck.add(app.getNationalId());
+            }
+            String studentCode = generateUserCode("sv", app.getId());
+            String guardianCode = generateUserCode("ph", app.getId());
+
+            usernamesToCheck.add(studentCode);
+            usernamesToCheck.add(guardianCode);
+
+            cachedStudentCodes.put(app.getId(), studentCode);
+            cachedGuardianCodes.put(app.getId(), guardianCode);
+
+        }
 
         Set<String> existingNationalIds = studentRepository
                 .findAllByNationalIdInAndDeletedFalse(nationalIdsToCheck)
                 .stream()
                 .map(Student::getNationalId)
+                .collect(Collectors.toSet());
+
+        Set<String> existingUsernames = accountRepository
+                .findAllByUsernameIn(usernamesToCheck)
+                .stream()
+                .map(Account::getUsername)
                 .collect(Collectors.toSet());
 
         List<Student> newStudents = new ArrayList<>();
@@ -139,21 +170,32 @@ public class AdmissionOnboardingServiceImpl implements AdmissionOnboardingServic
 
         for (AdmissionApplication app : approvedApps) {
 
-            // Chặn tạo trùng dữ liệu
+            if (app.getDateOfBirth() == null) {
+                throw new InvalidDataException("Hồ sơ ID " + app.getId() + " thiếu Ngày sinh (dùng làm Mật khẩu). Không thể nhập học.");
+            }
+            if (app.getNationalId() == null || app.getNationalId().trim().isEmpty()) {
+                throw new InvalidDataException("Hồ sơ ID " + app.getId() + " thiếu CCCD. Không thể nhập học.");
+            }
+            if (app.getEmail() == null || app.getEmail().trim().isEmpty()) {
+                throw new InvalidDataException("Hồ sơ ID " + app.getId() + " thiếu Email (dùng để gửi thông báo). Không thể nhập học.");
+            }
             if (existingNationalIds.contains(app.getNationalId())) {
                 log.warn("Thí sinh có CCCD {} đã tồn tại. Bỏ qua.", app.getNationalId());
                 continue;
             }
 
             // Sinh cặp mã định danh đồng bộ (VD: sv_2600150 và ph_2600150)
-            String studentCode = generateUserCode("sv", app.getId());
-            String guardianCode = generateUserCode("ph", app.getId());
+            String studentCode = cachedStudentCodes.get(app.getId());
+            String guardianCode = cachedGuardianCodes.get(app.getId());
+
+            if (existingUsernames.contains(studentCode) || existingUsernames.contains(guardianCode)) {
+                log.warn("Tài khoản {} hoặc {} đã tồn tại. Bỏ qua hồ sơ ID {}.", studentCode, guardianCode, app.getId());
+                continue;
+            }
 
             String rawPassword = app.getDateOfBirth().toString();
             String encodedPassword = passwordEncoder.encode(rawPassword);
-            // -----------------------------------------------------------------
-            // BƯỚC A: TẠO TÀI KHOẢN VÀ HỒ SƠ PHỤ HUYNH TRƯỚC
-            // -----------------------------------------------------------------
+
             Account guardianAccount = new Account();
             guardianAccount.setRole(guardianRole);
             guardianAccount.setUsername(guardianCode);
@@ -165,16 +207,12 @@ public class AdmissionOnboardingServiceImpl implements AdmissionOnboardingServic
 
             Guardian guardian = new Guardian();
             guardian.setAccount(savedGuardianAccount);
-            // Dùng dữ liệu tạm thời (Placeholder) vì form tuyển sinh chưa lấy thông tin phụ huynh
             guardian.setFullName("Phụ huynh của " + app.getFullName());
             guardian.setPhone(app.getPhone());
             guardian.setRelationship("Phụ huynh");
             guardian.setDeleted(false);
             Guardian savedGuardian = guardianRepository.save(guardian);
 
-            // -----------------------------------------------------------------
-            // BƯỚC B: TẠO TÀI KHOẢN VÀ HỒ SƠ SINH VIÊN (LINK VỚI PHỤ HUYNH)
-            // -----------------------------------------------------------------
             Account studentAccount = new Account();
             studentAccount.setRole(studentRole);
             studentAccount.setUsername(studentCode);
@@ -186,7 +224,7 @@ public class AdmissionOnboardingServiceImpl implements AdmissionOnboardingServic
 
             Student student = new Student();
             student.setAccount(savedStudentAccount);
-            student.setGuardian(savedGuardian); // LIÊN KẾT KHÓA NGOẠI TẠI ĐÂY
+            student.setGuardian(savedGuardian);
             student.setStudentCode(studentCode);
             student.setMajor(app.getMajor());
             student.setFullName(app.getFullName());
@@ -201,9 +239,6 @@ public class AdmissionOnboardingServiceImpl implements AdmissionOnboardingServic
 
             newStudents.add(student);
 
-            // -----------------------------------------------------------------
-            // BƯỚC C: CẬP NHẬT TRẠNG THÁI HỒ SƠ
-            // -----------------------------------------------------------------
             app.setStatus(ApplicationStatus.ENROLLED);
             successfullyProcessedApps.add(app);
         }
@@ -213,11 +248,9 @@ public class AdmissionOnboardingServiceImpl implements AdmissionOnboardingServic
         applicationRepository.saveAll(successfullyProcessedApps);
 
         for (AdmissionApplication app : successfullyProcessedApps) {
-            // Tính toán lại mã và pass nguyên thủy để gửi mail
-            String studentCode = generateUserCode("sv", app.getId());
-            String rawPassword = app.getDateOfBirth().toString(); // Mật khẩu chưa mã hóa (VD: 2005-10-15)
+            String studentCode = cachedStudentCodes.get(app.getId());
+            String rawPassword = app.getDateOfBirth().toString();
 
-            // Hàm này chạy @Async nên vòng lặp sẽ trôi qua cực nhanh, không làm đứng hệ thống
             mailService.sendAdmissionResult(
                     app.getEmail(),
                     app.getFullName(),

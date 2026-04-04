@@ -23,7 +23,7 @@ public interface GuardianRepository extends JpaRepository<Guardian, Integer> {
     // Kiểm tra số điện thoại có tồn tại không (dùng khi Create/Update)
     boolean existsByPhoneAndDeletedFalse(String phone);
 
-    // Tìm kiếm theo tên hoặc số điện thoại (Sử dụng câu lệnh JPQL)
+    // Tìm kiếm theo tên hoặc số điện thoại
     @Query("SELECT g FROM Guardian g WHERE g.deleted = false AND " +
             "(LOWER(g.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
             "g.phone LIKE CONCAT('%', :keyword, '%'))")

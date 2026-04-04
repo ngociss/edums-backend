@@ -2,6 +2,8 @@ package com.G5C.EduMS.repository;
 
 import com.G5C.EduMS.common.enums.AdmissionPeriodStatus;
 import com.G5C.EduMS.model.AdmissionPeriod;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -9,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface AdmissionPeriodRepository extends JpaRepository<AdmissionPeriod, Integer> {
@@ -43,4 +46,10 @@ public interface AdmissionPeriodRepository extends JpaRepository<AdmissionPeriod
             "WHERE a.deleted = false AND a.startTime < :newEndTime AND a.endTime > :newStartTime")
     boolean existsOverlappingPeriod(@Param("newStartTime") LocalDateTime newStartTime,
                                     @Param("newEndTime") LocalDateTime newEndTime);
+
+    List<AdmissionPeriod> findAllByDeletedFalse();
+
+    Optional<AdmissionPeriod> findByIdAndDeletedFalse(Integer id);
+
+    Page<AdmissionPeriod> findAllByDeletedFalse(Pageable pageable);
 }

@@ -3,12 +3,15 @@ package com.G5C.EduMS.mapper;
 import com.G5C.EduMS.dto.request.BlockRequest;
 import com.G5C.EduMS.dto.request.AdmissionPeriodRequest;
 import com.G5C.EduMS.dto.request.CreateAdmissionCampaignRequest;
+import com.G5C.EduMS.dto.response.AdmissionBlockResponse;
 import com.G5C.EduMS.dto.response.BenchmarkResponse;
 import com.G5C.EduMS.dto.response.AdmissionPeriodAdminResponse;
 import com.G5C.EduMS.model.AdmissionBlock;
 import com.G5C.EduMS.model.AdmissionPeriod;
 import com.G5C.EduMS.model.BenchmarkScore;
 import org.mapstruct.*;
+
+import java.util.List;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface AdminMasterDataMapper {
@@ -42,6 +45,9 @@ public interface AdminMasterDataMapper {
     @Mapping(target = "blockName", expression = "java(request.getBlockName().toUpperCase())")
     void updateBlockFromRequest(BlockRequest request, @MappingTarget AdmissionBlock block);
 
+    AdmissionBlockResponse toBlockResponse(AdmissionBlock entity);
+
+    List<AdmissionBlockResponse> toBlockResponseList(List<AdmissionBlock> entities);
 
     // ==========================================
     // MAPPING CHO BENCHMARK (ĐIỂM CHUẨN) - LÀM PHẲNG DỮ LIỆU

@@ -40,7 +40,7 @@ public class CreateAdmissionCampaignRequest {
 
         @NotNull(message = "Điểm chuẩn không được để trống")
         @DecimalMin(value = "0.0", message = "Điểm chuẩn nhỏ nhất là 0")
-        @DecimalMax(value = "40.0", message = "Điểm chuẩn lớn nhất là 40") // Tùy thang điểm của trường
+        @DecimalMax(value = "30.0", message = "Điểm chuẩn lớn nhất là 30") // Tùy thang điểm của trường
         private Float score;
     }
 }
