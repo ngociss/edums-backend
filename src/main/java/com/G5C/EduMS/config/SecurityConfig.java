@@ -51,14 +51,23 @@ public class SecurityConfig {
                                 // ================================================================
                                 // Sinh viên xem điểm và điểm danh của mình
                                 .requestMatchers(HttpMethod.GET,
+                                        "/api/v1/students/me/attendances",
+                                        "/api/v1/students/me/grade-reports"
+                                ).hasRole("STUDENT")
+
+                                .requestMatchers(HttpMethod.GET,
                                         "/api/v1/students/*/grade-reports",
                                         "/api/v1/students/*/attendances"
-                                ).hasAnyRole("STUDENT", "ADMIN", "MANAGER")
+                                ).hasAnyRole("ADMIN", "MANAGER")
 
                                 // Phụ huynh xem điểm danh của con
                                 .requestMatchers(HttpMethod.GET,
+                                        "/api/v1/guardians/me/students/*/attendances"
+                                ).hasRole("GUARDIAN")
+
+                                .requestMatchers(HttpMethod.GET,
                                         "/api/v1/guardians/*/students/*/attendances"
-                                ).hasAnyRole("GUARDIAN", "ADMIN", "MANAGER")
+                                ).hasAnyRole("ADMIN", "MANAGER")
 
                                 // ================================================================
                                 // 4. API DÀNH RIÊNG CHO GIẢNG VIÊN (VÀ ADMIN)

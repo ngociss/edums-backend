@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -59,13 +60,22 @@ public class GradeReportController {
     }
 
 
-    @GetMapping("/students/{studentId}/grade-reports")
-    @Operation(summary = "Student views their grade reports")
-    public ResponseEntity<ResponseData<List<GradeReportResponse>>> getByStudent(
-            @PathVariable Integer studentId) {
+//    @GetMapping("/students/{studentId}/grade-reports")
+//    @Operation(summary = "Legacy route for admin/manager")
+//    public ResponseEntity<ResponseData<List<GradeReportResponse>>> getByStudent(
+//            @PathVariable Integer studentId) {
+//        return ResponseEntity.ok(
+//            ResponseData.success("Success",
+//                gradeReportService.getByStudent(studentId), 200));
+//    }
+
+    @GetMapping("/students/me/grade-reports")
+    @Operation(summary = "Student views their own grade reports by authenticated account")
+    public ResponseEntity<ResponseData<List<GradeReportResponse>>> getMyGradeReports(
+            Authentication authentication) {
         return ResponseEntity.ok(
             ResponseData.success("Success",
-                gradeReportService.getByStudent(studentId), 200));
+                gradeReportService.getCurrentStudentGradeReports(authentication.getName()), 200));
     }
 
     @GetMapping("/grade-reports/{id}")

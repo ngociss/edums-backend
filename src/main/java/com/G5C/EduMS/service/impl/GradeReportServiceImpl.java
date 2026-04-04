@@ -18,6 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class GradeReportServiceImpl implements GradeReportService {
 
+    private final AccountRepository accountRepository;
     private final GradeReportRepository gradeReportRepository;
     private final GradeDetailRepository gradeDetailRepository;
     private final GradeComponentRepository gradeComponentRepository;
@@ -120,6 +121,21 @@ public class GradeReportServiceImpl implements GradeReportService {
     @Override
     public List<GradeReportResponse> getBySection(Integer sectionId) {
         return gradeReportRepository.findAllBySectionId(sectionId)
+                .stream().map(gradeReportMapper::toResponse).toList();
+    }
+
+    @Override
+    public List<GradeReportResponse> getCurrentStudentGradeReports(String username) {
+        Integer accountId = accountRepository.findByUsernameAndDeletedFalse(username)
+                .orElseThrow(() -> new NotFoundResourcesException(
+                        "Account not found with username: " + username))
+                .getId();
+
+        Student student = studentRepository.findByAccount_IdAndDeletedFalse(accountId)
+                .orElseThrow(() -> new NotFoundResourcesException(
+                        "Student profile not found for account id: " + accountId));
+
+        return gradeReportRepository.findAllByStudentId(student.getId())
                 .stream().map(gradeReportMapper::toResponse).toList();
     }
 
