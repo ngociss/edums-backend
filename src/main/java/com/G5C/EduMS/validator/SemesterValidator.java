@@ -104,15 +104,13 @@ public class SemesterValidator {
         switch (currentStatus) {
             case PLANNING -> {
                 if (requestedStatus != SemesterStatus.REGISTRATION_OPEN
-                        && requestedStatus != SemesterStatus.ONGOING
-                        && requestedStatus != SemesterStatus.FINISHED) {
-                    throw new InvalidDataException("Học kỳ PLANNING chỉ có thể chuyển sang REGISTRATION_OPEN, ONGOING hoặc FINISHED");
+                    ) {
+                    throw new InvalidDataException("Học kỳ PLANNING chỉ có thể chuyển sang REGISTRATION_OPEN");
                 }
             }
             case REGISTRATION_OPEN -> {
-                if (requestedStatus != SemesterStatus.ONGOING
-                        && requestedStatus != SemesterStatus.FINISHED) {
-                    throw new InvalidDataException("Học kỳ REGISTRATION_OPEN chỉ có thể chuyển sang ONGOING hoặc FINISHED");
+                if (requestedStatus != SemesterStatus.ONGOING) {
+                    throw new InvalidDataException("Học kỳ REGISTRATION_OPEN chỉ có thể chuyển sang ONGOING");
                 }
             }
             case ONGOING -> {
