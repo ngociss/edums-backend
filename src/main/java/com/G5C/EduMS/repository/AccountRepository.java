@@ -37,4 +37,6 @@ public interface AccountRepository extends JpaRepository<Account, Integer> {
     Optional<Account> findByUsernameAndDeletedFalse(String username);
 
     List<Account> findAllByUsernameIn(Set<String> usernames);
+
+    Optional<Account> findByIdAndDeletedFalse(Integer integer);
 }

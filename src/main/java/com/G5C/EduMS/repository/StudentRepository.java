@@ -21,6 +21,8 @@ public interface StudentRepository extends JpaRepository<Student, Integer> {
 
     boolean existsByGuardianIdAndDeletedFalse(Integer id);
 
+    Optional<Student> findByAccount_IdAndDeletedFalse(Integer accountId);
+
     Optional<Student> findByAccountIdAndDeletedFalse(Integer accountId);
 
     // Kiểm tra ràng buộc trước khi xóa AdministrativeClass

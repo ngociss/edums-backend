@@ -165,15 +165,15 @@ public class ProfileServiceImpl implements ProfileService {
         String safeAddress = request.getAddress() != null ? request.getAddress().trim() : null;
         if (entity instanceof Student s) {
             s.setFullName(request.getFullName().trim());
-            s.setPhone(request.getPhone() != null ? request.getPhone().trim() : null);
-            s.setAddress(request.getAddress() != null ? request.getAddress().trim() : null);
+            s.setPhone(safePhone);
+            s.setAddress(safeAddress);
             s.setDateOfBirth(request.getDateOfBirth());
         } else if (entity instanceof Lecturer l) {
             l.setFullName(request.getFullName().trim());
-            l.setPhone(request.getPhone() != null ? request.getPhone().trim() : null);
+            l.setPhone(safePhone);
         } else if (entity instanceof Guardian g) {
             g.setFullName(request.getFullName().trim());
-            g.setPhone(request.getPhone() != null ? request.getPhone().trim() : null);
+            g.setPhone(safePhone);
         }
     }
 

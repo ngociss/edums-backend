@@ -74,7 +74,7 @@ public class AccountServiceImpl implements AccountService {
     @Override
     @Transactional(readOnly = true)
     public AccountResponse getAccountById(Integer id) {
-        Account account = accountRepository.findById(id)
+        Account account = accountRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy tài khoản với ID: " + id));
         return accountMapper.toResponse(account);
     }
@@ -82,12 +82,16 @@ public class AccountServiceImpl implements AccountService {
     @Override
     @Transactional
     public AccountResponse createAccount(AccountCreateRequest request) {
-        if (accountRepository.existsByUsername(request.getUsername())) {
+        if (request.getUsername() == null || request.getUsername().trim().isEmpty() || request.getPassword() == null) {
+            throw new InvalidDataException("Tên đăng nhập và Mật khẩu không được để trống.");
+        }
+
+        if (accountRepository.existsByUsernameAndDeletedFalse(request.getUsername())) {
             throw new ExistingResourcesException("Tên đăng nhập đã tồn tại trong hệ thống!");
         }
 
         // 2. Lấy thông tin Role
-        Role role = roleRepository.findById(request.getRoleId())
+        Role role = roleRepository.findByIdAndDeletedFalse(request.getRoleId())
                 .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy Vai trò (Role) hợp lệ!"));
 
         // 3. Khởi tạo và mã hóa mật khẩu
@@ -106,16 +110,20 @@ public class AccountServiceImpl implements AccountService {
     @Override
     @Transactional
     public AccountResponse updateAccount(Integer id, AccountUpdateRequest request) {
-        Account existingAccount = accountRepository.findById(id)
+        if (request.getUsername() == null || request.getUsername().trim().isEmpty()) {
+            throw new InvalidDataException("Tên đăng nhập không được để trống.");
+        }
+
+        Account existingAccount = accountRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy tài khoản để cập nhật!"));
 
         // Kiểm tra username mới có bị trùng với người khác không
         if (!existingAccount.getUsername().equals(request.getUsername()) &&
-                accountRepository.existsByUsername(request.getUsername())) {
+                accountRepository.existsByUsernameAndDeletedFalse(request.getUsername())) {
             throw new ExistingResourcesException("Tên đăng nhập mới đã bị trùng với người khác!");
         }
 
-        Role newRole = roleRepository.findById(request.getRoleId())
+        Role newRole = roleRepository.findByIdAndDeletedFalse(request.getRoleId())
                 .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy Vai trò (Role) mới hợp lệ!"));
 
         existingAccount.setUsername(request.getUsername());
@@ -129,7 +137,11 @@ public class AccountServiceImpl implements AccountService {
     @Override
     @Transactional
     public void updateAccountStatus(Integer id, AccountStatusUpdateRequest request) {
-        Account account = accountRepository.findById(id)
+        if (request.getStatus() == null) {
+            throw new InvalidDataException("Trạng thái không được để trống!");
+        }
+
+        Account account = accountRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy tài khoản!"));
 
         account.setStatus(request.getStatus());
@@ -139,12 +151,15 @@ public class AccountServiceImpl implements AccountService {
     @Override
     @Transactional
     public void resetPassword(Integer id, ResetPasswordRequest request) {
+        if (request.getNewPassword() == null || request.getConfirmPassword() == null) {
+            throw new InvalidDataException("Vui lòng nhập đầy đủ mật khẩu mới và xác nhận!");
+        }
 // Logic kiểm tra 2 mật khẩu khớp nhau
         if (!request.getNewPassword().equals(request.getConfirmPassword())) {
             throw new InvalidDataException("Mật khẩu xác nhận không khớp!");
         }
 
-        Account account = accountRepository.findById(id)
+        Account account = accountRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy tài khoản!"));
 
         account.setPassword(passwordEncoder.encode(request.getNewPassword()));
