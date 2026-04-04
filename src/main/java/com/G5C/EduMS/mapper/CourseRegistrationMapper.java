@@ -9,7 +9,13 @@ import org.mapstruct.Mapping;
 public interface CourseRegistrationMapper {
 
     @Mapping(source = "student.id", target = "studentId")
+    @Mapping(source = "student.studentCode", target = "studentCode")
     @Mapping(source = "section.id", target = "courseSectionId")
+    @Mapping(source = "section.sectionCode", target = "sectionCode")
+    @Mapping(source = "section.course.id", target = "courseId")
+    @Mapping(source = "section.course.courseCode", target = "courseCode")
+    @Mapping(source = "section.course.courseName", target = "courseName")
+    @Mapping(source = "section.semester.id", target = "semesterId")
     @Mapping(source = "registrationPeriod.id", target = "registrationPeriodId")
     CourseRegistrationResponse toResponse(CourseRegistration courseRegistration);
 }

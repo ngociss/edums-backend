@@ -17,6 +17,8 @@ public interface GradeReportService {
     List<GradeReportResponse> getBySection(Integer sectionId);
 
     //xem điểm
+    List<GradeReportResponse> getCurrentStudentGradeReports(String username);
+
     List<GradeReportResponse> getByStudent(Integer studentId);
 
     GradeReportResponse getById(Integer id);

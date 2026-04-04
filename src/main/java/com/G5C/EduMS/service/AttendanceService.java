@@ -18,7 +18,11 @@ public interface AttendanceService {
     void delete(Integer id);
 
     // KAN-45 — Sinh viên / Phụ huynh
+    List<AttendanceResponse> getCurrentStudentAttendances(String username);
+
     List<AttendanceResponse> getByStudent(Integer studentId);
+
+    List<AttendanceResponse> getByCurrentGuardianAndStudent(String username, Integer studentId);
 
     List<AttendanceResponse> getByGuardianAndStudent(Integer guardianId, Integer studentId);
 }

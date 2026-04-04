@@ -8,7 +8,8 @@ import lombok.Setter;
 @Setter
 public class CourseRegistrationRequest {
 
-    @NotNull(message = "Course section id must not be null")
+    @NotNull(message = "Mã lớp học phần không được để trống")
     private Integer courseSectionId;
-    private Integer studentId; // Optional: if not provided, will use the authenticated student's ID
+
+    private Integer studentId;
 }

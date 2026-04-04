@@ -23,6 +23,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AttendanceServiceImpl implements AttendanceService {
 
+    private final AccountRepository accountRepository;
     private final AttendanceRepository attendanceRepository;
     private final ClassSessionRepository classSessionRepository;
     private final CourseRegistrationRepository courseRegistrationRepository;
@@ -84,9 +85,47 @@ public class AttendanceServiceImpl implements AttendanceService {
     }
 
     @Override
+    public List<AttendanceResponse> getCurrentStudentAttendances(String username) {
+        Integer accountId = accountRepository.findByUsernameAndDeletedFalse(username)
+                .orElseThrow(() -> new NotFoundResourcesException(
+                        "Account not found with username: " + username))
+                .getId();
+
+        Student student = studentRepository.findByAccount_IdAndDeletedFalse(accountId)
+                .orElseThrow(() -> new NotFoundResourcesException(
+                        "Student profile not found for account id: " + accountId));
+
+        return attendanceRepository.findAllByStudentId(student.getId())
+                .stream().map(attendanceMapper::toResponse).toList();
+    }
+
+    @Override
     public List<AttendanceResponse> getByStudent(Integer studentId) {
         if (!studentRepository.existsById(studentId))
             throw new NotFoundResourcesException("Student not found with id: " + studentId);
+        return attendanceRepository.findAllByStudentId(studentId)
+                .stream().map(attendanceMapper::toResponse).toList();
+    }
+
+    @Override
+    public List<AttendanceResponse> getByCurrentGuardianAndStudent(String username, Integer studentId) {
+        Integer accountId = accountRepository.findByUsernameAndDeletedFalse(username)
+                .orElseThrow(() -> new NotFoundResourcesException(
+                        "Account not found with username: " + username))
+                .getId();
+
+        Guardian guardian = guardianRepository.findByAccountIdAndDeletedFalse(accountId)
+                .orElseThrow(() -> new NotFoundResourcesException(
+                        "Guardian profile not found for account id: " + accountId));
+
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new NotFoundResourcesException(
+                        "Student not found with id: " + studentId));
+
+        if (!student.getGuardian().getId().equals(guardian.getId()))
+            throw new NotFoundResourcesException(
+                    "Student " + studentId + " does not belong to current guardian");
+
         return attendanceRepository.findAllByStudentId(studentId)
                 .stream().map(attendanceMapper::toResponse).toList();
     }

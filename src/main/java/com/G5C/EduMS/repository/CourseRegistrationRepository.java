@@ -2,7 +2,9 @@ package com.G5C.EduMS.repository;
 
 import com.G5C.EduMS.common.enums.RegistrationStatus;
 import com.G5C.EduMS.model.CourseRegistration;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -15,6 +17,10 @@ public interface CourseRegistrationRepository extends JpaRepository<CourseRegist
 
     Optional<CourseRegistration> findByIdAndDeletedFalse(Integer id);
 
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT cr FROM CourseRegistration cr WHERE cr.id = :id AND cr.deleted = false")
+    Optional<CourseRegistration> findByIdAndDeletedFalseForUpdate(@Param("id") Integer id);
+
     @Query("SELECT cr FROM CourseRegistration cr WHERE cr.section.id = :sectionId AND cr.deleted = false")
     List<CourseRegistration> findAllBySectionId(@Param("sectionId") Integer sectionId);
 
@@ -22,6 +28,8 @@ public interface CourseRegistrationRepository extends JpaRepository<CourseRegist
     List<CourseRegistration> findAllByStudentId(@Param("studentId") Integer studentId);
 
     boolean existsByStudent_IdAndSection_IdAndDeletedFalse(Integer studentId, Integer sectionId);
+
+    boolean existsByRegistrationPeriod_IdAndDeletedFalse(Integer registrationPeriodId);
 
     boolean existsByStudent_IdAndSection_IdAndStatusInAndDeletedFalse(
             Integer studentId,
@@ -37,14 +45,26 @@ public interface CourseRegistrationRepository extends JpaRepository<CourseRegist
         SELECT cr
         FROM CourseRegistration cr
         WHERE cr.student.id = :studentId
+          AND cr.deleted = false
+          AND (:semesterId IS NULL OR cr.section.semester.id = :semesterId)
+    """)
+    List<CourseRegistration> findAllByStudentIdAndSemesterId(
+            @Param("studentId") Integer studentId,
+            @Param("semesterId") Integer semesterId
+    );
+
+    @Query("""
+        SELECT cr
+        FROM CourseRegistration cr
+        WHERE cr.student.id = :studentId
           AND cr.section.semester.id = :semesterId
           AND cr.deleted = false
           AND cr.status IN :statuses
     """)
     List<CourseRegistration> findActiveByStudentIdAndSemesterId(
-            Integer studentId,
-            Integer semesterId,
-            List<RegistrationStatus> statuses
+            @Param("studentId") Integer studentId,
+            @Param("semesterId") Integer semesterId,
+            @Param("statuses") List<RegistrationStatus> statuses
     );
 }
 

@@ -13,9 +13,9 @@ public interface ScheduleMapper {
 
     @Mapping(source = "id", target = "sessionId")
     @Mapping(source = "room.roomName", target = "roomName")
-    @Mapping(source = "section.sectionCode", target = "sectionCode")
-    @Mapping(source = "section.course.courseCode", target = "courseCode")
-    @Mapping(source = "section.course.courseName", target = "courseName")
+    @Mapping(source = "recurringSchedule.section.sectionCode", target = "sectionCode")
+    @Mapping(source = "recurringSchedule.section.course.courseCode", target = "courseCode")
+    @Mapping(source = "recurringSchedule.section.course.courseName", target = "courseName")
     LecturerScheduleResponse toLecturerScheduleResponse(ClassSession classSession);
 
     List<LecturerScheduleResponse> toLecturerScheduleResponseList(List<ClassSession> classSessions);

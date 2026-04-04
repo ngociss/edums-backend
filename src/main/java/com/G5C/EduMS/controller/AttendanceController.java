@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -61,22 +62,41 @@ public class AttendanceController {
             ResponseData.success("Attendance deleted successfully", null, 200));
     }
 
-    @GetMapping("/api/v1/students/{studentId}/attendances")
-    @Operation(summary = "Student views their own attendance")
-    public ResponseEntity<ResponseData<List<AttendanceResponse>>> getByStudent(
-            @PathVariable Integer studentId) {
+//    @GetMapping("/api/v1/students/{studentId}/attendances")
+//    @Operation(summary = "Route for admin")
+//    public ResponseEntity<ResponseData<List<AttendanceResponse>>> getByStudent(
+//            @PathVariable Integer studentId) {
+//        return ResponseEntity.ok(
+//            ResponseData.success("Success",
+//                attendanceService.getByStudent(studentId), 200));
+//    }
+
+    @GetMapping("/api/v1/students/me/attendances")
+    @Operation(summary = "Student views their own attendance by authenticated account")
+    public ResponseEntity<ResponseData<List<AttendanceResponse>>> getMyAttendances(
+            Authentication authentication) {
         return ResponseEntity.ok(
             ResponseData.success("Success",
-                attendanceService.getByStudent(studentId), 200));
+                attendanceService.getCurrentStudentAttendances(authentication.getName()), 200));
     }
 
-    @GetMapping("/api/v1/guardians/{guardianId}/students/{studentId}/attendances")
-    @Operation(summary = "Guardian views attendance of their child")
-    public ResponseEntity<ResponseData<List<AttendanceResponse>>> getByGuardianAndStudent(
-            @PathVariable Integer guardianId,
+    @GetMapping("/api/v1/guardians/me/students/{studentId}/attendances")
+    @Operation(summary = "Guardian views attendance of their child by authenticated account")
+    public ResponseEntity<ResponseData<List<AttendanceResponse>>> getByCurrentGuardianAndStudent(
+            Authentication authentication,
             @PathVariable Integer studentId) {
         return ResponseEntity.ok(
             ResponseData.success("Success",
-                attendanceService.getByGuardianAndStudent(guardianId, studentId), 200));
+                attendanceService.getByCurrentGuardianAndStudent(authentication.getName(), studentId), 200));
     }
+
+//    @GetMapping("/api/v1/guardians/{guardianId}/students/{studentId}/attendances")
+//    @Operation(summary = "Legacy route for admin/manager")
+//    public ResponseEntity<ResponseData<List<AttendanceResponse>>> getByGuardianAndStudent(
+//            @PathVariable Integer guardianId,
+//            @PathVariable Integer studentId) {
+//        return ResponseEntity.ok(
+//            ResponseData.success("Success",
+//                attendanceService.getByGuardianAndStudent(guardianId, studentId), 200));
+//    }
 }

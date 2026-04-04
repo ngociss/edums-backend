@@ -1,5 +1,6 @@
 package com.G5C.EduMS.model;
 
+import com.G5C.EduMS.common.enums.SemesterStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -33,6 +34,11 @@ public class Semester {
 
     @Column(name = "total_weeks")
     private Integer totalWeeks;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 30)
+    @Builder.Default
+    private SemesterStatus status = SemesterStatus.PLANNING;
 
     @Column(name = "deleted", nullable = false)
     @Builder.Default
