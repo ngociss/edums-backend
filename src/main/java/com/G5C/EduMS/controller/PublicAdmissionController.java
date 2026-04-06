@@ -1,4 +1,4 @@
-package com.G5C.EduMS.controller.publics; // Lưu ý package
+package com.G5C.EduMS.controller;
 
 import com.G5C.EduMS.dto.request.ApplicationSubmitRequest;
 import com.G5C.EduMS.dto.response.PublicLookupResponse;
