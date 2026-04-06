@@ -28,4 +28,6 @@ public interface GuardianRepository extends JpaRepository<Guardian, Integer> {
             "(LOWER(g.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
             "g.phone LIKE CONCAT('%', :keyword, '%'))")
     Page<Guardian> searchGuardians(@Param("keyword") String keyword, Pageable pageable);
+
+    Optional<Guardian> findByPhoneAndDeletedFalse(String phone);
 }

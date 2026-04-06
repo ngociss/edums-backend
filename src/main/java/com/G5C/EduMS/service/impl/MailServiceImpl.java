@@ -31,7 +31,7 @@ public class MailServiceImpl implements MailService {
 
         try {
             // 1. Gọi hàm build HTML
-            String htmlContent = buildWelcomeEmailHtml(fullName, studentCode, username, defaultPassword, loginUrl);
+            String htmlContent = buildWelcomeEmailHtml(toEmail, fullName, studentCode, username, defaultPassword);
 
             // 2. Chuẩn bị gói thư MimeMessage
             MimeMessage message = javaMailSender.createMimeMessage();

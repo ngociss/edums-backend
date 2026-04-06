@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -51,5 +52,15 @@ public interface StudentRepository extends JpaRepository<Student, Integer> {
                                  Pageable pageable);
 
 
+    // 1. Dùng để lấy nguyên cả danh sách object Student (Nếu bạn có dùng trong logic)
+    Set<Student> findByNationalIdInAndDeletedFalse(Collection<String> nationalIds);
+
+    // 2. Dùng để chỉ lấy ra 1 Set các số CCCD (Tối ưu hiệu suất, dùng cho Unit Test của bạn)
+    @Query("SELECT s.nationalId FROM Student s WHERE s.nationalId IN :nationalIds AND s.deleted = false")
+    Set<String> findNationalIdsInAndDeletedFalse(@Param("nationalIds") Collection<String> nationalIds);
+
+    // 3. Dùng để chỉ lấy ra 1 Set các Email
+    @Query("SELECT s.email FROM Student s WHERE s.email IN :emails AND s.deleted = false")
+    Set<String> findEmailsInAndDeletedFalse(@Param("emails") Collection<String> emails);
 }
 

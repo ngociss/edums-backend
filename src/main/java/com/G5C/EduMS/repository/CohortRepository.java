@@ -13,4 +13,5 @@ public interface CohortRepository extends JpaRepository<Cohort, Integer> {
     Optional<Cohort> findByIdAndDeletedFalse(Integer id);
     boolean existsByCohortNameAndDeletedFalse(String cohortName);
     boolean existsByCohortNameAndDeletedFalseAndIdNot(String cohortName, Integer id);
+    Optional<Cohort> findByCohortNameAndDeletedFalse(String cohortName);
 }
