@@ -52,4 +52,6 @@ public interface AdmissionPeriodRepository extends JpaRepository<AdmissionPeriod
     Optional<AdmissionPeriod> findByIdAndDeletedFalse(Integer id);
 
     Page<AdmissionPeriod> findAllByDeletedFalse(Pageable pageable);
+
+    List<AdmissionPeriod> findByStatusAndDeletedFalse(AdmissionPeriodStatus status);
 }

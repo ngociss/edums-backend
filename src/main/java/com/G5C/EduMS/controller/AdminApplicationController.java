@@ -80,11 +80,10 @@ public class AdminApplicationController {
     /**
      * API chốt danh sách nhập học: Sinh tài khoản và hồ sơ Sinh viên
      */
-    @PostMapping("/onboard")
-    public ResponseEntity<ResponseData<Void>> processOnboarding(
-            @Valid @RequestBody OnboardingRequest request) {
+    @PostMapping("/onboard/{periodId}")
+    public ResponseEntity<ResponseData<Void>> processOnboarding(Integer id) {
 
-        onboardingService.processOnboarding(request);
+        onboardingService.processOnboarding(id);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ResponseData.success("Chốt danh sách và tạo tài khoản sinh viên thành công", null, HttpStatus.CREATED.value()));
     }

@@ -32,5 +32,7 @@ public interface LecturerRepository extends JpaRepository<Lecturer, Integer> {
     Page<Lecturer> searchLecturers(@Param("keyword") String keyword, Pageable pageable);
 
     Optional<Lecturer> findByAccount_UsernameAndDeletedFalse(String username);
+
+    Optional<Lecturer> findByEmailAndDeletedFalse(String email);
 }
 

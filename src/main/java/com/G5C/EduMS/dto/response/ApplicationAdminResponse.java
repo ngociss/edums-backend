@@ -19,10 +19,12 @@ public class ApplicationAdminResponse {
     private Integer id;
     private String fullName;
     private LocalDate dateOfBirth;
+    private Boolean gender;
     private String email;
     private String phone;
     private String nationalId;
     private String address;
+    private String guardianPhone;
 
     // Thông tin xét tuyển
     private Float totalScore;
