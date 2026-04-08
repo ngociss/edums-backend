@@ -18,6 +18,7 @@ public class RegistrationPeriodValidator {
 
     public void validateCreate(RegistrationPeriodRequest request) {
         validateTimeRange(request);
+        validateSingleOpenPeriod(request.getStatus(), null);
         validateSinglePeriodPerSemester(request.getSemesterId(), null);
         validateOverlap(request.getSemesterId(), request.getStartTime(), request.getEndTime(), null);
     }
@@ -28,10 +29,25 @@ public class RegistrationPeriodValidator {
             boolean hasRegistrations
     ) {
         validateTimeRange(request);
+        validateSingleOpenPeriod(request.getStatus(), existing.getId());
         validateSinglePeriodPerSemester(request.getSemesterId(), existing.getId());
         validateOverlap(request.getSemesterId(), request.getStartTime(), request.getEndTime(), existing.getId());
         validateStatusTransition(existing.getStatus(), request.getStatus());
         validateFieldUpdates(existing, request, hasRegistrations);
+    }
+
+    private void validateSingleOpenPeriod(RegistrationPeriodStatus requestedStatus, Integer excludeId) {
+        if (requestedStatus != RegistrationPeriodStatus.OPEN) {
+            return;
+        }
+
+        boolean existsAnotherOpenPeriod = excludeId == null
+                ? registrationPeriodRepository.existsByStatusAndDeletedFalse(RegistrationPeriodStatus.OPEN)
+                : registrationPeriodRepository.existsByStatusAndIdNotAndDeletedFalse(RegistrationPeriodStatus.OPEN, excludeId);
+
+        if (existsAnotherOpenPeriod) {
+            throw new InvalidDataException("Chỉ được phép có 1 đợt đăng ký ở trạng thái OPEN");
+        }
     }
 
     private void validateTimeRange(RegistrationPeriodRequest request) {
@@ -42,15 +58,15 @@ public class RegistrationPeriodValidator {
         }
     }
 
-    private void validateSinglePeriodPerSemester(Integer semesterId, Integer excludeId) {
-        boolean exists = excludeId == null
-                ? registrationPeriodRepository.existsBySemester_IdAndDeletedFalse(semesterId)
-                : registrationPeriodRepository.existsBySemester_IdAndIdNotAndDeletedFalse(semesterId, excludeId);
+        private void validateSinglePeriodPerSemester(Integer semesterId, Integer excludeId) {
+            boolean exists = excludeId == null
+                    ? registrationPeriodRepository.existsBySemester_IdAndStatusAndDeletedFalse(semesterId, RegistrationPeriodStatus.OPEN)
+                    : registrationPeriodRepository.existsBySemester_IdAndIdNotAndStatusAndDeletedFalse(semesterId, excludeId,RegistrationPeriodStatus.OPEN);
 
-        if (exists) {
-            throw new InvalidDataException("Mỗi học kỳ chỉ được có một đợt đăng ký môn học");
+            if (exists) {
+                throw new InvalidDataException("Mỗi học kỳ chỉ được có một đợt đăng ký môn học");
+            }
         }
-    }
 
     private void validateOverlap(Integer semesterId, java.time.LocalDateTime startTime,
                                  java.time.LocalDateTime endTime, Integer excludeId) {

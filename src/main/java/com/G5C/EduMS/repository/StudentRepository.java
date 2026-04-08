@@ -2,9 +2,11 @@ package com.G5C.EduMS.repository;
 
 import com.G5C.EduMS.common.enums.StudentStatus;
 import com.G5C.EduMS.model.Student;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -25,6 +27,14 @@ public interface StudentRepository extends JpaRepository<Student, Integer> {
     Optional<Student> findByAccount_IdAndDeletedFalse(Integer accountId);
 
     Optional<Student> findByAccountIdAndDeletedFalse(Integer accountId);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT s FROM Student s WHERE s.id = :id AND s.deleted = false")
+    Optional<Student> findByIdAndDeletedFalseForUpdate(@Param("id") Integer id);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT s FROM Student s WHERE s.account.id = :accountId AND s.deleted = false")
+    Optional<Student> findByAccountIdAndDeletedFalseForUpdate(@Param("accountId") Integer accountId);
 
     // Kiểm tra ràng buộc trước khi xóa AdministrativeClass
     @Query("SELECT COUNT(s) > 0 FROM Student s WHERE s.administrativeClass.id = :classId AND s.deleted = false")

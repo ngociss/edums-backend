@@ -1,11 +1,13 @@
 package com.G5C.EduMS.service.impl;
 
+import com.G5C.EduMS.common.enums.CourseSectionStatus;
 import com.G5C.EduMS.common.enums.DayOfWeek;
 import com.G5C.EduMS.common.enums.SessionStatus;
+import com.G5C.EduMS.dto.request.RecurringScheduleRequest;
 import com.G5C.EduMS.dto.response.ClassSessionResponse;
 import com.G5C.EduMS.dto.response.RecurringScheduleResponse;
-import com.G5C.EduMS.dto.request.RecurringScheduleRequest;
 import com.G5C.EduMS.exception.CannotDeleteException;
+import com.G5C.EduMS.exception.InvalidDataException;
 import com.G5C.EduMS.exception.NotFoundResourcesException;
 import com.G5C.EduMS.mapper.ClassSessionMapper;
 import com.G5C.EduMS.mapper.RecurringScheduleMapper;
@@ -14,8 +16,8 @@ import com.G5C.EduMS.model.Classroom;
 import com.G5C.EduMS.model.CourseSection;
 import com.G5C.EduMS.model.RecurringSchedule;
 import com.G5C.EduMS.model.Semester;
-import com.G5C.EduMS.repository.ClassroomRepository;
 import com.G5C.EduMS.repository.ClassSessionRepository;
+import com.G5C.EduMS.repository.ClassroomRepository;
 import com.G5C.EduMS.repository.CourseSectionRepository;
 import com.G5C.EduMS.repository.RecurringScheduleRepository;
 import com.G5C.EduMS.service.RecurringScheduleService;
@@ -41,15 +43,15 @@ public class RecurringScheduleServiceImpl implements RecurringScheduleService {
     private final ClassSessionMapper classSessionMapper;
     private final RecurringScheduleValidator validator;
 
-    // ==================== GET ====================
-
     @Override
     public List<RecurringScheduleResponse> getBySectionId(Integer sectionId) {
         courseSectionRepository.findByIdAndDeletedFalse(sectionId)
                 .orElseThrow(() -> new NotFoundResourcesException(
                         "Không tìm thấy lớp học phần với id: " + sectionId));
         return recurringScheduleRepository.findAllBySectionIdAndDeletedFalse(sectionId)
-                .stream().map(recurringScheduleMapper::toResponse).toList();
+                .stream()
+                .map(recurringScheduleMapper::toResponse)
+                .toList();
     }
 
     @Override
@@ -60,18 +62,16 @@ public class RecurringScheduleServiceImpl implements RecurringScheduleService {
                                 "Không tìm thấy lịch học với id: " + id)));
     }
 
-    // ==================== CREATE ====================
-
     @Override
     @Transactional
     public RecurringScheduleResponse create(RecurringScheduleRequest request) {
-
         validator.validatePeriodLogic(request.getStartPeriod(), request.getEndPeriod());
 
         CourseSection section = courseSectionRepository.findByIdAndDeletedFalse(request.getSectionId())
                 .orElseThrow(() -> new NotFoundResourcesException(
                         "Không tìm thấy lớp học phần với id: " + request.getSectionId()));
         validator.validateCourseSection(section);
+
         int startWeek = resolveStartWeek(request, section.getSemester());
         int endWeek = resolveEndWeek(request, section.getSemester());
         validator.validateWeekRange(section.getSemester(), startWeek, endWeek);
@@ -104,13 +104,9 @@ public class RecurringScheduleServiceImpl implements RecurringScheduleService {
                 .build();
 
         schedule = recurringScheduleRepository.save(schedule);
-
         generateClassSessions(schedule);
-
         return recurringScheduleMapper.toResponse(schedule);
     }
-
-    // ==================== UPDATE ====================
 
     @Override
     @Transactional
@@ -119,12 +115,19 @@ public class RecurringScheduleServiceImpl implements RecurringScheduleService {
                 .orElseThrow(() -> new NotFoundResourcesException(
                         "Không tìm thấy lịch học với id: " + id));
 
+        if (classSessionRepository.existsSessionWithAttendanceByScheduleId(id)) {
+            throw new InvalidDataException("Không thể cập nhật lịch học vì đã phát sinh điểm danh");
+        }
+
         validator.validatePeriodLogic(request.getStartPeriod(), request.getEndPeriod());
 
-        CourseSection section = courseSectionRepository.findByIdAndDeletedFalse(request.getSectionId())
-                .orElseThrow(() -> new NotFoundResourcesException(
-                        "Không tìm thấy lớp học phần với id: " + request.getSectionId()));
+        CourseSection section = schedule.getSection();
+        if (!section.getId().equals(request.getSectionId())) {
+            throw new InvalidDataException("Không được thay đổi lớp học phần của lịch học định kỳ");
+        }
         validator.validateCourseSection(section);
+        validator.validateCourseSectionForOpen(section, request, schedule);
+
         int startWeek = resolveStartWeek(request, section.getSemester());
         int endWeek = resolveEndWeek(request, section.getSemester());
         validator.validateWeekRange(section.getSemester(), startWeek, endWeek);
@@ -133,7 +136,6 @@ public class RecurringScheduleServiceImpl implements RecurringScheduleService {
                 .orElseThrow(() -> new NotFoundResourcesException(
                         "Không tìm thấy phòng học với id: " + request.getClassroomId()));
         validator.validateClassroomCapacity(section, classroom);
-
         validator.validateConflicts(
                 section.getId(),
                 classroom.getId(),
@@ -145,12 +147,8 @@ public class RecurringScheduleServiceImpl implements RecurringScheduleService {
                 id
         );
 
-        List<ClassSession> oldSessions =
-                classSessionRepository.findAllByRecurringScheduleIdAndDeletedFalse(id);
-        oldSessions.forEach(s -> s.setDeleted(true));
-        classSessionRepository.saveAll(oldSessions);
+        classSessionRepository.deleteByRecurringScheduleId(id);
 
-        schedule.setSection(section);
         schedule.setRoom(classroom);
         schedule.setDayOfWeek(request.getDayOfWeek());
         schedule.setStartPeriod(request.getStartPeriod());
@@ -160,11 +158,8 @@ public class RecurringScheduleServiceImpl implements RecurringScheduleService {
         schedule = recurringScheduleRepository.save(schedule);
 
         generateClassSessions(schedule);
-
         return recurringScheduleMapper.toResponse(schedule);
     }
-
-    // ==================== DELETE ====================
 
     @Override
     @Transactional
@@ -173,23 +168,20 @@ public class RecurringScheduleServiceImpl implements RecurringScheduleService {
                 .orElseThrow(() -> new NotFoundResourcesException(
                         "Không tìm thấy lịch học với id: " + id));
 
-        // Không được xóa nếu đã có buổi học có điểm danh
         if (classSessionRepository.existsSessionWithAttendanceByScheduleId(id)) {
-            throw new CannotDeleteException("SCHEDULE_HAS_ATTENDANCE",
-                    "Không thể xóa lịch học vì đã có buổi học được điểm danh. "
-                    + "Vui lòng hủy buổi học riêng lẻ thay vì xóa lịch.");
+            throw new CannotDeleteException(
+                    "SCHEDULE_HAS_ATTENDANCE",
+                    "Không thể xóa lịch học vì đã có buổi học được điểm danh. Vui lòng xử lý từng buổi học riêng lẻ."
+            );
         }
 
-        List<ClassSession> sessions =
-                classSessionRepository.findAllByRecurringScheduleIdAndDeletedFalse(id);
-        sessions.forEach(s -> s.setDeleted(true));
+        List<ClassSession> sessions = classSessionRepository.findAllByRecurringScheduleIdAndDeletedFalse(id);
+        sessions.forEach(session -> session.setDeleted(true));
         classSessionRepository.saveAll(sessions);
 
         schedule.setDeleted(true);
         recurringScheduleRepository.save(schedule);
     }
-
-    // ==================== GET CLASS SESSIONS ====================
 
     @Override
     public List<ClassSessionResponse> getClassSessions(Integer scheduleId) {
@@ -197,16 +189,17 @@ public class RecurringScheduleServiceImpl implements RecurringScheduleService {
                 .orElseThrow(() -> new NotFoundResourcesException(
                         "Không tìm thấy lịch học với id: " + scheduleId));
         return classSessionRepository.findAllByRecurringScheduleIdAndDeletedFalse(scheduleId)
-                .stream().map(classSessionMapper::toResponse).toList();
+                .stream()
+                .map(classSessionMapper::toResponse)
+                .toList();
     }
 
     private void generateClassSessions(RecurringSchedule schedule) {
         Semester semester = schedule.getSection().getSemester();
         LocalDate startDate = semester.getStartDate();
-        LocalDate endDate   = semester.getEndDate();
+        LocalDate endDate = semester.getEndDate();
 
-        java.time.DayOfWeek targetDow =
-                DayOfWeek.fromValue(schedule.getDayOfWeek()).toJavaDayOfWeek();
+        java.time.DayOfWeek targetDayOfWeek = DayOfWeek.fromValue(schedule.getDayOfWeek()).toJavaDayOfWeek();
 
         List<ClassSession> sessions = new ArrayList<>();
         int startWeek = schedule.getStartWeek() == null ? 1 : schedule.getStartWeek();
@@ -214,7 +207,7 @@ public class RecurringScheduleServiceImpl implements RecurringScheduleService {
 
         LocalDate current = startDate;
         while (!current.isAfter(endDate)) {
-            if (current.getDayOfWeek() == targetDow) {
+            if (current.getDayOfWeek() == targetDayOfWeek) {
                 int weekNumber = (int) ChronoUnit.WEEKS.between(startDate, current) + 1;
                 if (weekNumber >= startWeek && weekNumber <= endWeek) {
                     if (!classSessionRepository.existsByRecurringScheduleIdAndSessionDateAndDeletedFalse(
@@ -260,4 +253,3 @@ public class RecurringScheduleServiceImpl implements RecurringScheduleService {
         return 1;
     }
 }
-

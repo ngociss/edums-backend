@@ -2,6 +2,7 @@ package com.G5C.EduMS.repository;
 
 
 
+import com.G5C.EduMS.common.enums.RegistrationPeriodStatus;
 import com.G5C.EduMS.model.RegistrationPeriod;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -23,6 +24,21 @@ public interface RegistrationPeriodRepository extends JpaRepository<Registration
     boolean existsBySemester_IdAndDeletedFalse(Integer semesterId);
 
     boolean existsBySemester_IdAndIdNotAndDeletedFalse(Integer semesterId, Integer id);
+
+    boolean existsBySemester_IdAndStatusAndDeletedFalse(Integer semesterId, RegistrationPeriodStatus status);
+
+    boolean existsBySemester_IdAndIdNotAndStatusAndDeletedFalse(
+            Integer semesterId,
+            Integer id,
+            RegistrationPeriodStatus status
+    );
+
+    boolean existsByStatusAndDeletedFalse(com.G5C.EduMS.common.enums.RegistrationPeriodStatus status);
+
+    boolean existsByStatusAndIdNotAndDeletedFalse(
+            com.G5C.EduMS.common.enums.RegistrationPeriodStatus status,
+            Integer id
+    );
 
     @Query("""
         SELECT rp
@@ -53,6 +69,10 @@ public interface RegistrationPeriodRepository extends JpaRepository<Registration
     FROM RegistrationPeriod rp
     WHERE rp.semester.id = :semesterId
       AND rp.deleted = false
+      AND rp.status IN (
+          com.G5C.EduMS.common.enums.RegistrationPeriodStatus.UPCOMING,
+          com.G5C.EduMS.common.enums.RegistrationPeriodStatus.OPEN
+      )
       AND rp.startTime <= :endTime
       AND rp.endTime >= :startTime
 """)
@@ -68,6 +88,10 @@ public interface RegistrationPeriodRepository extends JpaRepository<Registration
     WHERE rp.semester.id = :semesterId
       AND rp.deleted = false
       AND (:excludeId IS NULL OR rp.id <> :excludeId)
+      AND rp.status IN (
+          com.G5C.EduMS.common.enums.RegistrationPeriodStatus.UPCOMING,
+          com.G5C.EduMS.common.enums.RegistrationPeriodStatus.OPEN
+      )
       AND rp.startTime <= :endTime
       AND rp.endTime >= :startTime
 """)

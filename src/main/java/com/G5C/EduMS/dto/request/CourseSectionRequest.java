@@ -3,7 +3,6 @@ package com.G5C.EduMS.dto.request;
 import com.G5C.EduMS.common.enums.CourseSectionStatus;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.*;
 
 @Getter
@@ -12,9 +11,6 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class CourseSectionRequest {
-
-    @Size(max = 255, message = "Display name must not exceed 255 characters")
-    private String displayName; // optional
 
     @NotNull(message = "Course ID is required")
     private Integer courseId;

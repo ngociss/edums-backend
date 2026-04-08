@@ -19,6 +19,8 @@ public interface GradeReportService {
     //xem điểm
     List<GradeReportResponse> getCurrentStudentGradeReports(String username);
 
+    GradeReportResponse getCurrentStudentGradeReportById(String username, Integer id);
+
     List<GradeReportResponse> getByStudent(Integer studentId);
 
     GradeReportResponse getById(Integer id);

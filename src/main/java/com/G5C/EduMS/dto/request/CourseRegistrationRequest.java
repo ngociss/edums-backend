@@ -11,5 +11,4 @@ public class CourseRegistrationRequest {
     @NotNull(message = "Mã lớp học phần không được để trống")
     private Integer courseSectionId;
 
-    private Integer studentId;
 }
