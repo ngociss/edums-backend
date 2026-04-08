@@ -78,6 +78,16 @@ public class GradeReportController {
                 gradeReportService.getCurrentStudentGradeReports(authentication.getName()), 200));
     }
 
+    @GetMapping("/students/me/grade-reports/{id}")
+    @Operation(summary = "Student views their own grade report detail")
+    public ResponseEntity<ResponseData<GradeReportResponse>> getMyGradeReportDetail(
+            @PathVariable Integer id,
+            Authentication authentication) {
+        return ResponseEntity.ok(
+            ResponseData.success("Success",
+                gradeReportService.getCurrentStudentGradeReportById(authentication.getName(), id), 200));
+    }
+
     @GetMapping("/grade-reports/{id}")
     @Operation(summary = "Get grade report detail by ID")
     public ResponseEntity<ResponseData<GradeReportResponse>> getById(

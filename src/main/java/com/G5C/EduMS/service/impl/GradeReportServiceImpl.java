@@ -126,17 +126,21 @@ public class GradeReportServiceImpl implements GradeReportService {
 
     @Override
     public List<GradeReportResponse> getCurrentStudentGradeReports(String username) {
-        Integer accountId = accountRepository.findByUsernameAndDeletedFalse(username)
-                .orElseThrow(() -> new NotFoundResourcesException(
-                        "Account not found with username: " + username))
-                .getId();
-
-        Student student = studentRepository.findByAccount_IdAndDeletedFalse(accountId)
-                .orElseThrow(() -> new NotFoundResourcesException(
-                        "Student profile not found for account id: " + accountId));
+        Student student = findCurrentStudentByUsername(username);
 
         return gradeReportRepository.findAllByStudentId(student.getId())
                 .stream().map(gradeReportMapper::toResponse).toList();
+    }
+
+    @Override
+    public GradeReportResponse getCurrentStudentGradeReportById(String username, Integer id) {
+        Student student = findCurrentStudentByUsername(username);
+
+        GradeReport report = gradeReportRepository.findByIdAndStudentId(id, student.getId())
+                .orElseThrow(() -> new NotFoundResourcesException(
+                        "Không tìm thấy phiếu điểm của sinh viên với id: " + id));
+
+        return gradeReportMapper.toResponse(report);
     }
 
     @Override
@@ -170,6 +174,17 @@ public class GradeReportServiceImpl implements GradeReportService {
         report.setFinalScore(finalScore);
         report.setLetterGrade(toLetterGrade(finalScore));
         gradeReportRepository.save(report);
+    }
+
+    private Student findCurrentStudentByUsername(String username) {
+        Integer accountId = accountRepository.findByUsernameAndDeletedFalse(username)
+                .orElseThrow(() -> new NotFoundResourcesException(
+                        "Account not found with username: " + username))
+                .getId();
+
+        return studentRepository.findByAccount_IdAndDeletedFalse(accountId)
+                .orElseThrow(() -> new NotFoundResourcesException(
+                        "Student profile not found for account id: " + accountId));
     }
 
     private String toLetterGrade(float score) {

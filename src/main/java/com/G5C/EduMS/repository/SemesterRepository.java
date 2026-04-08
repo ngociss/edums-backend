@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,15 +21,15 @@ public interface SemesterRepository extends JpaRepository<Semester, Integer> {
 
 
     @Query("""
-        SELECT s
-        FROM Semester s
-        WHERE s.id = :semesterId
-          AND s.deleted = false
-          AND s.status = :status
-    """)
-    Optional<Semester> findByIdAndStatus(
+    SELECT s
+    FROM Semester s
+    WHERE s.id = :semesterId
+      AND s.deleted = false
+      AND s.status IN :statuses
+""")
+    Optional<Semester> findByIdAndStatusIn(
             Integer semesterId,
-            SemesterStatus status
+            Collection<SemesterStatus> statuses
     );
 
     boolean existsBySemesterNumberAndAcademicYearAndDeletedFalse(

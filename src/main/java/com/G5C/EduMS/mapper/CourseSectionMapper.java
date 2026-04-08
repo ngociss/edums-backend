@@ -17,7 +17,7 @@ public interface CourseSectionMapper {
     @Mapping(target = "recurringSchedules", ignore = true)
     @Mapping(target = "courseRegistrations", ignore = true)
     @Mapping(target = "sectionCode", ignore = true)
-    @Mapping(target = "displayName", source = "displayName")
+    @Mapping(target = "displayName", ignore = true)
     @Mapping(target = "maxCapacity", source = "maxCapacity")
     @Mapping(target = "status", source = "status")
     CourseSection toEntity(CourseSectionRequest request);
@@ -42,7 +42,7 @@ public interface CourseSectionMapper {
     @Mapping(target = "recurringSchedules", ignore = true)
     @Mapping(target = "courseRegistrations", ignore = true)
     @Mapping(target = "sectionCode", ignore = true)
-    @Mapping(target = "displayName", source = "displayName")
+    @Mapping(target = "displayName", ignore = true)
     @Mapping(target = "maxCapacity", source = "maxCapacity")
     @Mapping(target = "status", source = "status")
     void updateEntity(CourseSectionRequest request, @MappingTarget CourseSection courseSection);

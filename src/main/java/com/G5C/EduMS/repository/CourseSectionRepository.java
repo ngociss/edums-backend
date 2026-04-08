@@ -74,9 +74,8 @@ public interface CourseSectionRepository extends JpaRepository<CourseSection, In
         FROM CourseSection cs
         WHERE cs.course.id = :courseId
           AND cs.semester.id = :semesterId
-          AND cs.deleted = false
     """)
-    List<CourseSection> findAllByCourseIdAndSemesterIdAndDeletedFalseForUpdate(
+    List<CourseSection> findAllByCourseIdAndSemesterIdForUpdate(
             @Param("courseId") Integer courseId,
             @Param("semesterId") Integer semesterId
     );
@@ -94,5 +93,6 @@ public interface CourseSectionRepository extends JpaRepository<CourseSection, In
 
 
     boolean existsByLecturerIdAndDeletedFalse(Integer lecturerId);
-}
 
+    
+}

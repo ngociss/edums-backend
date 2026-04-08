@@ -36,7 +36,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -94,7 +93,7 @@ public class CourseRegistrationServiceImpl implements CourseRegistrationService 
     @Override
     @Transactional
     public CourseRegistrationResponse register(CourseRegistrationRequest request) {
-        Student student = resolveStudentForWrite(request.getStudentId());
+        Student student = getCurrentStudentForUpdate();
         CourseSection courseSection = getCourseSectionForUpdate(request.getCourseSectionId());
 
         CourseRegistration courseRegistration = prepareRegistration(student, courseSection, null);
@@ -120,6 +119,12 @@ public class CourseRegistrationServiceImpl implements CourseRegistrationService 
     @Override
     @Transactional
     public CourseRegistrationResponse cancel(Integer registrationId) {
+        CourseRegistration registrationSnapshot = courseRegistrationRepository.findByIdAndDeletedFalse(registrationId)
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy đăng ký học phần với id: " + registrationId));
+
+        assertCanManageRegistration(registrationSnapshot);
+        lockStudentForWrite(registrationSnapshot.getStudent().getId());
+
         CourseRegistration registration = courseRegistrationRepository.findByIdAndDeletedFalseForUpdate(registrationId)
                 .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy đăng ký học phần với id: " + registrationId));
 
@@ -128,13 +133,20 @@ public class CourseRegistrationServiceImpl implements CourseRegistrationService 
         courseRegistrationValidator.validateRegistrationActive(registration);
         courseRegistrationValidator.validateCanModifyDuringOpenPeriod(registration, now);
 
-        registration.setStatus(RegistrationStatus.CANCELLED);
-        return courseRegistrationMapper.toResponse(courseRegistrationRepository.save(registration));
+        CourseRegistrationResponse response = courseRegistrationMapper.toResponse(registration);
+        courseRegistrationRepository.delete(registration);
+        return response;
     }
 
     @Override
     @Transactional
     public CourseRegistrationResponse switchSection(Integer registrationId, CourseRegistrationSwitchRequest request) {
+        CourseRegistration registrationSnapshot = courseRegistrationRepository.findByIdAndDeletedFalse(registrationId)
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy đăng ký học phần với id: " + registrationId));
+
+        assertCanManageRegistration(registrationSnapshot);
+        lockStudentForWrite(registrationSnapshot.getStudent().getId());
+
         CourseRegistration currentRegistration = courseRegistrationRepository.findByIdAndDeletedFalseForUpdate(registrationId)
                 .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy đăng ký học phần với id: " + registrationId));
 
@@ -163,10 +175,9 @@ public class CourseRegistrationServiceImpl implements CourseRegistrationService 
                 currentRegistration.getId()
         );
 
-        currentRegistration.setStatus(RegistrationStatus.CANCELLED);
-        courseRegistrationRepository.save(currentRegistration);
-
-        return courseRegistrationMapper.toResponse(courseRegistrationRepository.save(newRegistration));
+        CourseRegistration savedRegistration = courseRegistrationRepository.save(newRegistration);
+        courseRegistrationRepository.delete(currentRegistration);
+        return courseRegistrationMapper.toResponse(savedRegistration);
     }
 
     private List<CourseRegistrationResponse> getRegistrations(Integer studentId, Integer semesterId) {
@@ -272,7 +283,7 @@ public class CourseRegistrationServiceImpl implements CourseRegistrationService 
                 for (RecurringSchedule newSchedule : newSchedules) {
                     if (hasScheduleConflict(existingSchedule, newSchedule)) {
                         throw new InvalidDataException(
-                                "Lịch học của lớp học phần bị trùng với lớp " + activeRegistration.getSection().getSectionCode()
+                                "Lịch học của lớp học phần bị trùng với lớp " + activeRegistration.getSection().getDisplayName()
                         );
                     }
                 }
@@ -408,7 +419,7 @@ public class CourseRegistrationServiceImpl implements CourseRegistrationService 
         );
 
         if (!passedPrerequisite) {
-            throw new InvalidDataException("Sinh viên chưa đạt môn học tiên quyết");
+            throw new InvalidDataException("Sinh viên chưa đạt môn học tiên quyết: " + courseSection.getCourse().getPrerequisiteCourse().getCourseName());
         }
     }
 
@@ -433,11 +444,11 @@ public class CourseRegistrationServiceImpl implements CourseRegistrationService 
                 throw new InvalidDataException("Admin hoặc quản lý phải truyền studentId khi đăng ký hộ");
             }
 
-            return studentRepository.findByIdAndDeletedFalse(requestedStudentId)
+            return studentRepository.findByIdAndDeletedFalseForUpdate(requestedStudentId)
                     .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy sinh viên với id: " + requestedStudentId));
         }
 
-        return getCurrentStudent();
+        return getCurrentStudentForUpdate();
     }
 
     private void assertCanManageRegistration(CourseRegistration registration) {
@@ -462,6 +473,17 @@ public class CourseRegistrationServiceImpl implements CourseRegistrationService 
         Account account = getAuthenticatedAccount();
         return studentRepository.findByAccount_IdAndDeletedFalse(account.getId())
                 .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy sinh viên tương ứng với tài khoản hiện tại"));
+    }
+
+    private Student getCurrentStudentForUpdate() {
+        Account account = getAuthenticatedAccount();
+        return studentRepository.findByAccountIdAndDeletedFalseForUpdate(account.getId())
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy sinh viên tương ứng với tài khoản hiện tại"));
+    }
+
+    private Student lockStudentForWrite(Integer studentId) {
+        return studentRepository.findByIdAndDeletedFalseForUpdate(studentId)
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy sinh viên với id: " + studentId));
     }
 
     private Account getAuthenticatedAccount() {

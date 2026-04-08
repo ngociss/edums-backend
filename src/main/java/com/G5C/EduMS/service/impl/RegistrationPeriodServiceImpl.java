@@ -1,9 +1,11 @@
 package com.G5C.EduMS.service.impl;
 
 import com.G5C.EduMS.common.enums.RegistrationPeriodStatus;
+import com.G5C.EduMS.common.enums.SemesterStatus;
 import com.G5C.EduMS.dto.request.RegistrationPeriodRequest;
 import com.G5C.EduMS.dto.response.RegistrationPeriodResponse;
 import com.G5C.EduMS.exception.CannotDeleteException;
+import com.G5C.EduMS.exception.InvalidDataException;
 import com.G5C.EduMS.exception.NotFoundResourcesException;
 import com.G5C.EduMS.mapper.RegistrationPeriodMapper;
 import com.G5C.EduMS.model.RegistrationPeriod;
@@ -50,6 +52,7 @@ public class RegistrationPeriodServiceImpl implements RegistrationPeriodService 
     public RegistrationPeriodResponse create(RegistrationPeriodRequest request) {
         Semester semester = findSemesterOrThrow(request.getSemesterId());
         registrationPeriodValidator.validateCreate(request);
+        validateSemesterCanOpenRegistrationPeriod(semester, request.getStatus());
 
         RegistrationPeriod registrationPeriod = registrationPeriodMapper.toEntity(request);
         registrationPeriod.setSemester(semester);
@@ -64,6 +67,7 @@ public class RegistrationPeriodServiceImpl implements RegistrationPeriodService 
         Semester semester = findSemesterOrThrow(request.getSemesterId());
         boolean hasRegistrations = courseRegistrationRepository.existsByRegistrationPeriod_IdAndDeletedFalse(id);
         registrationPeriodValidator.validateUpdate(registrationPeriod, request, hasRegistrations);
+        validateSemesterCanOpenRegistrationPeriod(semester, request.getStatus());
 
         registrationPeriodMapper.updateEntity(request, registrationPeriod);
         registrationPeriod.setSemester(semester);
@@ -76,7 +80,7 @@ public class RegistrationPeriodServiceImpl implements RegistrationPeriodService 
     public void delete(Integer id) {
         RegistrationPeriod registrationPeriod = findOrThrow(id);
         if (registrationPeriod.getStatus() != RegistrationPeriodStatus.UPCOMING) {
-            throw new CannotDeleteException("Chỉ có thể xóa đợt đăng ký ở trạng thái sắp diễn ra");
+            throw new CannotDeleteException("Chỉ có thể xóa đợt đăng ký ở trạng thái UPCOMING");
         }
 
         if (courseRegistrationRepository.existsByRegistrationPeriod_IdAndDeletedFalse(id)) {
@@ -95,5 +99,11 @@ public class RegistrationPeriodServiceImpl implements RegistrationPeriodService 
     private Semester findSemesterOrThrow(Integer semesterId) {
         return semesterRepository.findByIdAndDeletedFalse(semesterId)
                 .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy học kỳ với id: " + semesterId));
+    }
+
+    private void validateSemesterCanOpenRegistrationPeriod(Semester semester, RegistrationPeriodStatus status) {
+        if (status == RegistrationPeriodStatus.OPEN && semester.getStatus() != SemesterStatus.REGISTRATION_OPEN) {
+            throw new InvalidDataException("Không thể mở đợt đăng ký khi học kỳ chưa ở trạng thái REGISTRATION_OPEN");
+        }
     }
 }
