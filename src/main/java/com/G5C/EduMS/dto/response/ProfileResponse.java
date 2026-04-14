@@ -20,4 +20,5 @@ public class ProfileResponse {
     // Thuộc tính riêng cho sinh viên
     private String studentCode;
     private String majorName;
+    private String administrativeClassName;
 }
