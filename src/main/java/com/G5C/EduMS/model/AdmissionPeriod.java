@@ -37,4 +37,31 @@ public class AdmissionPeriod {
     @Column(name = "deleted", nullable = false)
     @Builder.Default
     private boolean deleted = false;
+
+    public void updateStatusBasedOnTime() {
+        if (this.startTime == null || this.endTime == null) {
+            return;
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+
+        if (now.isBefore(this.startTime)) {
+            this.status = AdmissionPeriodStatus.UPCOMING;
+        } else if (now.isAfter(this.endTime)) {
+            this.status = AdmissionPeriodStatus.CLOSED;
+        } else {
+            this.status = AdmissionPeriodStatus.OPEN;
+        }
+    }
+
+    @PrePersist
+    @PreUpdate
+    public void onPrePersistOrUpdate() {
+        updateStatusBasedOnTime();
+    }
+
+    @PostLoad
+    public void onPostLoad() {
+        updateStatusBasedOnTime();
+    }
 }

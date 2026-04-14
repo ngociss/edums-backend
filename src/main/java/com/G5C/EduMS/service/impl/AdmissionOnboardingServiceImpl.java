@@ -165,30 +165,6 @@ public class AdmissionOnboardingServiceImpl implements AdmissionOnboardingServic
                     return cohortRepository.save(newCohort);
                 });
 
-        // 3. --- XỬ LÝ RỦI RO LECTURER: Tạo/Lấy Giảng viên tạm thời ---
-        Role lecturerRole = roleRepository.findByRoleNameAndDeletedFalse("LECTURER")
-                .orElseThrow(() -> new NotFoundResourcesException("Chưa cấu hình Role: LECTURER"));
-
-        Lecturer dummyLecturer = lecturerRepository.findByEmailAndDeletedFalse("dummy.lecturer@system.edu.vn")
-                .orElseGet(() -> {
-                    Account lecAcc = new Account();
-                    lecAcc.setUsername("dummy_lecturer");
-                    lecAcc.setPassword(passwordEncoder.encode("Dummy@12345"));
-                    lecAcc.setRole(lecturerRole);
-                    lecAcc.setStatus(AccountStatus.ACTIVE);
-                    lecAcc.setCreatedAt(LocalDateTime.now());
-                    lecAcc.setDeleted(false);
-                    accountRepository.save(lecAcc); // Lưu trước để có ID
-
-                    Lecturer newLec = new Lecturer();
-                    newLec.setAccount(lecAcc);
-                    newLec.setFullName("Giảng viên Tạm thời");
-                    newLec.setEmail("dummy.lecturer@system.edu.vn");
-                    newLec.setPhone("0000000000");
-                    newLec.setDeleted(false);
-                    return lecturerRepository.save(newLec); // Lưu trước để gán cho Lớp
-                });
-
         // Chuẩn bị Role & Cache
         Role studentRole = roleRepository.findByRoleNameAndDeletedFalse("STUDENT")
                 .orElseThrow(() -> new NotFoundResourcesException("Chưa cấu hình Role: STUDENT"));
@@ -224,7 +200,6 @@ public class AdmissionOnboardingServiceImpl implements AdmissionOnboardingServic
                 newClass.setCohort(cohort);
                 newClass.setMajor(major);
                 newClass.setMaxCapacity(50);
-                newClass.setHeadLecturer(dummyLecturer); // Gán giảng viên tạm thời thay vì null
                 newClass.setDeleted(false);
                 classesForMajor.add(newClass);
             }
