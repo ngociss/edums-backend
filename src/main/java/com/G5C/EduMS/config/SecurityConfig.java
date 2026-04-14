@@ -51,6 +51,7 @@ public class SecurityConfig {
                                 // ================================================================
                                 // Sinh viên xem điểm và điểm danh của mình
                                 .requestMatchers(HttpMethod.GET,
+                                        "/api/v1/students/me",
                                         "/api/v1/students/me/attendances",
                                         "/api/v1/students/me/grade-reports",
                                         "/api/v1/students/me/grade-reports/*"

@@ -17,8 +17,20 @@ public class ProfileResponse {
     private String address;
     private LocalDate dateOfBirth;
 
-    // Thuộc tính riêng cho sinh viên
-    private String studentCode;
+    private Integer facultyId;
+    private String facultyName;
+    private Integer classId;
+    private String className;
+    private Integer classMaxCapacity;
+    private Integer cohortId;
+    private String cohortName;
+    private Integer majorId;
     private String majorName;
-    private String administrativeClassName;
+    private String majorCode;
+    private Integer specializationId;
+    private String specializationName;
+    private Integer guardianId;
+    private String guardianName;
+
+    private String studentCode;
 }
