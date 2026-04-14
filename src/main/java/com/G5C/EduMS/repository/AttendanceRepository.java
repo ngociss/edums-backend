@@ -13,6 +13,7 @@ import java.util.Optional;
 public interface AttendanceRepository extends JpaRepository<Attendance, Integer> {
 
     Optional<Attendance> findByIdAndDeletedFalse(Integer id);
+    Optional<Attendance> findBySession_IdAndRegistration_Id(Integer sessionId, Integer registrationId);
 
     @Query("SELECT a FROM Attendance a WHERE a.session.id = :sessionId AND a.deleted = false")
     List<Attendance> findAllBySessionId(@Param("sessionId") Integer sessionId);

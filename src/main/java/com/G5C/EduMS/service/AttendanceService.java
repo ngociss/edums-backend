@@ -12,6 +12,7 @@ public interface AttendanceService {
     List<AttendanceResponse> getBySession(Integer sessionId);
 
     List<AttendanceResponse> createBatch(Integer sessionId, AttendanceBatchRequest request);
+    List<AttendanceResponse> syncSessionAttendance(Integer sessionId);
 
     AttendanceResponse update(Integer id, AttendanceUpdateRequest request);
 

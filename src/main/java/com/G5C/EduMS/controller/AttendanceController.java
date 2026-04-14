@@ -44,6 +44,15 @@ public class AttendanceController {
                 attendanceService.createBatch(sessionId, request), 201));
     }
 
+    @PostMapping("/api/v1/class-sessions/{sessionId}/attendances/sync")
+    @Operation(summary = "Sync initial attendance list for a session")
+    public ResponseEntity<ResponseData<List<AttendanceResponse>>> syncSessionAttendance(
+            @PathVariable Integer sessionId) {
+        return ResponseEntity.ok(
+                ResponseData.success("Attendance list synchronized successfully",
+                        attendanceService.syncSessionAttendance(sessionId), 200));
+    }
+
     @PutMapping("/api/v1/attendances/{id}")
     @Operation(summary = "Update attendance record")
     public ResponseEntity<ResponseData<AttendanceResponse>> update(

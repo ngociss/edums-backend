@@ -1,4 +1,4 @@
-package com.G5C.EduMS.controller.publics; // Lưu ý package
+package com.G5C.EduMS.controller;
 
 import com.G5C.EduMS.dto.request.ApplicationSubmitRequest;
 import com.G5C.EduMS.dto.response.PublicLookupResponse;
@@ -25,7 +25,8 @@ public class PublicAdmissionController {
     @GetMapping("/active-periods")
     public ResponseEntity<ResponseData<List<Map<String, Object>>>> getActivePeriods() {
         List<Map<String, Object>> result = publicAdmissionService.getActivePeriods();
-        return ResponseEntity.ok(ResponseData.success("Lấy danh sách đợt tuyển sinh thành công", result, HttpStatus.OK.value()));
+        return ResponseEntity
+                .ok(ResponseData.success("Lấy danh sách đợt tuyển sinh thành công", result, HttpStatus.OK.value()));
     }
 
     // Lấy Ngành đang mở TRONG 1 Đợt cụ thể (Dựa vào cấu hình điểm chuẩn)
@@ -41,14 +42,16 @@ public class PublicAdmissionController {
             @PathVariable Integer periodId,
             @PathVariable Integer majorId) {
         List<Map<String, Object>> result = publicAdmissionService.getAvailableBlocks(periodId, majorId);
-        return ResponseEntity.ok(ResponseData.success("Lấy danh sách khối xét tuyển thành công", result, HttpStatus.OK.value()));
+        return ResponseEntity
+                .ok(ResponseData.success("Lấy danh sách khối xét tuyển thành công", result, HttpStatus.OK.value()));
     }
 
     @PostMapping("/apply")
     public ResponseEntity<ResponseData<Void>> submitApplication(@Valid @RequestBody ApplicationSubmitRequest request) {
         publicAdmissionService.submitApplication(request);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ResponseData.success("Nộp hồ sơ thành công! Vui lòng lưu lại CCCD và SĐT để tra cứu.", null, HttpStatus.CREATED.value()));
+                .body(ResponseData.success("Nộp hồ sơ thành công! Vui lòng lưu lại CCCD và SĐT để tra cứu.", null,
+                        HttpStatus.CREATED.value()));
     }
 
     // Đổi về trả về List để phòng trường hợp thí sinh nộp nhiều đợt (nhiều năm)
