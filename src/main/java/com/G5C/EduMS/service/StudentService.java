@@ -15,6 +15,8 @@ public interface StudentService {
     // Lấy chi tiết 1 sinh viên
     StudentResponse getStudentById(Integer id);
 
+    StudentResponse getCurrentStudent(String username);
+
     // Thêm mới sinh viên
     StudentResponse createStudent(StudentCreateRequest request);
 

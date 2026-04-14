@@ -189,8 +189,21 @@ public class ProfileServiceImpl implements ProfileService {
                 .nationalId(student.getNationalId())
                 .address(student.getAddress())
                 .dateOfBirth(student.getDateOfBirth())
+                .facultyId(student.getMajor() != null && student.getMajor().getFaculty() != null ? student.getMajor().getFaculty().getId() : null)
+                .facultyName(student.getMajor() != null && student.getMajor().getFaculty() != null ? student.getMajor().getFaculty().getFacultyName() : null)
+                .classId(student.getAdministrativeClass() != null ? student.getAdministrativeClass().getId() : null)
+                .className(student.getAdministrativeClass() != null ? student.getAdministrativeClass().getClassName() : null)
+                .classMaxCapacity(student.getAdministrativeClass() != null ? student.getAdministrativeClass().getMaxCapacity() : null)
+                .cohortId(student.getAdministrativeClass() != null && student.getAdministrativeClass().getCohort() != null ? student.getAdministrativeClass().getCohort().getId() : null)
+                .cohortName(student.getAdministrativeClass() != null && student.getAdministrativeClass().getCohort() != null ? student.getAdministrativeClass().getCohort().getCohortName() : null)
+                .majorId(student.getMajor() != null ? student.getMajor().getId() : null)
                 .studentCode(student.getStudentCode())
                 .majorName(student.getMajor() != null ? student.getMajor().getMajorName() : null)
+                .majorCode(student.getMajor() != null ? student.getMajor().getMajorCode() : null)
+                .specializationId(student.getSpecialization() != null ? student.getSpecialization().getId() : null)
+                .specializationName(student.getSpecialization() != null ? student.getSpecialization().getSpecializationName() : null)
+                .guardianId(student.getGuardian() != null ? student.getGuardian().getId() : null)
+                .guardianName(student.getGuardian() != null ? student.getGuardian().getFullName() : null)
                 .build();
     }
 
