@@ -16,6 +16,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
+
 @RestController
 @RequestMapping("/api/v1/students")
 @RequiredArgsConstructor
@@ -43,6 +45,13 @@ public class StudentController {
     public ResponseEntity<ResponseData> getStudentById(@PathVariable Integer id) {
         StudentResponse student = studentService.getStudentById(id);
         return ResponseEntity.ok(new ResponseData(200, "SUCCESS", "Lấy thông tin sinh viên thành công", student));
+    }
+
+    @Operation(summary = "Lấy thông tin sinh viên hiện tại", description = "Sinh viên tự xem hồ sơ của chính mình")
+    @GetMapping("/me")
+    public ResponseEntity<ResponseData> getCurrentStudent(Principal principal) {
+        StudentResponse student = studentService.getCurrentStudent(principal.getName());
+        return ResponseEntity.ok(new ResponseData(200, "SUCCESS", "Lấy thông tin sinh viên hiện tại thành công", student));
     }
 
     @Operation(summary = "Thêm mới sinh viên", description = "Tạo mới một hồ sơ sinh viên")

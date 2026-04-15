@@ -3,7 +3,6 @@ package com.G5C.EduMS.controller;
 import com.G5C.EduMS.dto.request.CourseSectionRequest;
 import com.G5C.EduMS.dto.response.CourseSectionResponse;
 import com.G5C.EduMS.dto.response.ResponseData;
-import com.G5C.EduMS.dto.request.CourseSectionStatusRequest;
 import com.G5C.EduMS.service.CourseSectionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -11,7 +10,14 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -41,7 +47,6 @@ public class CourseSectionController {
         return ResponseEntity.ok(ResponseData.success("Success", courseSectionService.getAllBySemester(semesterId), 200));
     }
 
-
     @GetMapping("/{id}")
     @Operation(summary = "Get course section by ID")
     public ResponseEntity<ResponseData<CourseSectionResponse>> getById(@PathVariable Integer id) {
@@ -54,7 +59,7 @@ public class CourseSectionController {
             @Valid @RequestBody CourseSectionRequest request) {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(ResponseData.success("Course section created successfully", courseSectionService.create(request), 201));
+                .body(ResponseData.success("Tạo lớp học phần thành công", courseSectionService.create(request), 201));
     }
 
     @PutMapping("/{id}")
@@ -63,23 +68,13 @@ public class CourseSectionController {
             @PathVariable Integer id,
             @Valid @RequestBody CourseSectionRequest request) {
         return ResponseEntity.ok(
-                ResponseData.success("Course section updated successfully", courseSectionService.update(id, request), 200));
-    }
-
-    @PatchMapping("/{id}/status")
-    public ResponseEntity<ResponseData<CourseSectionResponse>>  changeStatus(
-            @PathVariable Integer id,
-            @RequestBody CourseSectionStatusRequest request
-    ) {
-        return ResponseEntity.ok(
-                ResponseData.success("Course section updated successfully", courseSectionService.updateStatus(id, request), 200));
+                ResponseData.success("Cập nhật lớp học phần thành công", courseSectionService.update(id, request), 200));
     }
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Soft delete course section (only DRAFT or CANCELLED)")
     public ResponseEntity<ResponseData<Void>> delete(@PathVariable Integer id) {
         courseSectionService.delete(id);
-        return ResponseEntity.ok(ResponseData.success("Course section deleted successfully", null, 200));
+        return ResponseEntity.ok(ResponseData.success("Xóa lớp học phần thành công", null, 200));
     }
 }
-

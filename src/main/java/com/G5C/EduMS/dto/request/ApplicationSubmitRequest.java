@@ -22,13 +22,20 @@ public class ApplicationSubmitRequest {
     @Past(message = "Ngày sinh phải là một ngày trong quá khứ")
     private LocalDate dateOfBirth;
 
+    @NotNull(message = "Vui lòng chọn giới tính")
+    private Boolean gender;
+
     @NotBlank(message = "Email không được để trống")
     @Email(message = "Email không đúng định dạng")
     private String email;
 
-    @NotBlank(message = "Số điện thoại không được để trống")
+    @NotBlank(message = "Số điện thoại thí sinh không được để trống")
     @Pattern(regexp = "^(0[3|5|7|8|9])+([0-9]{8})$", message = "Số điện thoại không hợp lệ")
     private String phone;
+
+    @NotBlank(message = "Số điện thoại phụ huynh không được để trống")
+    @Pattern(regexp = "^(0[3|5|7|8|9])+([0-9]{8})$", message = "Số điện thoại không hợp lệ")
+    private String guardianPhone;
 
     @NotBlank(message = "Số CCCD không được để trống")
     @Pattern(regexp = "^[0-9]{12}$", message = "Căn cước công dân phải bao gồm đúng 12 chữ số")

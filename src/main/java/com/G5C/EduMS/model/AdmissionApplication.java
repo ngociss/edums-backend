@@ -30,11 +30,18 @@ public class AdmissionApplication {
     @Column(name = "date_of_birth")
     private LocalDate dateOfBirth;
 
+    @Column(name = "gender")
+    @Builder.Default
+    private Boolean gender = true; // true = Male, false = Female
+
     @Column(name = "email", length = 255)
     private String email;
 
     @Column(name = "phone", length = 20)
     private String phone;
+
+    @Column(name = "guardian_phone", length = 20)
+    private String guardianPhone;
 
     @Column(name = "national_id", length = 12)
     private String nationalId;

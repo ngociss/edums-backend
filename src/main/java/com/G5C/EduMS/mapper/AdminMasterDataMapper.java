@@ -1,13 +1,17 @@
 package com.G5C.EduMS.mapper;
 
 import com.G5C.EduMS.dto.request.BlockRequest;
-import com.G5C.EduMS.dto.request.PeriodRequest;
+import com.G5C.EduMS.dto.request.AdmissionPeriodRequest;
+import com.G5C.EduMS.dto.request.CreateAdmissionCampaignRequest;
+import com.G5C.EduMS.dto.response.AdmissionBlockResponse;
 import com.G5C.EduMS.dto.response.BenchmarkResponse;
-import com.G5C.EduMS.dto.response.PeriodAdminResponse;
+import com.G5C.EduMS.dto.response.AdmissionPeriodAdminResponse;
 import com.G5C.EduMS.model.AdmissionBlock;
 import com.G5C.EduMS.model.AdmissionPeriod;
 import com.G5C.EduMS.model.BenchmarkScore;
 import org.mapstruct.*;
+
+import java.util.List;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface AdminMasterDataMapper {
@@ -18,13 +22,16 @@ public interface AdminMasterDataMapper {
 
     @Mapping(target = "totalApplications", constant = "0L")
     @Mapping(target = "approvedApplications", constant = "0L")
-    PeriodAdminResponse toPeriodResponse(AdmissionPeriod period);
+    AdmissionPeriodAdminResponse toPeriodResponse(AdmissionPeriod period);
 
     @Mapping(target = "deleted", constant = "false")
-    AdmissionPeriod toPeriodEntity(PeriodRequest request);
+    AdmissionPeriod toPeriodEntity(AdmissionPeriodRequest request);
+
+    @Mapping(target = "deleted", constant = "false")
+    AdmissionPeriod toPeriodEntity(CreateAdmissionCampaignRequest request);
 
     // Dùng cho hàm Update: Chuyển dữ liệu từ Request đè vào Entity có sẵn
-    void updatePeriodFromRequest(PeriodRequest request, @MappingTarget AdmissionPeriod period);
+    void updatePeriodFromRequest(AdmissionPeriodRequest request, @MappingTarget AdmissionPeriod period);
 
 
     // ==========================================
@@ -38,6 +45,9 @@ public interface AdminMasterDataMapper {
     @Mapping(target = "blockName", expression = "java(request.getBlockName().toUpperCase())")
     void updateBlockFromRequest(BlockRequest request, @MappingTarget AdmissionBlock block);
 
+    AdmissionBlockResponse toBlockResponse(AdmissionBlock entity);
+
+    List<AdmissionBlockResponse> toBlockResponseList(List<AdmissionBlock> entities);
 
     // ==========================================
     // MAPPING CHO BENCHMARK (ĐIỂM CHUẨN) - LÀM PHẲNG DỮ LIỆU

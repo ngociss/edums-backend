@@ -2,9 +2,11 @@ package com.G5C.EduMS.validator;
 
 import com.G5C.EduMS.common.enums.CourseSectionStatus;
 import com.G5C.EduMS.common.enums.SchoolPeriod;
+import com.G5C.EduMS.dto.request.RecurringScheduleRequest;
 import com.G5C.EduMS.exception.InvalidDataException;
 import com.G5C.EduMS.model.Classroom;
 import com.G5C.EduMS.model.CourseSection;
+import com.G5C.EduMS.model.RecurringSchedule;
 import com.G5C.EduMS.model.Semester;
 import com.G5C.EduMS.repository.RecurringScheduleRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +19,7 @@ import java.util.Set;
 public class RecurringScheduleValidator {
 
     private final RecurringScheduleRepository recurringScheduleRepository;
+    private static final int MORNING_END_PERIOD = 5;
 
     /** Chỉ những trạng thái này mới được tạo / sửa lịch */
     private static final Set<CourseSectionStatus> EDITABLE_STATUSES =
@@ -36,6 +39,12 @@ public class RecurringScheduleValidator {
         if (startPeriod >= endPeriod) {
             throw new InvalidDataException("INVALID_PERIOD_RANGE",
                     "Tiết bắt đầu phải nhỏ hơn tiết kết thúc (startPeriod < endPeriod)");
+        }
+
+        // Không cho phép lịch học cắt qua 2 buổi: sáng (1-5) và chiều (6-10)
+        if (startPeriod <= MORNING_END_PERIOD && endPeriod > MORNING_END_PERIOD) {
+            throw new InvalidDataException("INVALID_SESSION_RANGE",
+                    "Tiết học phải nằm trong cùng một buổi: sáng (1-5) hoặc chiều (6-10)");
         }
     }
 
@@ -77,6 +86,23 @@ public class RecurringScheduleValidator {
                     "Học kỳ chưa được cấu hình ngày bắt đầu / kết thúc. Không thể sinh buổi học.");
         }
     }
+
+    public void validateCourseSectionForOpen(CourseSection section, RecurringScheduleRequest request, RecurringSchedule schedule) {
+        if (section.getStatus() == CourseSectionStatus.OPEN) {
+            boolean isChangingTime =
+                    !schedule.getDayOfWeek().equals(request.getDayOfWeek()) ||
+                            !schedule.getStartPeriod().equals(request.getStartPeriod()) ||
+                            !schedule.getEndPeriod().equals(request.getEndPeriod()) ||
+                            !schedule.getStartWeek().equals(request.getStartWeek()) ||
+                            !schedule.getEndWeek().equals(request.getEndWeek());
+
+            if (isChangingTime) {
+                throw new InvalidDataException("Chỉ được phép thay đổi phòng học");
+            }
+
+    }}
+
+
 
     // ==================== Validation 3: Classroom capacity ====================
 

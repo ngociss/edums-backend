@@ -1,7 +1,12 @@
 package com.G5C.EduMS.dto.response;
 
 import com.G5C.EduMS.common.enums.StudentStatus;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.time.LocalDate;
 
 @Getter
@@ -12,18 +17,27 @@ import java.time.LocalDate;
 public class StudentResponse {
     private Integer id;
     private Integer accountId;
+    private String username;
 
-    // Flatten data (Dữ liệu làm phẳng từ các bảng liên kết)
+    private Integer facultyId;
+    private String facultyName;
+
     private Integer classId;
     private String className;
+    private Integer classMaxCapacity;
+    private Integer cohortId;
+    private String cohortName;
+
     private Integer majorId;
     private String majorName;
+    private String majorCode;
+
     private Integer specializationId;
     private String specializationName;
+
     private Integer guardianId;
     private String guardianName;
 
-    // Thông tin chính
     private String studentCode;
     private String fullName;
     private String email;

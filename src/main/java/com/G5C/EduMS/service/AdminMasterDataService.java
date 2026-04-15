@@ -1,10 +1,7 @@
 package com.G5C.EduMS.service;
 
 import com.G5C.EduMS.dto.request.*;
-import com.G5C.EduMS.dto.response.BenchmarkResponse;
-import com.G5C.EduMS.dto.response.PageResponse;
-import com.G5C.EduMS.dto.response.PeriodAdminResponse;
-import com.G5C.EduMS.dto.response.SelectionOptionsResponse;
+import com.G5C.EduMS.dto.response.*;
 import com.G5C.EduMS.model.AdmissionBlock;
 
 import java.util.List;
@@ -15,25 +12,27 @@ public interface AdminMasterDataService {
     // 1. QUẢN LÝ ĐỢT TUYỂN SINH (ADMISSION PERIODS)
     // =========================================================================
 
-    PageResponse<PeriodAdminResponse> getPeriods(BaseFilterRequest filter);
+    PageResponse<AdmissionPeriodAdminResponse> getPeriods(BaseFilterRequest filter);
 
-    PeriodAdminResponse getPeriodById(Integer id);
+    AdmissionPeriodAdminResponse getPeriodById(Integer id);
 
-    PeriodAdminResponse createPeriod(PeriodRequest request);
+    AdmissionPeriodAdminResponse createPeriod(AdmissionPeriodRequest request);
 
-    PeriodAdminResponse updatePeriod(Integer id, PeriodRequest request);
+    AdmissionPeriodAdminResponse updatePeriod(Integer id, AdmissionPeriodRequest request);
 
     void deletePeriod(Integer id);
+
+    void createFullAdmissionCampaign(CreateAdmissionCampaignRequest request);
 
     // =========================================================================
     // 2. QUẢN LÝ KHỐI XÉT TUYỂN (ADMISSION BLOCKS)
     // =========================================================================
 
-    List<AdmissionBlock> getAllBlocks();
+    List<AdmissionBlockResponse> getAllBlocks();
 
-    AdmissionBlock createBlock(BlockRequest request);
+    AdmissionBlockResponse createBlock(BlockRequest request);
 
-    AdmissionBlock updateBlock(Integer id, BlockRequest request);
+    AdmissionBlockResponse updateBlock(Integer id, BlockRequest request);
 
     void deleteBlock(Integer id);
 

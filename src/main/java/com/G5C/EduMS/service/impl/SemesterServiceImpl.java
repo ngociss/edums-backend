@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -26,8 +27,11 @@ public class SemesterServiceImpl implements SemesterService {
 
     @Override
     public List<SemesterResponse> getAll() {
-        return semesterRepository.findAllByDeletedFalse()
-                .stream()
+        return semesterRepository.findAllByDeletedFalse().stream()
+                .sorted(Comparator
+                        .comparing(Semester::getAcademicYear, Comparator.nullsLast(String::compareTo))
+                        .thenComparing(Semester::getSemesterNumber, Comparator.nullsLast(Integer::compareTo))
+                        .reversed())
                 .map(semesterMapper::toResponse)
                 .toList();
     }
@@ -41,12 +45,10 @@ public class SemesterServiceImpl implements SemesterService {
     @Transactional
     public SemesterResponse create(SemesterRequest request) {
         semesterValidator.validateCreate(request);
-
         Semester semester = semesterMapper.toEntity(request);
-        semester.setAcademicYear(normalizeAcademicYear(request.getAcademicYear()));
-        semester.setStatus(request.getStatus() == null ? SemesterStatus.PLANNING : request.getStatus());
+        semester.setAcademicYear(request.getAcademicYear().trim());
         semester.setEndDate(calculateEndDate(request.getStartDate(), request.getTotalWeeks()));
-
+        semester.setStatus(request.getStatus() == null ? SemesterStatus.PLANNING : request.getStatus());
         return semesterMapper.toResponse(semesterRepository.save(semester));
     }
 
@@ -55,12 +57,12 @@ public class SemesterServiceImpl implements SemesterService {
     public SemesterResponse update(Integer id, SemesterRequest request) {
         Semester semester = findOrThrow(id);
         semesterValidator.validateUpdate(semester, request);
-
         semesterMapper.updateEntity(request, semester);
-        semester.setAcademicYear(normalizeAcademicYear(request.getAcademicYear()));
-        semester.setStatus(request.getStatus() == null ? semester.getStatus() : request.getStatus());
+        semester.setAcademicYear(request.getAcademicYear().trim());
         semester.setEndDate(calculateEndDate(request.getStartDate(), request.getTotalWeeks()));
-
+        if (request.getStatus() != null) {
+            semester.setStatus(request.getStatus());
+        }
         return semesterMapper.toResponse(semesterRepository.save(semester));
     }
 
@@ -75,14 +77,13 @@ public class SemesterServiceImpl implements SemesterService {
 
     private Semester findOrThrow(Integer id) {
         return semesterRepository.findByIdAndDeletedFalse(id)
-                .orElseThrow(() -> new NotFoundResourcesException("Semester not found with id: " + id));
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy học kỳ với id: " + id));
     }
 
     private LocalDate calculateEndDate(LocalDate startDate, Integer totalWeeks) {
-        return startDate.plusDays((long) totalWeeks * 7 - 1);
-    }
-
-    private String normalizeAcademicYear(String academicYear) {
-        return academicYear == null ? null : academicYear.trim();
+        if (startDate == null || totalWeeks == null || totalWeeks <= 0) {
+            return null;
+        }
+        return startDate.plusWeeks(totalWeeks.longValue()).minusDays(1);
     }
 }

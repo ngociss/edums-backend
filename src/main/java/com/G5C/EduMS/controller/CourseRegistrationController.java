@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,6 +23,7 @@ public class CourseRegistrationController {
 
     private final CourseRegistrationService courseRegistrationService;
 
+    @PreAuthorize("hasRole('STUDENT')")
     @GetMapping("/available-sections")
     public ResponseEntity<ResponseData<List<AvailableCourseSectionResponse>>> getAvailableSections(
             @RequestParam(required = false) Integer facultyId,
@@ -38,8 +40,8 @@ public class CourseRegistrationController {
         );
     }
 
+    @PreAuthorize("hasRole('STUDENT')")
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<ResponseData<CourseRegistrationResponse>> register(
             @Valid @RequestBody CourseRegistrationRequest request
     ) {
@@ -48,6 +50,7 @@ public class CourseRegistrationController {
                 .body(ResponseData.success("Đăng ký học phần thành công", courseRegistrationService.register(request), 201));
     }
 
+    @PreAuthorize("hasRole('STUDENT')")
     @GetMapping("/me")
     public ResponseEntity<ResponseData<List<CourseRegistrationResponse>>> getMyRegistrations(
             @RequestParam(required = false) Integer semesterId
@@ -61,7 +64,9 @@ public class CourseRegistrationController {
         );
     }
 
+
     @GetMapping("/students/{studentId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<ResponseData<List<CourseRegistrationResponse>>> getStudentRegistrations(
             @PathVariable Integer studentId,
             @RequestParam(required = false) Integer semesterId
@@ -75,7 +80,8 @@ public class CourseRegistrationController {
         );
     }
 
-    @PatchMapping("/{registrationId}/cancel")
+        @PatchMapping("/{registrationId}/cancel")
+        @PreAuthorize("hasRole('STUDENT')")
     public ResponseEntity<ResponseData<CourseRegistrationResponse>> cancel(@PathVariable Integer registrationId) {
         return ResponseEntity.ok(
                 ResponseData.success(
@@ -87,6 +93,7 @@ public class CourseRegistrationController {
     }
 
     @PostMapping("/{registrationId}/switch")
+    @PreAuthorize("hasRole('STUDENT')")
     public ResponseEntity<ResponseData<CourseRegistrationResponse>> switchSection(
             @PathVariable Integer registrationId,
             @Valid @RequestBody CourseRegistrationSwitchRequest request

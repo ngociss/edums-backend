@@ -20,6 +20,15 @@ public interface GradeReportRepository extends JpaRepository<GradeReport, Intege
     @Query("SELECT gr FROM GradeReport gr WHERE gr.registration.student.id = :studentId AND gr.deleted = false")
     List<GradeReport> findAllByStudentId(@Param("studentId") Integer studentId);
 
+    @Query("""
+        SELECT gr
+        FROM GradeReport gr
+        WHERE gr.id = :id
+          AND gr.registration.student.id = :studentId
+          AND gr.deleted = false
+    """)
+    Optional<GradeReport> findByIdAndStudentId(@Param("id") Integer id, @Param("studentId") Integer studentId);
+
     @Query("SELECT gr FROM GradeReport gr WHERE gr.registration.section.id = :sectionId AND gr.deleted = false")
     List<GradeReport> findAllBySectionId(@Param("sectionId") Integer sectionId);
 

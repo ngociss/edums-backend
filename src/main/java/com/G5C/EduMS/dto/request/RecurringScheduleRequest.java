@@ -24,13 +24,13 @@ public class RecurringScheduleRequest {
     private Integer dayOfWeek;
 
     @NotNull(message = "Tiết bắt đầu là bắt buộc")
-    @Min(value = 1, message = "Tiết học phải từ 1 đến 4")
-    @Max(value = 4, message = "Tiết học phải từ 1 đến 4")
+    @Min(value = 1, message = "Tiết học phải từ 1 đến 10")
+    @Max(value = 10, message = "Tiết học phải từ 1 đến 10")
     private Integer startPeriod;
 
     @NotNull(message = "Tiết kết thúc là bắt buộc")
-    @Min(value = 1, message = "Tiết học phải từ 1 đến 4")
-    @Max(value = 4, message = "Tiết học phải từ 1 đến 4")
+    @Min(value = 1, message = "Tiết học phải từ 1 đến 10")
+    @Max(value = 10, message = "Tiết học phải từ 1 đến 10")
     private Integer endPeriod;
 
     @Min(value = 1, message = "Tuần bắt đầu phải lớn hơn hoặc bằng 1")

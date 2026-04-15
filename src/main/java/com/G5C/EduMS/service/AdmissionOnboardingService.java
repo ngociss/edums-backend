@@ -1,7 +1,5 @@
 package com.G5C.EduMS.service;
 
-import com.G5C.EduMS.dto.request.OnboardingRequest;
-
 public interface AdmissionOnboardingService {
 
     /**
@@ -14,5 +12,5 @@ public interface AdmissionOnboardingService {
      * Chốt danh sách nhập học: Chuyển thí sinh trúng tuyển (APPROVED) thành Sinh viên
      * Tự động sinh Account và Student
      */
-    void processOnboarding(OnboardingRequest request);
+    void processOnboarding(Integer periodId);
 }

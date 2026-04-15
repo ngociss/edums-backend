@@ -51,10 +51,11 @@ public class SecurityConfig {
                                 // ================================================================
                                 // Sinh viên xem điểm và điểm danh của mình
                                 .requestMatchers(HttpMethod.GET,
+                                        "/api/v1/students/me",
                                         "/api/v1/students/me/attendances",
-                                        "/api/v1/students/me/grade-reports"
+                                        "/api/v1/students/me/grade-reports",
+                                        "/api/v1/students/me/grade-reports/*"
                                 ).hasRole("STUDENT")
-
                                 .requestMatchers(HttpMethod.GET,
                                         "/api/v1/students/*/grade-reports",
                                         "/api/v1/students/*/attendances"
@@ -74,6 +75,7 @@ public class SecurityConfig {
                                 // ================================================================
                                 // Giảng viên xem lịch dạy cá nhân
                                 .requestMatchers(HttpMethod.GET, "/api/v1/schedules/lecturers/me").hasRole("LECTURER")
+                                .requestMatchers(HttpMethod.GET, "/api/v1/schedules/students/me/semester-options").hasRole("STUDENT")
 
                                 // Quản lý điểm số, điểm danh, buổi học (Ghi điểm, sửa điểm danh...)
                                 .requestMatchers("/api/v1/grade-reports/**",
@@ -95,11 +97,20 @@ public class SecurityConfig {
                                         "/api/v1/cohorts/**",
                                         "/api/v1/classrooms/**",
                                         "/api/v1/administrative-classes/**",
+                                        "/api/v1/semesters/**",
+                                        "/api/v1/registration-periods/**",
                                         "/api/v1/courses/**",
                                         "/api/v1/course-sections/**",
                                         "/api/v1/recurring-schedules/**",
                                         "/api/v1/grade-components/**"
                                 ).authenticated()
+
+                                // ================================================================
+                                // 5.1 COURSE REGISTRATION
+                                // URL-level chỉ yêu cầu đăng nhập, quyền chi tiết để ở @PreAuthorize
+                                // để tránh mâu thuẫn role giữa SecurityConfig và Controller
+                                // ================================================================
+                                .requestMatchers("/api/v1/course-registrations/**").authenticated()
 
                                 // ================================================================
                                 // 6. ADMIN & MANAGER - FULL QUYỀN (CHỐT CHẶN CUỐI CÙNG)

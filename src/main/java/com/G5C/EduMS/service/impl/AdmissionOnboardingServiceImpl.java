@@ -2,8 +2,10 @@ package com.G5C.EduMS.service.impl;
 
 import com.G5C.EduMS.common.enums.AccountStatus;
 import com.G5C.EduMS.common.enums.ApplicationStatus;
+import com.G5C.EduMS.common.enums.CohortStatus;
 import com.G5C.EduMS.common.enums.StudentStatus;
-import com.G5C.EduMS.dto.request.OnboardingRequest;
+import com.G5C.EduMS.exception.InvalidDataException;
+import com.G5C.EduMS.exception.NotFoundResourcesException;
 import com.G5C.EduMS.model.*;
 import com.G5C.EduMS.repository.*;
 import com.G5C.EduMS.service.AdmissionOnboardingService;
@@ -15,10 +17,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,9 +33,13 @@ public class AdmissionOnboardingServiceImpl implements AdmissionOnboardingServic
     private final AccountRepository accountRepository;
     private final StudentRepository studentRepository;
     private final RoleRepository roleRepository;
-    private final AdmissionPeriodRepository periodRepository;
+    private final AdmissionPeriodRepository admissionPeriodRepository;
     private final GuardianRepository guardianRepository;
+    private final CohortRepository cohortRepository;
+    private final LecturerRepository lecturerRepository;
+    private final AdministrativeClassRepository administrativeClassRepository;
     private final MailService mailService;
+
 
     // Dùng để mã hóa mật khẩu mặc định
     private final PasswordEncoder passwordEncoder;
@@ -49,6 +53,9 @@ public class AdmissionOnboardingServiceImpl implements AdmissionOnboardingServic
     public void autoScreenApplications(Integer periodId) {
         log.info("Bắt đầu chạy Auto-Screening cho Đợt tuyển sinh ID: {}", periodId);
 
+        AdmissionPeriod admissionPeriod = admissionPeriodRepository.findByIdAndDeletedFalse(periodId)
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy Đợt tuyển sinh với ID: " + periodId));
+
         // 1. Lấy tất cả hồ sơ đang chờ duyệt (PENDING) của đợt này
         List<AdmissionApplication> pendingApps = applicationRepository
                 .findAllByAdmissionPeriodIdAndStatusAndDeletedFalse(periodId, ApplicationStatus.PENDING);
@@ -59,10 +66,8 @@ public class AdmissionOnboardingServiceImpl implements AdmissionOnboardingServic
         }
 
         // 2. Lấy bảng điểm chuẩn của đợt này
-        // (Bạn cần thêm hàm findAllByAdmissionPeriodIdAndDeletedFalse vào BenchmarkScoreRepository)
         List<BenchmarkScore> benchmarks = benchmarkRepository.findAllByAdmissionPeriodIdAndDeletedFalse(periodId);
 
-        // Biến list điểm chuẩn thành Map (Key = MajorId_BlockId, Value = Score) để tra cứu cực nhanh (O(1))
         Map<String, Float> benchmarkMap = benchmarks.stream()
                 .collect(Collectors.toMap(
                         b -> b.getMajor().getId() + "_" + b.getAdmissionBlock().getId(),
@@ -75,6 +80,12 @@ public class AdmissionOnboardingServiceImpl implements AdmissionOnboardingServic
 
         // 3. Tiến hành quét từng hồ sơ
         for (AdmissionApplication app : pendingApps) {
+
+            if (app.getMajor() == null || app.getAdmissionBlock() == null || app.getTotalScore() == null) {
+                log.warn("Hồ sơ ID {} bị thiếu Ngành, Khối hoặc Điểm xét tuyển. Bỏ qua Auto-Screening.", app.getId());
+                continue;
+            }
+
             String key = app.getMajor().getId() + "_" + app.getAdmissionBlock().getId();
             Float requireScore = benchmarkMap.get(key);
 
@@ -105,134 +116,203 @@ public class AdmissionOnboardingServiceImpl implements AdmissionOnboardingServic
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void processOnboarding(OnboardingRequest request) {
-        log.info("Bắt đầu tiến trình Onboarding cho Đợt ID: {}", request.getPeriodId());
+    public void processOnboarding(Integer periodId) {
+        log.info("Bắt đầu tự động duyệt hồ sơ và phân lớp cho Đợt ID: {}", periodId);
+
+        // 1. Kiểm tra Đợt tuyển sinh và lấy danh sách hồ sơ hợp lệ
+        AdmissionPeriod period = admissionPeriodRepository.findByIdAndDeletedFalse(periodId)
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy đợt tuyển sinh."));
+
+        if (!"CLOSED".equals(period.getStatus().name())) {
+            throw new InvalidDataException("Chỉ có thể chốt nhập học khi Đợt tuyển sinh đã KẾT THÚC (CLOSED). Trạng thái hiện tại: " + period.getStatus());
+        }
 
         List<AdmissionApplication> approvedApps = applicationRepository
-                .findAllByAdmissionPeriodIdAndStatusAndDeletedFalse(request.getPeriodId(), ApplicationStatus.APPROVED);
+                .findAllByAdmissionPeriodIdAndStatusAndDeletedFalse(periodId, ApplicationStatus.APPROVED);
 
         if (approvedApps.isEmpty()) {
-            throw new IllegalArgumentException("Không có thí sinh nào trúng tuyển để chốt nhập học.");
+            throw new NotFoundResourcesException("Không có hồ sơ nào trúng tuyển để chốt nhập học.");
         }
 
-        // 1. Lấy Roles từ DB
+        // --- XỬ LÝ RỦI RO 2: UNIQUE CONSTRAINT (Lọc sinh viên đã tồn tại) ---
+        Set<String> appNationalIds = approvedApps.stream().map(AdmissionApplication::getNationalId).collect(Collectors.toSet());
+        Set<String> appEmails = approvedApps.stream().map(AdmissionApplication::getEmail).collect(Collectors.toSet());
+
+        Set<String> existingNids = studentRepository.findNationalIdsInAndDeletedFalse(appNationalIds);
+        Set<String> existingMails = studentRepository.findEmailsInAndDeletedFalse(appEmails);
+
+        List<AdmissionApplication> validApps = approvedApps.stream()
+                .filter(app -> !existingNids.contains(app.getNationalId()) && !existingMails.contains(app.getEmail()))
+                .collect(Collectors.toList());
+
+        if (validApps.isEmpty()) {
+            log.warn("Tất cả hồ sơ trúng tuyển đều đã tồn tại sinh viên trên hệ thống. Bỏ qua tiến trình.");
+            return;
+        }
+
+        // 2. Tự động xử lý Niên khóa (Cohort)
+        int startYear = period.getStartTime().getYear();
+        String cohortName = "K" + (startYear % 100);
+
+        Cohort cohort = cohortRepository.findByCohortNameAndDeletedFalse(cohortName)
+                .orElseGet(() -> {
+                    Cohort newCohort = new Cohort();
+                    newCohort.setCohortName(cohortName);
+                    newCohort.setStartYear(startYear);
+                    newCohort.setEndYear(startYear + 4);
+                    newCohort.setStatus(CohortStatus.ACTIVE);
+                    newCohort.setDeleted(false);
+                    return cohortRepository.save(newCohort);
+                });
+
+        // Chuẩn bị Role & Cache
         Role studentRole = roleRepository.findByRoleNameAndDeletedFalse("STUDENT")
-                .orElseThrow(() -> new IllegalStateException("Hệ thống chưa cấu hình Role: STUDENT"));
+                .orElseThrow(() -> new NotFoundResourcesException("Chưa cấu hình Role: STUDENT"));
         Role guardianRole = roleRepository.findByRoleNameAndDeletedFalse("GUARDIAN")
-                .orElseThrow(() -> new IllegalStateException("Hệ thống chưa cấu hình Role: GUARDIAN"));
-
-        Set<String> nationalIdsToCheck = approvedApps.stream()
-                .map(AdmissionApplication::getNationalId)
-                .collect(Collectors.toSet());
-
-        Set<String> existingNationalIds = studentRepository
-                .findAllByNationalIdInAndDeletedFalse(nationalIdsToCheck)
-                .stream()
-                .map(Student::getNationalId)
-                .collect(Collectors.toSet());
-
-        List<Student> newStudents = new ArrayList<>();
-
-        List<AdmissionApplication> successfullyProcessedApps = new ArrayList<>();
+                .orElseThrow(() -> new NotFoundResourcesException("Chưa cấu hình Role: GUARDIAN"));
 
         LocalDateTime now = LocalDateTime.now();
+        List<Account> newAccounts = new ArrayList<>();
+        List<Guardian> newGuardians = new ArrayList<>();
+        List<Student> newStudents = new ArrayList<>();
+        Map<String, Guardian> cachedGuardians = new HashMap<>();
 
-        for (AdmissionApplication app : approvedApps) {
+        // 4. Gom nhóm thí sinh theo Ngành học & Tự tạo lớp
+        Map<Major, List<AdmissionApplication>> appsByMajor = validApps.stream()
+                .collect(Collectors.groupingBy(AdmissionApplication::getMajor));
 
-            // Chặn tạo trùng dữ liệu
-            if (existingNationalIds.contains(app.getNationalId())) {
-                log.warn("Thí sinh có CCCD {} đã tồn tại. Bỏ qua.", app.getNationalId());
-                continue;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("ddMMyyyy");
+
+        for (Map.Entry<Major, List<AdmissionApplication>> entry : appsByMajor.entrySet()) {
+            Major major = entry.getKey();
+            List<AdmissionApplication> apps = entry.getValue();
+
+            // Thuật toán chia đều sĩ số
+            int totalStudents = apps.size();
+            int numberOfClasses = (int) Math.ceil((double) totalStudents / 50.0);
+            int baseStudentsPerClass = totalStudents / numberOfClasses;
+            int remainder = totalStudents % numberOfClasses;
+
+            List<AdministrativeClass> classesForMajor = new ArrayList<>();
+            for (int i = 1; i <= numberOfClasses; i++) {
+                AdministrativeClass newClass = new AdministrativeClass();
+                newClass.setClassName(String.format("%s-%s-%02d", major.getMajorCode(), cohortName, i));
+                newClass.setCohort(cohort);
+                newClass.setMajor(major);
+                newClass.setMaxCapacity(50);
+                newClass.setDeleted(false);
+                classesForMajor.add(newClass);
             }
+            administrativeClassRepository.saveAll(classesForMajor);
 
-            // Sinh cặp mã định danh đồng bộ (VD: sv_2600150 và ph_2600150)
-            String studentCode = generateUserCode("sv", app.getId());
-            String guardianCode = generateUserCode("ph", app.getId());
+            int currentClassIndex = 0;
+            int assignedCount = 0;
+            int currentClassTargetSize = baseStudentsPerClass + (remainder > 0 ? 1 : 0);
 
-            String rawPassword = app.getDateOfBirth().toString();
-            String encodedPassword = passwordEncoder.encode(rawPassword);
-            // -----------------------------------------------------------------
-            // BƯỚC A: TẠO TÀI KHOẢN VÀ HỒ SƠ PHỤ HUYNH TRƯỚC
-            // -----------------------------------------------------------------
-            Account guardianAccount = new Account();
-            guardianAccount.setRole(guardianRole);
-            guardianAccount.setUsername(guardianCode);
-            guardianAccount.setPassword(encodedPassword);
-            guardianAccount.setStatus(AccountStatus.ACTIVE);
-            guardianAccount.setCreatedAt(now);
-            guardianAccount.setDeleted(false);
-            Account savedGuardianAccount = accountRepository.save(guardianAccount);
+            for (AdmissionApplication app : apps) {
+                if (assignedCount >= currentClassTargetSize) {
+                    currentClassIndex++;
+                    assignedCount = 0;
+                    remainder--;
+                    currentClassTargetSize = baseStudentsPerClass + (remainder > 0 ? 1 : 0);
+                }
 
-            Guardian guardian = new Guardian();
-            guardian.setAccount(savedGuardianAccount);
-            // Dùng dữ liệu tạm thời (Placeholder) vì form tuyển sinh chưa lấy thông tin phụ huynh
-            guardian.setFullName("Phụ huynh của " + app.getFullName());
-            guardian.setPhone(app.getPhone());
-            guardian.setRelationship("Phụ huynh");
-            guardian.setDeleted(false);
-            Guardian savedGuardian = guardianRepository.save(guardian);
+                AdministrativeClass assignedClass = classesForMajor.get(currentClassIndex);
+                assignedCount++;
 
-            // -----------------------------------------------------------------
-            // BƯỚC B: TẠO TÀI KHOẢN VÀ HỒ SƠ SINH VIÊN (LINK VỚI PHỤ HUYNH)
-            // -----------------------------------------------------------------
-            Account studentAccount = new Account();
-            studentAccount.setRole(studentRole);
-            studentAccount.setUsername(studentCode);
-            studentAccount.setPassword(encodedPassword);
-            studentAccount.setStatus(AccountStatus.ACTIVE);
-            studentAccount.setCreatedAt(now);
-            studentAccount.setDeleted(false);
-            Account savedStudentAccount = accountRepository.save(studentAccount);
+                // --- XỬ LÝ RỦI RO 1: NullPointerException Ngày sinh ---
+                String rawPassword = (app.getDateOfBirth() != null)
+                        ? app.getDateOfBirth().format(formatter)
+                        : app.getNationalId();
+                String encodedPassword = passwordEncoder.encode(rawPassword);
 
-            Student student = new Student();
-            student.setAccount(savedStudentAccount);
-            student.setGuardian(savedGuardian); // LIÊN KẾT KHÓA NGOẠI TẠI ĐÂY
-            student.setStudentCode(studentCode);
-            student.setMajor(app.getMajor());
-            student.setFullName(app.getFullName());
-            student.setEmail(app.getEmail());
-            student.setPhone(app.getPhone());
-            student.setNationalId(app.getNationalId());
-            student.setAddress(app.getAddress());
-            student.setDateOfBirth(app.getDateOfBirth());
-            student.setStatus(StudentStatus.ACTIVE);
-            student.setCreatedAt(now);
-            student.setDeleted(false);
+                // --- XỬ LÝ RỦI RO 4: Chuẩn hóa số điện thoại Phụ huynh ---
+                String rawPhone = app.getGuardianPhone();
+                String parentPhone = (rawPhone != null) ? rawPhone.replaceAll("\\D+", "") : null;
+                Guardian guardian = null;
 
-            newStudents.add(student);
+                if (parentPhone != null && !parentPhone.isEmpty()) {
+                    guardian = cachedGuardians.get(parentPhone);
+                    if (guardian == null) {
+                        guardian = guardianRepository.findByPhoneAndDeletedFalse(parentPhone).orElse(null);
+                    }
 
-            // -----------------------------------------------------------------
-            // BƯỚC C: CẬP NHẬT TRẠNG THÁI HỒ SƠ
-            // -----------------------------------------------------------------
-            app.setStatus(ApplicationStatus.ENROLLED);
-            successfullyProcessedApps.add(app);
+                    if (guardian == null) {
+                        String guardianCode = generateUserCode("ph", app.getId());
+
+                        Account guardianAcc = new Account();
+                        guardianAcc.setUsername(guardianCode);
+                        guardianAcc.setPassword(encodedPassword);
+                        guardianAcc.setRole(guardianRole);
+                        guardianAcc.setStatus(AccountStatus.ACTIVE);
+                        guardianAcc.setCreatedAt(now);
+                        guardianAcc.setDeleted(false);
+                        newAccounts.add(guardianAcc);
+
+                        guardian = new Guardian();
+                        guardian.setAccount(guardianAcc);
+                        guardian.setFullName("Phụ huynh của " + app.getFullName());
+                        guardian.setPhone(parentPhone);
+                        guardian.setDeleted(false);
+
+                        newGuardians.add(guardian);
+                        cachedGuardians.put(parentPhone, guardian);
+                    }
+                }
+
+                // Tạo Profile Sinh viên
+                String studentCode = generateUserCode("sv", app.getId());
+
+                Account studentAcc = new Account();
+                studentAcc.setUsername(studentCode);
+                studentAcc.setPassword(encodedPassword);
+                studentAcc.setRole(studentRole);
+                studentAcc.setStatus(AccountStatus.ACTIVE);
+                studentAcc.setCreatedAt(now);
+                studentAcc.setDeleted(false);
+                newAccounts.add(studentAcc);
+
+                Student student = new Student();
+                student.setAccount(studentAcc);
+                student.setAdministrativeClass(assignedClass);
+                student.setMajor(major);
+                student.setGuardian(guardian);
+                student.setStudentCode(studentCode);
+                student.setFullName(app.getFullName());
+                student.setEmail(app.getEmail());
+                student.setPhone(app.getPhone());
+                student.setNationalId(app.getNationalId());
+                student.setDateOfBirth(app.getDateOfBirth());
+                student.setGender(app.getGender());
+                student.setAddress(app.getAddress());
+                student.setStatus(StudentStatus.ACTIVE);
+                student.setCreatedAt(now);
+                student.setDeleted(false);
+
+                newStudents.add(student);
+                app.setStatus(ApplicationStatus.ENROLLED);
+            }
         }
 
-        // Batch save toàn bộ sinh viên
+        // --- XỬ LÝ RỦI RO 3: Thứ tự lưu Batch an toàn tránh TransientObjectException ---
+        accountRepository.saveAll(newAccounts);
+        guardianRepository.saveAll(newGuardians);
         studentRepository.saveAll(newStudents);
-        applicationRepository.saveAll(successfullyProcessedApps);
+        applicationRepository.saveAll(validApps);
 
-        for (AdmissionApplication app : successfullyProcessedApps) {
-            // Tính toán lại mã và pass nguyên thủy để gửi mail
-            String studentCode = generateUserCode("sv", app.getId());
-            String rawPassword = app.getDateOfBirth().toString(); // Mật khẩu chưa mã hóa (VD: 2005-10-15)
-
-            // Hàm này chạy @Async nên vòng lặp sẽ trôi qua cực nhanh, không làm đứng hệ thống
+        for (Student student : newStudents) {
             mailService.sendAdmissionResult(
-                    app.getEmail(),
-                    app.getFullName(),
-                    studentCode,
-                    studentCode,
-                    rawPassword
+                    student.getEmail(),
+                    student.getFullName(),
+                    student.getStudentCode(),
+                    student.getAccount().getUsername(),
+                    student.getDateOfBirth().format(formatter)
             );
         }
 
-        log.info("Onboarding thành công! Đã tạo {} cặp tài khoản Sinh viên & Phụ huynh.", newStudents.size());
+        log.info("Onboarding hoàn tất! Đã tạo {} sinh viên mới.", newStudents.size());
     }
 
-    // =========================================================================
-    // HÀM TRỢ GIÚP: SINH MÃ ĐỊNH DANH (REUSABLE UTILITY)
-    // =========================================================================
     private String generateUserCode(String prefix, Integer uniqueId) {
         int currentYear = java.time.Year.now().getValue() % 100;
         return String.format("%s_%02d%05d", prefix.toLowerCase(), currentYear, uniqueId);

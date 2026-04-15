@@ -26,6 +26,8 @@ public interface RecurringScheduleMapper {
     @Mapping(target = "semesterEndDate",   source = "section.semester.endDate")
     @Mapping(target = "startWeek", expression = "java(resolveStartWeek(schedule))")
     @Mapping(target = "endWeek", expression = "java(resolveEndWeek(schedule))")
+    @Mapping(target = "startDate", expression = "java(resolveEffectiveDate(schedule, resolveStartWeek(schedule)))")
+    @Mapping(target = "endDate", expression = "java(resolveEffectiveDate(schedule, resolveEndWeek(schedule)))")
     @Mapping(target = "effectiveStartDate", expression = "java(resolveEffectiveDate(schedule, resolveStartWeek(schedule)))")
     @Mapping(target = "effectiveEndDate", expression = "java(resolveEffectiveDate(schedule, resolveEndWeek(schedule)))")
     RecurringScheduleResponse toResponse(RecurringSchedule schedule);

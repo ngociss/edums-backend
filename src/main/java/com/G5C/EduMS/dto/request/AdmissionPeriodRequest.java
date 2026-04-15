@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PeriodRequest {
+public class AdmissionPeriodRequest {
 
     @NotBlank(message = "Tên đợt tuyển sinh không được để trống")
     private String periodName;
@@ -24,7 +24,4 @@ public class PeriodRequest {
 
     @NotNull(message = "Thời gian kết thúc không được để trống")
     private LocalDateTime endTime;
-
-    @NotNull(message = "Trạng thái không được để trống")
-    private AdmissionPeriodStatus status;
 }

@@ -2,13 +2,16 @@ package com.G5C.EduMS.repository;
 
 import com.G5C.EduMS.common.enums.StudentStatus;
 import com.G5C.EduMS.model.Student;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -19,7 +22,19 @@ public interface StudentRepository extends JpaRepository<Student, Integer> {
     // Kiểm tra ràng buộc trước khi xóa Specialization
     boolean existsBySpecializationIdAndDeletedFalse(Integer specializationId);
 
+    boolean existsByGuardianIdAndDeletedFalse(Integer id);
+
     Optional<Student> findByAccount_IdAndDeletedFalse(Integer accountId);
+
+    Optional<Student> findByAccountIdAndDeletedFalse(Integer accountId);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT s FROM Student s WHERE s.id = :id AND s.deleted = false")
+    Optional<Student> findByIdAndDeletedFalseForUpdate(@Param("id") Integer id);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT s FROM Student s WHERE s.account.id = :accountId AND s.deleted = false")
+    Optional<Student> findByAccountIdAndDeletedFalseForUpdate(@Param("accountId") Integer accountId);
 
     // Kiểm tra ràng buộc trước khi xóa AdministrativeClass
     @Query("SELECT COUNT(s) > 0 FROM Student s WHERE s.administrativeClass.id = :classId AND s.deleted = false")
@@ -47,5 +62,15 @@ public interface StudentRepository extends JpaRepository<Student, Integer> {
                                  Pageable pageable);
 
 
+    // 1. Dùng để lấy nguyên cả danh sách object Student (Nếu bạn có dùng trong logic)
+    Set<Student> findByNationalIdInAndDeletedFalse(Collection<String> nationalIds);
+
+    // 2. Dùng để chỉ lấy ra 1 Set các số CCCD (Tối ưu hiệu suất, dùng cho Unit Test của bạn)
+    @Query("SELECT s.nationalId FROM Student s WHERE s.nationalId IN :nationalIds AND s.deleted = false")
+    Set<String> findNationalIdsInAndDeletedFalse(@Param("nationalIds") Collection<String> nationalIds);
+
+    // 3. Dùng để chỉ lấy ra 1 Set các Email
+    @Query("SELECT s.email FROM Student s WHERE s.email IN :emails AND s.deleted = false")
+    Set<String> findEmailsInAndDeletedFalse(@Param("emails") Collection<String> emails);
 }
 

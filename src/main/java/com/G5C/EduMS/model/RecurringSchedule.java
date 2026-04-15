@@ -8,9 +8,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "recurring_schedules",
-        indexes = @Index(name = "idx_recurring_room_day_period",
-                columnList = "room_id, day_of_week, start_period"))
+@Table(name = "recurring_schedules")
 @Getter
 @Setter
 @NoArgsConstructor

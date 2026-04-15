@@ -14,6 +14,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
@@ -33,9 +36,11 @@ public class AuthController {
         // 2. Nếu đăng nhập đúng, lấy thông tin User ra
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
-        // 3. Đóng dấu (Generate) JWT Token
-        String jwtToken = jwtService.generateToken(userDetails);
+        Map<String, Object> extraClaims = new HashMap<>();
+        extraClaims.put("accountId", userDetails.getAccount().getId());
 
+        // 3. Đóng dấu (Generate) JWT Token
+        String jwtToken = jwtService.generateToken(extraClaims, userDetails);
         // 4. Trả về Frontend
         AuthResponse authResponse = AuthResponse.builder()
                 .token(jwtToken)

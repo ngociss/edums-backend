@@ -3,6 +3,9 @@ package com.G5C.EduMS.service.impl;
 import com.G5C.EduMS.dto.response.AccountResponse;
 import com.G5C.EduMS.dto.response.PageResponse;
 import com.G5C.EduMS.dto.request.*;
+import com.G5C.EduMS.exception.ExistingResourcesException;
+import com.G5C.EduMS.exception.InvalidDataException;
+import com.G5C.EduMS.exception.NotFoundResourcesException;
 import com.G5C.EduMS.mapper.AccountMapper;
 import com.G5C.EduMS.model.Account;
 import com.G5C.EduMS.model.Role;
@@ -18,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.file.ReadOnlyFileSystemException;
 import java.util.List;
 
 @Service
@@ -70,21 +74,25 @@ public class AccountServiceImpl implements AccountService {
     @Override
     @Transactional(readOnly = true)
     public AccountResponse getAccountById(Integer id) {
-        Account account = accountRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy tài khoản với ID: " + id));
+        Account account = accountRepository.findByIdAndDeletedFalse(id)
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy tài khoản với ID: " + id));
         return accountMapper.toResponse(account);
     }
 
     @Override
     @Transactional
     public AccountResponse createAccount(AccountCreateRequest request) {
-        if (accountRepository.existsByUsername(request.getUsername())) {
-            throw new RuntimeException("Tên đăng nhập đã tồn tại trong hệ thống!");
+        if (request.getUsername() == null || request.getUsername().trim().isEmpty() || request.getPassword() == null) {
+            throw new InvalidDataException("Tên đăng nhập và Mật khẩu không được để trống.");
+        }
+
+        if (accountRepository.existsByUsernameAndDeletedFalse(request.getUsername())) {
+            throw new ExistingResourcesException("Tên đăng nhập đã tồn tại trong hệ thống!");
         }
 
         // 2. Lấy thông tin Role
-        Role role = roleRepository.findById(request.getRoleId())
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy Vai trò (Role) hợp lệ!"));
+        Role role = roleRepository.findByIdAndDeletedFalse(request.getRoleId())
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy Vai trò (Role) hợp lệ!"));
 
         // 3. Khởi tạo và mã hóa mật khẩu
         Account newAccount = Account.builder()
@@ -102,17 +110,21 @@ public class AccountServiceImpl implements AccountService {
     @Override
     @Transactional
     public AccountResponse updateAccount(Integer id, AccountUpdateRequest request) {
-        Account existingAccount = accountRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy tài khoản để cập nhật!"));
+        if (request.getUsername() == null || request.getUsername().trim().isEmpty()) {
+            throw new InvalidDataException("Tên đăng nhập không được để trống.");
+        }
+
+        Account existingAccount = accountRepository.findByIdAndDeletedFalse(id)
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy tài khoản để cập nhật!"));
 
         // Kiểm tra username mới có bị trùng với người khác không
         if (!existingAccount.getUsername().equals(request.getUsername()) &&
-                accountRepository.existsByUsername(request.getUsername())) {
-            throw new RuntimeException("Tên đăng nhập mới đã bị trùng với người khác!");
+                accountRepository.existsByUsernameAndDeletedFalse(request.getUsername())) {
+            throw new ExistingResourcesException("Tên đăng nhập mới đã bị trùng với người khác!");
         }
 
-        Role newRole = roleRepository.findById(request.getRoleId())
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy Vai trò (Role) mới hợp lệ!"));
+        Role newRole = roleRepository.findByIdAndDeletedFalse(request.getRoleId())
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy Vai trò (Role) mới hợp lệ!"));
 
         existingAccount.setUsername(request.getUsername());
         existingAccount.setRole(newRole);
@@ -125,8 +137,12 @@ public class AccountServiceImpl implements AccountService {
     @Override
     @Transactional
     public void updateAccountStatus(Integer id, AccountStatusUpdateRequest request) {
-        Account account = accountRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy tài khoản!"));
+        if (request.getStatus() == null) {
+            throw new InvalidDataException("Trạng thái không được để trống!");
+        }
+
+        Account account = accountRepository.findByIdAndDeletedFalse(id)
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy tài khoản!"));
 
         account.setStatus(request.getStatus());
         accountRepository.save(account);
@@ -135,13 +151,16 @@ public class AccountServiceImpl implements AccountService {
     @Override
     @Transactional
     public void resetPassword(Integer id, ResetPasswordRequest request) {
+        if (request.getNewPassword() == null || request.getConfirmPassword() == null) {
+            throw new InvalidDataException("Vui lòng nhập đầy đủ mật khẩu mới và xác nhận!");
+        }
 // Logic kiểm tra 2 mật khẩu khớp nhau
         if (!request.getNewPassword().equals(request.getConfirmPassword())) {
-            throw new RuntimeException("Mật khẩu xác nhận không khớp!");
+            throw new InvalidDataException("Mật khẩu xác nhận không khớp!");
         }
 
-        Account account = accountRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy tài khoản!"));
+        Account account = accountRepository.findByIdAndDeletedFalse(id)
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy tài khoản!"));
 
         account.setPassword(passwordEncoder.encode(request.getNewPassword()));
         accountRepository.save(account);

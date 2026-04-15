@@ -39,6 +39,8 @@ public class RecurringScheduleResponse {
 
     private Integer startWeek;
     private Integer endWeek;
+    private LocalDate startDate;
+    private LocalDate endDate;
     private LocalDate effectiveStartDate;
     private LocalDate effectiveEndDate;
 

@@ -1,7 +1,11 @@
 package com.G5C.EduMS.service.impl;
 
+import com.G5C.EduMS.common.enums.RegistrationPeriodStatus;
+import com.G5C.EduMS.common.enums.SemesterStatus;
 import com.G5C.EduMS.dto.request.RegistrationPeriodRequest;
 import com.G5C.EduMS.dto.response.RegistrationPeriodResponse;
+import com.G5C.EduMS.exception.CannotDeleteException;
+import com.G5C.EduMS.exception.InvalidDataException;
 import com.G5C.EduMS.exception.NotFoundResourcesException;
 import com.G5C.EduMS.mapper.RegistrationPeriodMapper;
 import com.G5C.EduMS.model.RegistrationPeriod;
@@ -40,8 +44,7 @@ public class RegistrationPeriodServiceImpl implements RegistrationPeriodService 
 
     @Override
     public RegistrationPeriodResponse getById(Integer id) {
-        RegistrationPeriod period = findOrThrow(id);
-        return registrationPeriodMapper.toResponse(period);
+        return registrationPeriodMapper.toResponse(findOrThrow(id));
     }
 
     @Override
@@ -49,44 +52,58 @@ public class RegistrationPeriodServiceImpl implements RegistrationPeriodService 
     public RegistrationPeriodResponse create(RegistrationPeriodRequest request) {
         Semester semester = findSemesterOrThrow(request.getSemesterId());
         registrationPeriodValidator.validateCreate(request);
+        validateSemesterCanOpenRegistrationPeriod(semester, request.getStatus());
 
-        RegistrationPeriod period = registrationPeriodMapper.toEntity(request);
-        period.setSemester(semester);
+        RegistrationPeriod registrationPeriod = registrationPeriodMapper.toEntity(request);
+        registrationPeriod.setSemester(semester);
 
-        return registrationPeriodMapper.toResponse(registrationPeriodRepository.save(period));
+        return registrationPeriodMapper.toResponse(registrationPeriodRepository.save(registrationPeriod));
     }
 
     @Override
     @Transactional
     public RegistrationPeriodResponse update(Integer id, RegistrationPeriodRequest request) {
-        RegistrationPeriod existing = findOrThrow(id);
+        RegistrationPeriod registrationPeriod = findOrThrow(id);
         Semester semester = findSemesterOrThrow(request.getSemesterId());
-        boolean hasRegistrations = courseRegistrationRepository
-                .existsByRegistrationPeriod_IdAndDeletedFalse(id);
+        boolean hasRegistrations = courseRegistrationRepository.existsByRegistrationPeriod_IdAndDeletedFalse(id);
+        registrationPeriodValidator.validateUpdate(registrationPeriod, request, hasRegistrations);
+        validateSemesterCanOpenRegistrationPeriod(semester, request.getStatus());
 
-        registrationPeriodValidator.validateUpdate(existing, request, hasRegistrations);
+        registrationPeriodMapper.updateEntity(request, registrationPeriod);
+        registrationPeriod.setSemester(semester);
 
-        registrationPeriodMapper.updateEntity(request, existing);
-        existing.setSemester(semester);
-
-        return registrationPeriodMapper.toResponse(registrationPeriodRepository.save(existing));
+        return registrationPeriodMapper.toResponse(registrationPeriodRepository.save(registrationPeriod));
     }
 
     @Override
     @Transactional
     public void delete(Integer id) {
-        RegistrationPeriod existing = findOrThrow(id);
-        existing.setDeleted(true);
-        registrationPeriodRepository.save(existing);
+        RegistrationPeriod registrationPeriod = findOrThrow(id);
+        if (registrationPeriod.getStatus() != RegistrationPeriodStatus.UPCOMING) {
+            throw new CannotDeleteException("Chỉ có thể xóa đợt đăng ký ở trạng thái UPCOMING");
+        }
+
+        if (courseRegistrationRepository.existsByRegistrationPeriod_IdAndDeletedFalse(id)) {
+            throw new CannotDeleteException("Không thể xóa đợt đăng ký vì đã có đăng ký môn học liên quan");
+        }
+
+        registrationPeriod.setDeleted(true);
+        registrationPeriodRepository.save(registrationPeriod);
     }
 
     private RegistrationPeriod findOrThrow(Integer id) {
         return registrationPeriodRepository.findByIdAndDeletedFalse(id)
-                .orElseThrow(() -> new NotFoundResourcesException("Registration period not found with id: " + id));
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy đợt đăng ký với id: " + id));
     }
 
     private Semester findSemesterOrThrow(Integer semesterId) {
         return semesterRepository.findByIdAndDeletedFalse(semesterId)
-                .orElseThrow(() -> new NotFoundResourcesException("Semester not found with id: " + semesterId));
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy học kỳ với id: " + semesterId));
+    }
+
+    private void validateSemesterCanOpenRegistrationPeriod(Semester semester, RegistrationPeriodStatus status) {
+        if (status == RegistrationPeriodStatus.OPEN && semester.getStatus() != SemesterStatus.REGISTRATION_OPEN) {
+            throw new InvalidDataException("Không thể mở đợt đăng ký khi học kỳ chưa ở trạng thái REGISTRATION_OPEN");
+        }
     }
 }
