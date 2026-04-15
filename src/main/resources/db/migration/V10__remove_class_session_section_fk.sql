@@ -1,5 +1,0 @@
-ALTER TABLE class_sessions
-    DROP FOREIGN KEY FK_CLASS_SESSIONS_ON_SECTION;
-
-ALTER TABLE class_sessions
-    DROP COLUMN section_id;
