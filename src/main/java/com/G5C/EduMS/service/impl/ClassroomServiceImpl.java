@@ -38,7 +38,7 @@ public class ClassroomServiceImpl implements ClassroomService {
     @Override
     public ClassroomResponse getById(Integer id) {
         Classroom classroom = classroomRepository.findByIdAndDeletedFalse(id)
-                .orElseThrow(() -> new NotFoundResourcesException("Classroom not found with id: " + id));
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy phòng học với id: " + id));
         return classroomMapper.toResponse(classroom);
     }
 
@@ -54,7 +54,7 @@ public class ClassroomServiceImpl implements ClassroomService {
     @Transactional
     public ClassroomResponse update(Integer id, ClassroomRequest request) {
         Classroom classroom = classroomRepository.findByIdAndDeletedFalse(id)
-                .orElseThrow(() -> new NotFoundResourcesException("Classroom not found with id: " + id));
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy phòng học với id: " + id));
         classroomValidator.validateDuplicate(request.getRoomName(), id);
         classroomMapper.updateEntity(request, classroom);
         return classroomMapper.toResponse(classroomRepository.save(classroom));
@@ -64,13 +64,13 @@ public class ClassroomServiceImpl implements ClassroomService {
     @Transactional
     public void delete(Integer id) {
         Classroom classroom = classroomRepository.findByIdAndDeletedFalse(id)
-                .orElseThrow(() -> new NotFoundResourcesException("Classroom not found with id: " + id));
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy phòng học với id: " + id));
 
         if (recurringScheduleRepository.existsByRoomId(id)) {
-            throw new CannotDeleteException("Cannot delete classroom because it is assigned to recurring schedules");
+            throw new CannotDeleteException("Không thể xóa phòng học vì đang được gán cho lịch học định kỳ");
         }
         if (classSessionRepository.existsByRoomId(id)) {
-            throw new CannotDeleteException("Cannot delete classroom because it is assigned to class sessions");
+            throw new CannotDeleteException("Không thể xóa phòng học vì đang được gán cho các buổi học");
         }
 
         classroom.setDeleted(true);

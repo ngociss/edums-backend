@@ -51,7 +51,7 @@ public class AdmissionOnboardingServiceImpl implements AdmissionOnboardingServic
     @Override
     @Transactional
     public void autoScreenApplications(Integer periodId) {
-        log.info("Bắt đầu chạy Auto-Screening cho Đợt tuyển sinh ID: {}", periodId);
+        log.info("Bắt đầu chạy sàng lọc tự động cho đợt tuyển sinh ID: {}", periodId);
 
         AdmissionPeriod admissionPeriod = admissionPeriodRepository.findByIdAndDeletedFalse(periodId)
                 .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy Đợt tuyển sinh với ID: " + periodId));
@@ -82,7 +82,7 @@ public class AdmissionOnboardingServiceImpl implements AdmissionOnboardingServic
         for (AdmissionApplication app : pendingApps) {
 
             if (app.getMajor() == null || app.getAdmissionBlock() == null || app.getTotalScore() == null) {
-                log.warn("Hồ sơ ID {} bị thiếu Ngành, Khối hoặc Điểm xét tuyển. Bỏ qua Auto-Screening.", app.getId());
+                log.warn("Hồ sơ ID {} bị thiếu Ngành, Khối hoặc Điểm xét tuyển. Bỏ qua sàng lọc tự động.", app.getId());
                 continue;
             }
 
@@ -107,7 +107,7 @@ public class AdmissionOnboardingServiceImpl implements AdmissionOnboardingServic
 
         // 4. Lưu đồng loạt xuống DB
         applicationRepository.saveAll(pendingApps);
-        log.info("Auto-Screening hoàn tất! Đậu: {}, Rớt: {}", approvedCount, rejectedCount);
+        log.info("Sàng lọc tự động hoàn tất! Đậu: {}, Rớt: {}", approvedCount, rejectedCount);
     }
 
     // =========================================================================

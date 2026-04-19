@@ -36,12 +36,16 @@ public interface RecurringScheduleRepository extends JpaRepository<RecurringSche
           AND rs.id        != :excludeId
           AND rs.startPeriod <= :endPeriod
           AND rs.endPeriod   >= :startPeriod
+          AND rs.startWeek   <= :endWeek
+          AND rs.endWeek     >= :startWeek
     """)
     boolean existsConflictInSection(
             @Param("sectionId")   Integer sectionId,
             @Param("dayOfWeek")   Integer dayOfWeek,
             @Param("startPeriod") Integer startPeriod,
             @Param("endPeriod")   Integer endPeriod,
+            @Param("startWeek")   Integer startWeek,
+            @Param("endWeek")     Integer endWeek,
             @Param("excludeId")   Integer excludeId
     );
 
@@ -52,17 +56,23 @@ public interface RecurringScheduleRepository extends JpaRepository<RecurringSche
     @Query("""
         SELECT COUNT(rs) > 0 FROM RecurringSchedule rs
         WHERE rs.room.id     = :classroomId
+          AND rs.section.semester.id = :semesterId
           AND rs.dayOfWeek   = :dayOfWeek
           AND rs.deleted     = false
           AND rs.id         != :excludeId
           AND rs.startPeriod <= :endPeriod
           AND rs.endPeriod   >= :startPeriod
+          AND rs.startWeek   <= :endWeek
+          AND rs.endWeek     >= :startWeek
     """)
     boolean existsConflictInClassroom(
             @Param("classroomId") Integer classroomId,
+            @Param("semesterId")  Integer semesterId,
             @Param("dayOfWeek")   Integer dayOfWeek,
             @Param("startPeriod") Integer startPeriod,
             @Param("endPeriod")   Integer endPeriod,
+            @Param("startWeek")   Integer startWeek,
+            @Param("endWeek")     Integer endWeek,
             @Param("excludeId")   Integer excludeId
     );
 
@@ -79,6 +89,8 @@ public interface RecurringScheduleRepository extends JpaRepository<RecurringSche
           AND rs.id                  != :excludeId
           AND rs.startPeriod <= :endPeriod
           AND rs.endPeriod   >= :startPeriod
+          AND rs.startWeek   <= :endWeek
+          AND rs.endWeek     >= :startWeek
     """)
     boolean existsConflictForLecturer(
             @Param("lecturerId")  Integer lecturerId,
@@ -86,6 +98,8 @@ public interface RecurringScheduleRepository extends JpaRepository<RecurringSche
             @Param("dayOfWeek")   Integer dayOfWeek,
             @Param("startPeriod") Integer startPeriod,
             @Param("endPeriod")   Integer endPeriod,
+            @Param("startWeek")   Integer startWeek,
+            @Param("endWeek")     Integer endWeek,
             @Param("excludeId")   Integer excludeId
     );
 }

@@ -18,7 +18,7 @@ public class CourseSectionValidator {
         if (courseSectionRepository.existsBySectionCodeAndCourseIdAndSemesterIdAndIdNotAndDeletedFalse(
                 sectionCode, courseId, semesterId, excludeId)) {
             throw new ExistingResourcesException(
-                    "Section code '" + sectionCode + "' already exists for this course in this semester");
+                    "Mã lớp học phần '" + sectionCode + "' đã tồn tại cho môn học này trong học kỳ này");
         }
     }
 }

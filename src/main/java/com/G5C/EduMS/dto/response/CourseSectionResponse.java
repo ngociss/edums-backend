@@ -27,7 +27,7 @@ public class CourseSectionResponse {
     private Integer semesterNumber;
     private String academicYear;
 
-
+    private Integer credits;
     private Integer maxCapacity;
     private CourseSectionStatus status;
     private LocalDateTime createdAt;

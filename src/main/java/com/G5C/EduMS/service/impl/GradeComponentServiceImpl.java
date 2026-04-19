@@ -85,11 +85,11 @@ public class GradeComponentServiceImpl implements GradeComponentService {
     
     private GradeComponent findOrThrow(Integer id) {
         return gradeComponentRepository.findByIdAndDeletedFalse(id)
-                .orElseThrow(() -> new NotFoundResourcesException("Grade Component not found with id: " + id));
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy thành phần điểm với id: " + id));
     }
     
     private Course findCourseOrThrow(Integer courseId) {
         return courseRepository.findByIdAndDeletedFalse(courseId)
-                .orElseThrow(() -> new NotFoundResourcesException("Course not found with id: " + courseId));
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy môn học với id: " + courseId));
     }
 }

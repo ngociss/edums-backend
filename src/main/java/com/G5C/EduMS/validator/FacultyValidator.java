@@ -16,10 +16,10 @@ public class FacultyValidator {
      */
     public void validateDuplicate(String facultyName, String facultyCode, Integer excludeId) {
         if (facultyRepository.existsByFacultyNameAndIdNotAndDeletedFalse(facultyName, excludeId)) {
-            throw new ExistingResourcesException("Faculty name already exists");
+            throw new ExistingResourcesException("Tên khoa đã tồn tại");
         }
         if (facultyRepository.existsByFacultyCodeAndIdNotAndDeletedFalse(facultyCode, excludeId)) {
-            throw new ExistingResourcesException("Faculty code already exists");
+            throw new ExistingResourcesException("Mã khoa đã tồn tại");
         }
     }
 }

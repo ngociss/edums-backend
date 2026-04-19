@@ -12,15 +12,15 @@ import lombok.*;
 @Builder
 public class MajorRequest {
 
-    @NotNull(message = "Faculty ID is required")
+    @NotNull(message = "Mã khoa là bắt buộc")
     private Integer facultyId;
 
-    @NotBlank(message = "Major name is required")
-    @Size(max = 255, message = "Major name must not exceed 255 characters")
+    @NotBlank(message = "Tên ngành học là bắt buộc")
+    @Size(max = 255, message = "Tên ngành học không được vượt quá 255 ký tự")
     private String majorName;
 
-    @NotBlank(message = "Major code is required")
-    @Size(max = 50, message = "Major code must not exceed 50 characters")
+    @NotBlank(message = "Mã ngành học là bắt buộc")
+    @Size(max = 50, message = "Mã ngành học không được vượt quá 50 ký tự")
     private String majorCode;
 }
 

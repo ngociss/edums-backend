@@ -53,7 +53,7 @@ public class CourseSectionServiceImpl implements CourseSectionService {
     @Override
     public List<CourseSectionResponse> getAllByCourse(Integer courseId) {
         courseRepository.findByIdAndDeletedFalse(courseId)
-                .orElseThrow(() -> new NotFoundResourcesException("Course not found with id: " + courseId));
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy môn học với id: " + courseId));
         return courseSectionRepository.findAllByCourseIdAndDeletedFalse(courseId)
                 .stream().map(courseSectionMapper::toResponse).toList();
     }
@@ -61,7 +61,7 @@ public class CourseSectionServiceImpl implements CourseSectionService {
     @Override
     public List<CourseSectionResponse> getAllBySemester(Integer semesterId) {
         semesterRepository.findByIdAndDeletedFalse(semesterId)
-                .orElseThrow(() -> new NotFoundResourcesException("Semester not found with id: " + semesterId));
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy học kỳ với id: " + semesterId));
         return courseSectionRepository.findAllBySemesterIdAndDeletedFalse(semesterId)
                 .stream().map(courseSectionMapper::toResponse).toList();
     }
@@ -70,17 +70,17 @@ public class CourseSectionServiceImpl implements CourseSectionService {
     public CourseSectionResponse getById(Integer id) {
         return courseSectionMapper.toResponse(
                 courseSectionRepository.findByIdAndDeletedFalse(id)
-                        .orElseThrow(() -> new NotFoundResourcesException("Course section not found with id: " + id)));
+                        .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy lớp học phần với id: " + id)));
     }
 
     @Override
     @Transactional
     public CourseSectionResponse create(CourseSectionRequest request) {
         var course = courseRepository.findByIdAndDeletedFalse(request.getCourseId())
-                .orElseThrow(() -> new NotFoundResourcesException("Course not found with id: " + request.getCourseId()));
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy môn học với id: " + request.getCourseId()));
 
         var semester = semesterRepository.findByIdAndStatusIn(request.getSemesterId(), List.of(SemesterStatus.PLANNING, SemesterStatus.REGISTRATION_OPEN))
-                .orElseThrow(() -> new NotFoundResourcesException("Semester not found with id: " + request.getSemesterId()));
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy học kỳ với id: " + request.getSemesterId()));
         validateSemesterEditable(semester);
 
         if (request.getStatus() != null && request.getStatus() != CourseSectionStatus.DRAFT) {
@@ -106,17 +106,17 @@ public class CourseSectionServiceImpl implements CourseSectionService {
     @Transactional
     public CourseSectionResponse update(Integer id, CourseSectionRequest request) {
         CourseSection section = courseSectionRepository.findByIdAndDeletedFalse(id)
-                .orElseThrow(() -> new NotFoundResourcesException("Course section not found with id: " + id));
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy lớp học phần với id: " + id));
 
         var course = courseRepository.findByIdAndDeletedFalse(request.getCourseId())
-                .orElseThrow(() -> new NotFoundResourcesException("Course not found with id: " + request.getCourseId()));
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy môn học với id: " + request.getCourseId()));
 
         var semester = semesterRepository.findByIdAndDeletedFalse(request.getSemesterId())
-                .orElseThrow(() -> new NotFoundResourcesException("Semester not found with id: " + request.getSemesterId()));
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy học kỳ với id: " + request.getSemesterId()));
 
         if (section.getStatus() == CourseSectionStatus.FINISHED
                 || section.getStatus() == CourseSectionStatus.CANCELLED) {
-            throw new InvalidDataException("Cannot update section with status: " + section.getStatus());
+            throw new InvalidDataException("Không thể cập nhật lớp học phần với trạng thái: " + section.getStatus());
         }
 
         CourseSectionStatus currentStatus = section.getStatus();
@@ -129,7 +129,7 @@ public class CourseSectionServiceImpl implements CourseSectionService {
         }
 
         if (currentStatus == CourseSectionStatus.ONGOING && configurationChanged) {
-            throw new InvalidDataException("Cannot update course section configuration when section is ONGOING");
+            throw new InvalidDataException("Không thể cập nhật cấu hình lớp học phần khi lớp đang ở trạng thái ONGOING");
         }
 
         if (configurationChanged && currentStatus == CourseSectionStatus.DRAFT) {
@@ -137,23 +137,23 @@ public class CourseSectionServiceImpl implements CourseSectionService {
         }
 
         if (!section.getCourse().getId().equals(request.getCourseId()) && currentStatus != CourseSectionStatus.DRAFT) {
-            throw new InvalidDataException("Course can only be changed when section is DRAFT");
+            throw new InvalidDataException("Chỉ được thay đổi môn học khi lớp học phần ở trạng thái DRAFT");
         }
 
         if (!section.getSemester().getId().equals(request.getSemesterId()) && currentStatus != CourseSectionStatus.DRAFT) {
-            throw new InvalidDataException("Semester can only be changed when section is DRAFT");
+            throw new InvalidDataException("Chỉ được thay đổi học kỳ khi lớp học phần ở trạng thái DRAFT");
         }
 
         if (currentStatus != CourseSectionStatus.DRAFT
                 && currentStatus != CourseSectionStatus.OPEN
                 && !sameLecturer(section.getLecturer(), request.getLecturerId())) {
-            throw new InvalidDataException("Lecturer can only be changed when section is DRAFT or OPEN");
+            throw new InvalidDataException("Chỉ được thay đổi giảng viên khi lớp học phần ở trạng thái DRAFT hoặc OPEN");
         }
 
         if (currentStatus != CourseSectionStatus.DRAFT
                 && section.getLecturer() != null
                 && request.getLecturerId() == null) {
-            throw new InvalidDataException("Lecturer can only be removed when section is DRAFT");
+            throw new InvalidDataException("Chỉ được gỡ giảng viên khi lớp học phần ở trạng thái DRAFT");
         }
 
         boolean courseChanged = !section.getCourse().getId().equals(request.getCourseId());
@@ -179,18 +179,18 @@ public class CourseSectionServiceImpl implements CourseSectionService {
     @Transactional
     public void delete(Integer id) {
         CourseSection section = courseSectionRepository.findByIdAndDeletedFalse(id)
-                .orElseThrow(() -> new NotFoundResourcesException("Course section not found with id: " + id));
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy lớp học phần với id: " + id));
 
         switch (section.getStatus()) {
             case DRAFT, CANCELLED -> {
             }
             default -> throw new CannotDeleteException(
-                    "Cannot delete course section with status: " + section.getStatus()
-                            + ". Only DRAFT or CANCELLED sections can be deleted.");
+                    "Không thể xóa lớp học phần với trạng thái: " + section.getStatus()
+                        + ". Chỉ lớp ở trạng thái DRAFT hoặc CANCELLED mới được xóa.");
         }
 
         if (!section.getCourseRegistrations().isEmpty()) {
-            throw new CannotDeleteException("Cannot delete course section because it already has course registrations");
+            throw new CannotDeleteException("Không thể xóa lớp học phần vì đã có đăng ký học phần");
         }
 
         section.setDeleted(true);
@@ -209,26 +209,26 @@ public class CourseSectionServiceImpl implements CourseSectionService {
         switch (current) {
             case DRAFT -> {
                 if (next != CourseSectionStatus.OPEN && next != CourseSectionStatus.CANCELLED) {
-                    throw new InvalidDataException("DRAFT can only move to OPEN or CANCELLED");
+                    throw new InvalidDataException("Trạng thái DRAFT chỉ có thể chuyển sang OPEN hoặc CANCELLED");
                 }
             }
             case OPEN -> {
                 if (next != CourseSectionStatus.ONGOING && next != CourseSectionStatus.CANCELLED) {
-                    throw new InvalidDataException("OPEN can only move to ONGOING or CANCELLED");
+                    throw new InvalidDataException("Trạng thái OPEN chỉ có thể chuyển sang ONGOING hoặc CANCELLED");
                 }
             }
             case ONGOING -> {
                 if (next != CourseSectionStatus.FINISHED) {
-                    throw new InvalidDataException("ONGOING can only move to FINISHED");
+                    throw new InvalidDataException("Trạng thái ONGOING chỉ có thể chuyển sang FINISHED");
                 }
             }
-            case FINISHED, CANCELLED -> throw new InvalidDataException("Cannot change status from " + current);
+            case FINISHED, CANCELLED -> throw new InvalidDataException("Không thể thay đổi trạng thái từ " + current);
         }
     }
 
     private void validateSemesterEditable(Semester semester) {
         if (semester.getStatus() != SemesterStatus.PLANNING && semester.getStatus() != SemesterStatus.REGISTRATION_OPEN ) {
-            throw new InvalidDataException("Cannot modify course sections for semester that is not in PLANNING status");
+            throw new InvalidDataException("Không thể chỉnh sửa lớp học phần cho học kỳ không ở trạng thái PLANNING");
         }
     }
 
@@ -237,11 +237,11 @@ public class CourseSectionServiceImpl implements CourseSectionService {
             if (targetStatus == CourseSectionStatus.DRAFT) {
                 return null;
             }
-            throw new InvalidDataException("Lecturer is required when course section is not DRAFT");
+            throw new InvalidDataException("Bắt buộc có giảng viên khi lớp học phần không ở trạng thái DRAFT");
         }
 
         return lecturerRepository.findByIdAndDeletedFalse(lecturerId)
-                .orElseThrow(() -> new NotFoundResourcesException("Lecturer not found with id: " + lecturerId));
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy giảng viên với id: " + lecturerId));
     }
 
     private boolean sameLecturer(Lecturer currentLecturer, Integer requestedLecturerId) {
@@ -271,15 +271,15 @@ public class CourseSectionServiceImpl implements CourseSectionService {
         }
 
         if (section.getLecturer() == null) {
-            throw new InvalidDataException("Cannot open course section without lecturer");
+            throw new InvalidDataException("Không thể mở lớp học phần khi chưa có giảng viên");
         }
 
         if (section.getMaxCapacity() == null || section.getMaxCapacity() <= 0) {
-            throw new InvalidDataException("Cannot open course section without valid max capacity");
+            throw new InvalidDataException("Không thể mở lớp học phần khi sĩ số tối đa không hợp lệ");
         }
 
         if (section.getId() == null || !recurringScheduleRepository.existsBySectionIdAndDeletedFalse(section.getId())) {
-            throw new InvalidDataException("Cannot open course section without recurring schedules");
+            throw new InvalidDataException("Không thể mở lớp học phần khi chưa có lịch học định kỳ");
         }
     }
 

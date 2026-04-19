@@ -16,7 +16,7 @@ public class OnboardingRequest {
     @NotNull(message = "Vui lòng chọn Đợt tuyển sinh cần chốt")
     private Integer periodId;
 
-    @NotNull(message = "Vui lòng chọn Khóa học (Cohort) để xếp lớp cho sinh viên mới")
+    @NotNull(message = "Vui lòng chọn khóa học để xếp lớp cho sinh viên mới")
     private Integer cohortId; // Ví dụ: ID của khóa K2024
 
 }

@@ -75,7 +75,10 @@ public class SecurityConfig {
                                 // ================================================================
                                 // Giảng viên xem lịch dạy cá nhân
                                 .requestMatchers(HttpMethod.GET, "/api/v1/schedules/lecturers/me").hasRole("LECTURER")
+                                .requestMatchers(HttpMethod.GET, "/api/v1/lecturers/me/course-sections").hasRole("LECTURER")
                                 .requestMatchers(HttpMethod.GET, "/api/v1/schedules/students/me/semester-options").hasRole("STUDENT")
+                                .requestMatchers(HttpMethod.GET, "/api/v1/course-sections/*/roster").hasAnyRole("LECTURER", "ADMIN", "MANAGER")
+                                .requestMatchers(HttpMethod.POST, "/api/v1/course-sections/*/roster/sync").hasAnyRole("LECTURER", "ADMIN", "MANAGER")
 
                                 // Quản lý điểm số, điểm danh, buổi học (Ghi điểm, sửa điểm danh...)
                                 .requestMatchers("/api/v1/grade-reports/**",
@@ -85,6 +88,7 @@ public class SecurityConfig {
 
                                 // Xem danh sách điểm của một lớp học phần
                                 .requestMatchers(HttpMethod.GET, "/api/v1/course-sections/*/grade-reports").hasAnyRole("LECTURER", "ADMIN", "MANAGER")
+                                .requestMatchers(HttpMethod.GET, "/api/v1/course-sections/*/grade-entry-roster").hasAnyRole("LECTURER", "ADMIN", "MANAGER")
 
                                 // ================================================================
                                 // 5. MASTER DATA - QUYỀN ĐỌC (GET) CHO MỌI ROLE ĐÃ ĐĂNG NHẬP

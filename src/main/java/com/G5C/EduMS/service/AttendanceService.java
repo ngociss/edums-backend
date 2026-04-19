@@ -9,14 +9,14 @@ import java.util.List;
 public interface AttendanceService {
 
     // KAN-43 — Giảng viên
-    List<AttendanceResponse> getBySession(Integer sessionId);
+    List<AttendanceResponse> getBySession(String username, Integer sessionId);
 
-    List<AttendanceResponse> createBatch(Integer sessionId, AttendanceBatchRequest request);
-    List<AttendanceResponse> syncSessionAttendance(Integer sessionId);
+    List<AttendanceResponse> createBatch(String username, Integer sessionId, AttendanceBatchRequest request);
+    List<AttendanceResponse> syncSessionAttendance(String username, Integer sessionId);
 
-    AttendanceResponse update(Integer id, AttendanceUpdateRequest request);
+    AttendanceResponse update(String username, Integer id, AttendanceUpdateRequest request);
 
-    void delete(Integer id);
+    void delete(String username, Integer id);
 
     // KAN-45 — Sinh viên / Phụ huynh
     List<AttendanceResponse> getCurrentStudentAttendances(String username);

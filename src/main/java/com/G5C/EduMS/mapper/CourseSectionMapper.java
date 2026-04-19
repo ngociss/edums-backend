@@ -30,6 +30,7 @@ public interface CourseSectionMapper {
     @Mapping(target = "semesterId", source = "semester.id")
     @Mapping(target = "semesterNumber", source = "semester.semesterNumber")
     @Mapping(target = "academicYear", source = "semester.academicYear")
+    @Mapping(target = "credits", source = "course.credits")
     CourseSectionResponse toResponse(CourseSection courseSection);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)

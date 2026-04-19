@@ -12,10 +12,10 @@ import lombok.*;
 @Builder
 public class RecurringScheduleRequest {
 
-    @NotNull(message = "Section ID là bắt buộc")
+    @NotNull(message = "Mã lớp học phần là bắt buộc")
     private Integer sectionId;
 
-    @NotNull(message = "Classroom ID là bắt buộc")
+    @NotNull(message = "Mã phòng học là bắt buộc")
     private Integer classroomId;
 
     @NotNull(message = "Thứ trong tuần là bắt buộc")

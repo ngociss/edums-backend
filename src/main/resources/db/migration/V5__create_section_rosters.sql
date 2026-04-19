@@ -1,0 +1,21 @@
+CREATE TABLE `section_rosters` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `section_id` int(11) NOT NULL,
+  `student_id` int(11) NOT NULL,
+  `course_registration_id` int(11) NOT NULL,
+  `source_registration_period_id` int(11) DEFAULT NULL,
+  `status` varchar(20) NOT NULL DEFAULT 'ACTIVE',
+  `locked_at` datetime DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `deleted` bit(1) NOT NULL DEFAULT b'0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_section_rosters_section_student` (`section_id`, `student_id`),
+  UNIQUE KEY `uk_section_rosters_registration` (`course_registration_id`),
+  KEY `idx_section_rosters_section_deleted` (`section_id`, `deleted`),
+  KEY `idx_section_rosters_student_deleted` (`student_id`, `deleted`),
+  KEY `idx_section_rosters_registration_period` (`source_registration_period_id`),
+  CONSTRAINT `FK_SECTION_ROSTERS_ON_SECTION` FOREIGN KEY (`section_id`) REFERENCES `course_sections` (`id`),
+  CONSTRAINT `FK_SECTION_ROSTERS_ON_STUDENT` FOREIGN KEY (`student_id`) REFERENCES `students` (`id`),
+  CONSTRAINT `FK_SECTION_ROSTERS_ON_REGISTRATION` FOREIGN KEY (`course_registration_id`) REFERENCES `course_registrations` (`id`),
+  CONSTRAINT `FK_SECTION_ROSTERS_ON_REGISTRATION_PERIOD` FOREIGN KEY (`source_registration_period_id`) REFERENCES `registration_periods` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -27,11 +26,10 @@ public class ScheduleController {
     @Operation(summary = "Xem thoi khoa bieu giang day", description = "Danh cho giang vien")
     @GetMapping("/lecturers/me")
     public ResponseEntity<ResponseData> getMyLecturerSchedule(
-            @RequestParam LocalDate startDate,
-            @RequestParam LocalDate endDate
+            @RequestParam Integer semesterId
     ) {
         String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
-        var schedule = scheduleService.getMyLecturerSchedule(currentUsername, startDate, endDate);
+        var schedule = scheduleService.getMyLecturerSchedule(currentUsername, semesterId);
         return ResponseEntity.ok(new ResponseData(200, "SUCCESS", "Lay thoi khoa bieu thanh cong", schedule));
     }
 

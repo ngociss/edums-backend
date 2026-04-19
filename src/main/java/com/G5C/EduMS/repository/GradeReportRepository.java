@@ -32,6 +32,24 @@ public interface GradeReportRepository extends JpaRepository<GradeReport, Intege
     @Query("SELECT gr FROM GradeReport gr WHERE gr.registration.section.id = :sectionId AND gr.deleted = false")
     List<GradeReport> findAllBySectionId(@Param("sectionId") Integer sectionId);
 
+    @Query("""
+        SELECT DISTINCT gr
+        FROM GradeReport gr
+        JOIN FETCH gr.registration reg
+        JOIN FETCH reg.student stu
+        JOIN FETCH reg.section sec
+        JOIN FETCH sec.course c
+        LEFT JOIN FETCH gr.gradeDetails gd
+        LEFT JOIN FETCH gd.component comp
+        WHERE sec.id = :sectionId
+          AND gr.deleted = false
+          AND reg.deleted = false
+          AND stu.deleted = false
+          AND sec.deleted = false
+          AND c.deleted = false
+    """)
+    List<GradeReport> findAllBySectionIdWithDetails(@Param("sectionId") Integer sectionId);
+
     boolean existsByRegistrationIdAndDeletedFalse(Integer registrationId);
 
     @Query("""
@@ -40,14 +58,14 @@ public interface GradeReportRepository extends JpaRepository<GradeReport, Intege
         WHERE gr.registration.student.id = :studentId
           AND gr.registration.section.course.id = :courseId
           AND gr.deleted = false
-          AND gr.status = :status
+          AND gr.status IN :statuses
           AND gr.finalScore IS NOT NULL
           AND gr.finalScore >= :minimumScore
     """)
     boolean existsPassedCourseByStudentIdAndCourseId(
             @Param("studentId") Integer studentId,
             @Param("courseId") Integer courseId,
-            @Param("status") GradeStatus status,
+            @Param("statuses") List<GradeStatus> statuses,
             @Param("minimumScore") float minimumScore
     );
 }

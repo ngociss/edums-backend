@@ -47,7 +47,10 @@ public class CourseRegistrationServiceImpl implements CourseRegistrationService 
     private static final List<RegistrationStatus> ACTIVE_STATUSES =
             List.of(RegistrationStatus.PENDING, RegistrationStatus.CONFIRMED);
 
-    private static final float MINIMUM_PASSING_SCORE = 4.0f;
+    private static final List<GradeStatus> OFFICIAL_PREREQUISITE_STATUSES =
+            List.of(GradeStatus.PUBLISHED, GradeStatus.LOCKED);
+
+    private static final float MINIMUM_PASSING_SCORE_ON_10_SCALE = 4.0f;
 
     private final CourseRegistrationRepository courseRegistrationRepository;
     private final CourseSectionRepository courseSectionRepository;
@@ -207,7 +210,7 @@ public class CourseRegistrationServiceImpl implements CourseRegistrationService 
         validateNoDuplicateSection(activeRegistrations, courseSection.getId());
         validateNoDuplicateCourse(activeRegistrations, courseSection.getCourse().getId());
         validateScheduleConflict(activeRegistrations, courseSection);
-        validatePrerequisite(student, courseSection);
+        validatePrerequisiteByPreviousSemester(student, courseSection);
         validateCreditLimit(activeRegistrations, courseSection);
         courseRegistrationValidator.validateCapacity(courseSection);
 
@@ -414,13 +417,66 @@ public class CourseRegistrationServiceImpl implements CourseRegistrationService 
         boolean passedPrerequisite = gradeReportRepository.existsPassedCourseByStudentIdAndCourseId(
                 student.getId(),
                 courseSection.getCourse().getPrerequisiteCourse().getId(),
-                GradeStatus.PUBLISHED,
-                MINIMUM_PASSING_SCORE
+                OFFICIAL_PREREQUISITE_STATUSES,
+                MINIMUM_PASSING_SCORE_ON_10_SCALE
         );
 
         if (!passedPrerequisite) {
             throw new InvalidDataException("Sinh viên chưa đạt môn học tiên quyết: " + courseSection.getCourse().getPrerequisiteCourse().getCourseName());
         }
+    }
+
+    private void validatePrerequisiteByPreviousSemester(Student student, CourseSection courseSection) {
+        if (courseSection.getCourse().getPrerequisiteCourse() == null) {
+            return;
+        }
+
+        Integer prerequisiteCourseId = courseSection.getCourse().getPrerequisiteCourse().getId();
+        boolean learnedPrerequisiteInPreviousSemester = courseRegistrationRepository.findAllByStudentId(student.getId())
+                .stream()
+                .filter(registration -> registration.getStatus() == RegistrationStatus.CONFIRMED)
+                .filter(registration -> registration.getSection() != null)
+                .filter(registration -> registration.getSection().getCourse() != null)
+                .filter(registration -> registration.getSection().getCourse().getId().equals(prerequisiteCourseId))
+                .anyMatch(registration -> isPreviousSemester(registration.getSection(), courseSection));
+
+        if (!learnedPrerequisiteInPreviousSemester) {
+            throw new InvalidDataException("Sinh vien chua hoc mon tien quyet o ky truoc: "
+                    + courseSection.getCourse().getPrerequisiteCourse().getCourseName());
+        }
+    }
+
+    private boolean isPreviousSemester(CourseSection learnedSection, CourseSection targetSection) {
+        if (learnedSection.getSemester() == null || targetSection.getSemester() == null) {
+            return false;
+        }
+
+        if (learnedSection.getSemester().getId().equals(targetSection.getSemester().getId())) {
+            return false;
+        }
+
+        LocalDate learnedStartDate = learnedSection.getSemester().getStartDate();
+        LocalDate targetStartDate = targetSection.getSemester().getStartDate();
+        if (learnedStartDate != null && targetStartDate != null) {
+            return learnedStartDate.isBefore(targetStartDate);
+        }
+
+        String learnedAcademicYear = learnedSection.getSemester().getAcademicYear();
+        String targetAcademicYear = targetSection.getSemester().getAcademicYear();
+        if (learnedAcademicYear != null && targetAcademicYear != null) {
+            int academicYearComparison = learnedAcademicYear.compareTo(targetAcademicYear);
+            if (academicYearComparison != 0) {
+                return academicYearComparison < 0;
+            }
+        }
+
+        Integer learnedSemesterNumber = learnedSection.getSemester().getSemesterNumber();
+        Integer targetSemesterNumber = targetSection.getSemester().getSemesterNumber();
+        if (learnedSemesterNumber != null && targetSemesterNumber != null) {
+            return learnedSemesterNumber < targetSemesterNumber;
+        }
+
+        return learnedSection.getSemester().getId() < targetSection.getSemester().getId();
     }
 
     private void validateCreditLimit(List<CourseRegistration> activeRegistrations, CourseSection courseSection) {
@@ -441,7 +497,7 @@ public class CourseRegistrationServiceImpl implements CourseRegistrationService 
     private Student resolveStudentForWrite(Integer requestedStudentId) {
         if (hasAnyRole("ADMIN", "MANAGER")) {
             if (requestedStudentId == null) {
-                throw new InvalidDataException("Admin hoặc quản lý phải truyền studentId khi đăng ký hộ");
+                throw new InvalidDataException("Admin hoặc quản lý phải truyền mã sinh viên khi đăng ký hộ");
             }
 
             return studentRepository.findByIdAndDeletedFalseForUpdate(requestedStudentId)

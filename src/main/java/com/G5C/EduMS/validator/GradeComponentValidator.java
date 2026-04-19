@@ -30,7 +30,7 @@ public class GradeComponentValidator {
 
     public void validateDelete(GradeComponent entity) {
         if (entity.getGradeDetails() != null && !entity.getGradeDetails().isEmpty()) {
-            throw new CannotDeleteException("Cannot delete Grade Component because it has associated Grade Details.");
+            throw new CannotDeleteException("Không thể xóa thành phần điểm vì đã có chi tiết điểm liên quan.");
         }
     }
 
@@ -40,7 +40,7 @@ public class GradeComponentValidator {
         for (GradeComponent component : existingComponents) {
             if (component.getComponentName().equalsIgnoreCase(componentName)) {
                 if (currentId == null || !component.getId().equals(currentId)) {
-                    throw new ExistingResourcesException("Grade Component with name '" + componentName + "' already exists for this course");
+                    throw new ExistingResourcesException("Thành phần điểm với tên '" + componentName + "' đã tồn tại cho môn học này");
                 }
             }
         }
@@ -57,7 +57,7 @@ public class GradeComponentValidator {
         }
         
         if (totalWeight > 100f) {
-            throw new InvalidDataException("Total weight percentage for this course cannot exceed 100%. Current total would be: " + totalWeight + "%");
+            throw new InvalidDataException("Tổng phần trăm trọng số của môn học này không được vượt quá 100%. Tổng hiện tại sẽ là: " + totalWeight + "%");
         }
     }
 }

@@ -12,19 +12,18 @@ import lombok.*;
 @Builder
 public class CourseSectionRequest {
 
-    @NotNull(message = "Course ID is required")
+    @NotNull(message = "Mã môn học là bắt buộc")
     private Integer courseId;
 
     private Integer lecturerId; // optional khi DRAFT
 
-    @NotNull(message = "Semester ID is required")
+    @NotNull(message = "Mã học kỳ là bắt buộc")
     private Integer semesterId;
 
 
-    @NotNull(message = "Max capacity is required")
-    @Min(value = 1, message = "Max capacity must be at least 1")
+    @NotNull(message = "Sĩ số tối đa là bắt buộc")
+    @Min(value = 1, message = "Sĩ số tối đa phải lớn hơn hoặc bằng 1")
     private Integer maxCapacity;
 
-    private CourseSectionStatus status = CourseSectionStatus.DRAFT;
-}
+    private CourseSectionStatus status = CourseSectionStatus.DRAFT;}
 

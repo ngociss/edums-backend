@@ -14,7 +14,7 @@ public class AccountUpdateRequest {
     @NotBlank(message = "Tên đăng nhập không được để trống")
     private String username;
 
-    @NotNull(message = "Vai trò (Role ID) không được để trống")
+    @NotNull(message = "Vai trò (Mã vai trò) không được để trống")
     private Integer roleId;
 
     private String avatarUrl;

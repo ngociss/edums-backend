@@ -6,6 +6,10 @@ import com.G5C.EduMS.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 @Component
 @RequiredArgsConstructor
 public class GradeReportValidator {
@@ -18,27 +22,37 @@ public class GradeReportValidator {
     public void validateCreate(Integer registrationId) {
         if (!courseRegistrationRepository.existsById(registrationId))
             throw new NotFoundResourcesException(
-                "Course registration not found with id: " + registrationId);
+                "Không tìm thấy đăng ký học phần với id: " + registrationId);
 
         if (gradeReportRepository.existsByRegistrationIdAndDeletedFalse(registrationId))
             throw new ExistingResourcesException(
-                "Grade report already exists for registration: " + registrationId);
+                "Phiếu điểm đã tồn tại cho đăng ký học phần: " + registrationId);
     }
 
     public void validateUpdate(Integer id) {
         if (gradeReportRepository.findByIdAndDeletedFalse(id).isEmpty())
-            throw new NotFoundResourcesException("Grade report not found with id: " + id);
+            throw new NotFoundResourcesException("Không tìm thấy phiếu điểm với id: " + id);
     }
 
     public void validateComponent(Integer componentId) {
         if (gradeComponentRepository.findByIdAndDeletedFalse(componentId).isEmpty())
             throw new NotFoundResourcesException(
-                "Grade component not found with id: " + componentId);
+                "Không tìm thấy thành phần điểm với id: " + componentId);
     }
 
     public void validateDuplicateDetail(Integer reportId, Integer componentId) {
         if (gradeDetailRepository.existsByReportIdAndComponentIdAndDeletedFalse(reportId, componentId))
             throw new ExistingResourcesException(
-                "Grade detail already exists for component: " + componentId);
+                "Chi tiết điểm đã tồn tại cho thành phần điểm: " + componentId);
+    }
+
+    public void validateRequestDetails(List<Integer> componentIds) {
+        Set<Integer> seen = new HashSet<>();
+        for (Integer componentId : componentIds) {
+            if (!seen.add(componentId)) {
+                throw new ExistingResourcesException(
+                        "Dữ liệu chi tiết điểm chứa thành phần điểm bị trùng: " + componentId);
+            }
+        }
     }
 }

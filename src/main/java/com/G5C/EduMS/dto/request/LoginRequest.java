@@ -9,9 +9,9 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class LoginRequest {
-    @NotBlank( message = "Username is required")
+    @NotBlank( message = "Tên đăng nhập là bắt buộc")
     private String username;
 
-    @NotBlank( message = "Password is required")
+    @NotBlank( message = "Mật khẩu là bắt buộc")
     private String password;
 }

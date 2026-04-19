@@ -18,24 +18,24 @@ public class CohortValidator {
 
     public void validateCreate(CohortRequest request) {
         if (cohortRepository.existsByCohortNameAndDeletedFalse(request.getCohortName()))
-            throw new ExistingResourcesException("Cohort already exists with name: " + request.getCohortName());
+            throw new ExistingResourcesException("Khóa học đã tồn tại với tên: " + request.getCohortName());
         validateYears(request);
     }
 
     public void validateUpdate(Integer id, CohortRequest request) {
         if (cohortRepository.existsByCohortNameAndDeletedFalseAndIdNot(request.getCohortName(), id))
-            throw new ExistingResourcesException("Cohort already exists with name: " + request.getCohortName());
+            throw new ExistingResourcesException("Khóa học đã tồn tại với tên: " + request.getCohortName());
         validateYears(request);
     }
 
     public void validateDelete(Integer id) {
         if (administrativeClassRepository.existsByCohortIdAndDeletedFalse(id))
-            throw new CannotDeleteException("Cannot delete cohort: it still has administrative classes assigned");
+            throw new CannotDeleteException("Không thể xóa khóa học: vẫn còn lớp hành chính được gán");
     }
 
     private void validateYears(CohortRequest request) {
         if (request.getStartYear() != null && request.getEndYear() != null
                 && request.getEndYear() <= request.getStartYear())
-            throw new InvalidDataException("End year must be greater than start year");
+            throw new InvalidDataException("Năm kết thúc phải lớn hơn năm bắt đầu");
     }
 }

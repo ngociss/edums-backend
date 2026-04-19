@@ -12,6 +12,8 @@ public interface GradeDetailRepository extends JpaRepository<GradeDetail, Intege
 
     Optional<GradeDetail> findByIdAndDeletedFalse(Integer id);
 
+    List<GradeDetail> findAllByReportId(Integer reportId);
+
     List<GradeDetail> findAllByReportIdAndDeletedFalse(Integer reportId);
 
     boolean existsByReportIdAndComponentIdAndDeletedFalse(Integer reportId, Integer componentId);

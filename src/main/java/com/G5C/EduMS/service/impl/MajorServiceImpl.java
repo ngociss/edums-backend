@@ -46,7 +46,7 @@ public class MajorServiceImpl implements MajorService {
     @Override
     public List<MajorResponse> getAllByFaculty(Integer facultyId) {
         facultyRepository.findByIdAndDeletedFalse(facultyId)
-                .orElseThrow(() -> new NotFoundResourcesException("Faculty not found with id: " + facultyId));
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy khoa với id: " + facultyId));
         return majorRepository.findAllByFacultyIdAndDeletedFalse(facultyId)
                 .stream()
                 .map(majorMapper::toResponse)
@@ -56,7 +56,7 @@ public class MajorServiceImpl implements MajorService {
     @Override
     public MajorResponse getById(Integer id) {
         Major major = majorRepository.findByIdAndDeletedFalse(id)
-                .orElseThrow(() -> new NotFoundResourcesException("Major not found with id: " + id));
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy ngành học với id: " + id));
         return majorMapper.toResponse(major);
     }
 
@@ -64,12 +64,12 @@ public class MajorServiceImpl implements MajorService {
     @Transactional
     public MajorResponse create(MajorRequest request) {
         Faculty faculty = facultyRepository.findByIdAndDeletedFalse(request.getFacultyId())
-                .orElseThrow(() -> new NotFoundResourcesException("Faculty not found with id: " + request.getFacultyId()));
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy khoa với id: " + request.getFacultyId()));
 
         if (majorRepository.existsByMajorNameAndFacultyIdAndDeletedFalse(request.getMajorName(), request.getFacultyId())) {
-            throw new ExistingResourcesException("Major already exists with name: " + request.getMajorName());
+            throw new ExistingResourcesException("Ngành học đã tồn tại với tên: " + request.getMajorName());
         } else if (majorRepository.existsByMajorCodeAndFacultyIdAndDeletedFalse(request.getMajorCode(), request.getFacultyId())) {
-            throw new  ExistingResourcesException("Major already exists with code: " + request.getMajorCode());
+            throw new  ExistingResourcesException("Ngành học đã tồn tại với mã: " + request.getMajorCode());
         }
 
         Major major = majorMapper.toEntity(request);
@@ -81,10 +81,10 @@ public class MajorServiceImpl implements MajorService {
     @Transactional
     public MajorResponse update(Integer id, MajorRequest request) {
         Major major = majorRepository.findByIdAndDeletedFalse(id)
-                .orElseThrow(() -> new NotFoundResourcesException("Major not found with id: " + id));
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy ngành học với id: " + id));
 
         Faculty faculty = facultyRepository.findByIdAndDeletedFalse(request.getFacultyId())
-                .orElseThrow(() -> new NotFoundResourcesException("Faculty not found with id: " + request.getFacultyId()));
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy khoa với id: " + request.getFacultyId()));
 
         majorValidator.validateDuplicate(
                 request.getMajorName(),
@@ -102,19 +102,19 @@ public class MajorServiceImpl implements MajorService {
     @Transactional
     public void delete(Integer id) {
         Major major = majorRepository.findByIdAndDeletedFalse(id)
-                .orElseThrow(() -> new NotFoundResourcesException("Major not found with id: " + id));
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy ngành học với id: " + id));
 
         if (specializationRepository.existsByMajorIdAndDeletedFalse(id)) {
-            throw new CannotDeleteException("Cannot delete major because it still has active specializations");
+            throw new CannotDeleteException("Không thể xóa ngành học vì vẫn còn chuyên ngành đang hoạt động");
         }
         if (administrativeClassRepository.existsByMajorIdAndDeletedFalse(id)) {
-            throw new CannotDeleteException("Cannot delete major because it still has active administrative classes");
+            throw new CannotDeleteException("Không thể xóa ngành học vì vẫn còn lớp hành chính đang hoạt động");
         }
         if (admissionApplicationRepository.existsByMajorIdAndDeletedFalse(id)) {
-            throw new CannotDeleteException("Cannot delete major because it still has active admission applications");
+            throw new CannotDeleteException("Không thể xóa ngành học vì vẫn còn hồ sơ tuyển sinh đang hoạt động");
         }
         if (benchmarkScoreRepository.existsByMajorId(id)) {
-            throw new CannotDeleteException("Cannot delete major because it still has benchmark scores");
+            throw new CannotDeleteException("Không thể xóa ngành học vì vẫn còn cấu hình điểm chuẩn");
         }
 
         major.setDeleted(true);
