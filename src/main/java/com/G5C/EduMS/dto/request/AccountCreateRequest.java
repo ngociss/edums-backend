@@ -11,13 +11,13 @@ import lombok.*;
 @Builder
 public class AccountCreateRequest {
 
-    @NotBlank(message = "Username cannot be blank")
+    @NotBlank(message = "Tên đăng nhập không được để trống")
     private String username;
 
-    @NotBlank(message = "Password cannot be blank")
+    @NotBlank(message = "Mật khẩu không được để trống")
     private String password;
 
-    @NotNull(message = "Role ID is required")
+    @NotNull(message = "Mã vai trò là bắt buộc")
     private Integer roleId;
 
     private String avatarUrl;

@@ -9,14 +9,14 @@ import lombok.Data;
 @Data
 public class GradeComponentRequest {
     
-    @NotBlank(message = "Component name is required")
+    @NotBlank(message = "Tên thành phần điểm là bắt buộc")
     private String componentName;
     
-    @NotNull(message = "Weight percentage is required")
-    @Min(value = 0, message = "Weight percentage must be at least 0")
-    @Max(value = 100, message = "Weight percentage cannot exceed 100")
+    @NotNull(message = "Tỷ trọng phần trăm là bắt buộc")
+    @Min(value = 0, message = "Tỷ trọng phần trăm phải lớn hơn hoặc bằng 0")
+    @Max(value = 100, message = "Tỷ trọng phần trăm không được vượt quá 100")
     private Float weightPercentage;
     
-    @NotNull(message = "Course ID is required")
+    @NotNull(message = "Mã môn học là bắt buộc")
     private Integer courseId;
 }

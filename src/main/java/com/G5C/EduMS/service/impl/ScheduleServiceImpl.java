@@ -38,12 +38,15 @@ public class ScheduleServiceImpl implements ScheduleService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<LecturerScheduleResponse> getMyLecturerSchedule(String username, LocalDate startDate, LocalDate endDate) {
+    public List<LecturerScheduleResponse> getMyLecturerSchedule(String username, Integer semesterId) {
         Lecturer lecturer = lecturerRepository.findByAccount_UsernameAndDeletedFalse(username)
-                .orElseThrow(() -> new NotFoundResourcesException("Khong tim thay thong tin giang vien cho tai khoan nay."));
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy thông tin giảng viên cho tài khoản này."));
 
-        List<ClassSession> sessions = classSessionRepository.findScheduleByLecturerAndDateRange(
-                lecturer.getId(), startDate, endDate
+        semesterRepository.findByIdAndDeletedFalse(semesterId)
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy học kỳ với id: " + semesterId));
+
+        List<ClassSession> sessions = classSessionRepository.findScheduleByLecturerAndSemester(
+                lecturer.getId(), semesterId
         );
 
         return scheduleMapper.toLecturerScheduleResponseList(sessions);
@@ -107,6 +110,6 @@ public class ScheduleServiceImpl implements ScheduleService {
         if (semester == null || semester.getSemesterNumber() == null || semester.getAcademicYear() == null) {
             return null;
         }
-        return "Hoc ky " + semester.getSemesterNumber() + " - " + semester.getAcademicYear();
+        return "Học kỳ " + semester.getSemesterNumber() + " - " + semester.getAcademicYear();
     }
 }

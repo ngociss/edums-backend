@@ -7,6 +7,7 @@ import com.G5C.EduMS.exception.NotFoundResourcesException;
 import com.G5C.EduMS.mapper.SemesterMapper;
 import com.G5C.EduMS.model.Semester;
 import com.G5C.EduMS.repository.SemesterRepository;
+import com.G5C.EduMS.service.AcademicStatusSyncService;
 import com.G5C.EduMS.service.SemesterService;
 import com.G5C.EduMS.validator.SemesterValidator;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ public class SemesterServiceImpl implements SemesterService {
     private final SemesterRepository semesterRepository;
     private final SemesterMapper semesterMapper;
     private final SemesterValidator semesterValidator;
+    private final AcademicStatusSyncService academicStatusSyncService;
 
     @Override
     public List<SemesterResponse> getAll() {
@@ -63,7 +65,9 @@ public class SemesterServiceImpl implements SemesterService {
         if (request.getStatus() != null) {
             semester.setStatus(request.getStatus());
         }
-        return semesterMapper.toResponse(semesterRepository.save(semester));
+        Semester savedSemester = semesterRepository.save(semester);
+        academicStatusSyncService.syncSemester(savedSemester.getId());
+        return semesterMapper.toResponse(findOrThrow(savedSemester.getId()));
     }
 
     @Override

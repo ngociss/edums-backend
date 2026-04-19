@@ -11,7 +11,7 @@ import java.util.List;
 @Builder
 public class RoleRequest {
 
-    @NotBlank(message = "Role name cannot be blank")
+    @NotBlank(message = "Tên vai trò không được để trống")
     private String roleName;
 
     // Instead of sending complex RolePermission objects, the frontend

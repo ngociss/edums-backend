@@ -24,6 +24,21 @@ public interface CourseSectionRepository extends JpaRepository<CourseSection, In
     @Query("""
         SELECT cs
         FROM CourseSection cs
+        JOIN FETCH cs.course c
+        JOIN FETCH cs.semester s
+        LEFT JOIN FETCH cs.lecturer l
+        WHERE cs.deleted = false
+          AND l.id = :lecturerId
+          AND l.deleted = false
+          AND c.deleted = false
+          AND s.deleted = false
+        ORDER BY s.startDate DESC, s.semesterNumber DESC, c.courseCode ASC, cs.sectionCode ASC
+    """)
+    List<CourseSection> findAllActiveByLecturerId(@Param("lecturerId") Integer lecturerId);
+
+    @Query("""
+        SELECT cs
+        FROM CourseSection cs
         JOIN cs.course c
         LEFT JOIN cs.lecturer l
         WHERE cs.deleted = false

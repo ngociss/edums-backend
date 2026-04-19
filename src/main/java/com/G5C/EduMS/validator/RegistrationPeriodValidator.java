@@ -86,7 +86,7 @@ public class RegistrationPeriodValidator {
 
         try {RegistrationPeriodStatus.valueOf(requestedStatus.name());
         } catch (IllegalArgumentException e) {
-            throw new InvalidDataException("Status không hợp lệ");
+            throw new InvalidDataException("Trạng thái không hợp lệ");
         }
         if (requestedStatus == null ||currentStatus == requestedStatus) {
             return;

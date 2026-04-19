@@ -37,7 +37,7 @@ public class CourseServiceImpl implements CourseService {
     @Override
     public List<CourseResponse> getAllByFaculty(Integer facultyId) {
         facultyRepository.findByIdAndDeletedFalse(facultyId)
-                .orElseThrow(() -> new NotFoundResourcesException("Faculty not found with id: " + facultyId));
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy khoa với id: " + facultyId));
         return courseRepository.findAllByFacultyIdAndDeletedFalse(facultyId)
                 .stream()
                 .map(courseMapper::toResponse)
@@ -47,7 +47,7 @@ public class CourseServiceImpl implements CourseService {
     @Override
     public CourseResponse getById(Integer id) {
         Course course = courseRepository.findByIdAndDeletedFalse(id)
-                .orElseThrow(() -> new NotFoundResourcesException("Course not found with id: " + id));
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy môn học với id: " + id));
         return courseMapper.toResponse(course);
     }
 
@@ -55,7 +55,7 @@ public class CourseServiceImpl implements CourseService {
     @Transactional
     public CourseResponse create(CourseRequest request) {
         Faculty faculty = facultyRepository.findByIdAndDeletedFalse(request.getFacultyId())
-                .orElseThrow(() -> new NotFoundResourcesException("Faculty not found with id: " + request.getFacultyId()));
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy khoa với id: " + request.getFacultyId()));
 
         courseValidator.validateDuplicate(request.getCourseCode(), request.getCourseName(), request.getFacultyId(), 0);
 
@@ -65,7 +65,7 @@ public class CourseServiceImpl implements CourseService {
         // Gắn môn tiên quyết nếu có
         if (request.getPrerequisiteCourseId() != null) {
             Course prerequisite = courseRepository.findByIdAndDeletedFalse(request.getPrerequisiteCourseId())
-                    .orElseThrow(() -> new NotFoundResourcesException("Prerequisite course not found with id: " + request.getPrerequisiteCourseId()));
+                    .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy môn học tiên quyết với id: " + request.getPrerequisiteCourseId()));
             course.setPrerequisiteCourse(prerequisite);
         }
 
@@ -76,10 +76,10 @@ public class CourseServiceImpl implements CourseService {
     @Transactional
     public CourseResponse update(Integer id, CourseRequest request) {
         Course course = courseRepository.findByIdAndDeletedFalse(id)
-                .orElseThrow(() -> new NotFoundResourcesException("Course not found with id: " + id));
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy môn học với id: " + id));
 
         Faculty faculty = facultyRepository.findByIdAndDeletedFalse(request.getFacultyId())
-                .orElseThrow(() -> new NotFoundResourcesException("Faculty not found with id: " + request.getFacultyId()));
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy khoa với id: " + request.getFacultyId()));
 
         courseValidator.validateDuplicate(request.getCourseCode(), request.getCourseName(), request.getFacultyId(), id);
 
@@ -89,7 +89,7 @@ public class CourseServiceImpl implements CourseService {
         // Cập nhật môn tiên quyết
         if (request.getPrerequisiteCourseId() != null) {
             Course prerequisite = courseRepository.findByIdAndDeletedFalse(request.getPrerequisiteCourseId())
-                    .orElseThrow(() -> new NotFoundResourcesException("Prerequisite course not found with id: " + request.getPrerequisiteCourseId()));
+                    .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy môn học tiên quyết với id: " + request.getPrerequisiteCourseId()));
             course.setPrerequisiteCourse(prerequisite);
         } else {
             course.setPrerequisiteCourse(null);
@@ -102,11 +102,11 @@ public class CourseServiceImpl implements CourseService {
     @Transactional
     public void delete(Integer id) {
         Course course = courseRepository.findByIdAndDeletedFalse(id)
-                .orElseThrow(() -> new NotFoundResourcesException("Course not found with id: " + id));
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy môn học với id: " + id));
 
         // Không xóa nếu có môn khác đang dùng làm tiên quyết
         if (courseRepository.existsByPrerequisiteCourseIdAndDeletedFalse(id)) {
-            throw new CannotDeleteException("Cannot delete course because it is a prerequisite for other courses");
+            throw new CannotDeleteException("Không thể xóa môn học vì đang là môn tiên quyết của môn học khác");
         }
 
         course.setDeleted(true);

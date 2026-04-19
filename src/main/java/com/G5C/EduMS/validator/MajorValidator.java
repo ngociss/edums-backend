@@ -15,12 +15,12 @@ public class MajorValidator {
 
         if (majorRepository.existsByMajorNameAndFacultyIdAndIdNotAndDeletedFalse(
                 majorName, facultyId, id)) {
-            throw new ExistingResourcesException("Major name already exists");
+            throw new ExistingResourcesException("Tên ngành học đã tồn tại");
         }
 
         if (majorRepository.existsByMajorCodeAndFacultyIdAndIdNotAndDeletedFalse(
                 majorCode, facultyId, id)) {
-            throw new ExistingResourcesException("Major code already exists");
+            throw new ExistingResourcesException("Mã ngành học đã tồn tại");
         }
     }
 }

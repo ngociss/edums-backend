@@ -39,7 +39,7 @@ public class SpecializationServiceImpl implements SpecializationService {
     @Override
     public List<SpecializationResponse> getAllByMajor(Integer majorId) {
         majorRepository.findByIdAndDeletedFalse(majorId)
-                .orElseThrow(() -> new NotFoundResourcesException("Major not found with id: " + majorId));
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy ngành học với id: " + majorId));
         return specializationRepository.findAllByMajorIdAndDeletedFalse(majorId)
                 .stream()
                 .map(specializationMapper::toResponse)
@@ -49,7 +49,7 @@ public class SpecializationServiceImpl implements SpecializationService {
     @Override
     public SpecializationResponse getById(Integer id) {
         Specialization specialization = specializationRepository.findByIdAndDeletedFalse(id)
-                .orElseThrow(() -> new NotFoundResourcesException("Specialization not found with id: " + id));
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy chuyên ngành với id: " + id));
         return specializationMapper.toResponse(specialization);
     }
 
@@ -57,7 +57,7 @@ public class SpecializationServiceImpl implements SpecializationService {
     @Transactional
     public SpecializationResponse create(SpecializationRequest request) {
         Major major = majorRepository.findByIdAndDeletedFalse(request.getMajorId())
-                .orElseThrow(() -> new NotFoundResourcesException("Major not found with id: " + request.getMajorId()));
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy ngành học với id: " + request.getMajorId()));
 
         specializationValidator.validateDuplicate(request.getSpecializationName(), request.getMajorId(), 0);
 
@@ -70,10 +70,10 @@ public class SpecializationServiceImpl implements SpecializationService {
     @Transactional
     public SpecializationResponse update(Integer id, SpecializationRequest request) {
         Specialization specialization = specializationRepository.findByIdAndDeletedFalse(id)
-                .orElseThrow(() -> new NotFoundResourcesException("Specialization not found with id: " + id));
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy chuyên ngành với id: " + id));
 
         Major major = majorRepository.findByIdAndDeletedFalse(request.getMajorId())
-                .orElseThrow(() -> new NotFoundResourcesException("Major not found with id: " + request.getMajorId()));
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy ngành học với id: " + request.getMajorId()));
 
         specializationValidator.validateDuplicate(request.getSpecializationName(), request.getMajorId(), id);
 
@@ -86,10 +86,10 @@ public class SpecializationServiceImpl implements SpecializationService {
     @Transactional
     public void delete(Integer id) {
         Specialization specialization = specializationRepository.findByIdAndDeletedFalse(id)
-                .orElseThrow(() -> new NotFoundResourcesException("Specialization not found with id: " + id));
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy chuyên ngành với id: " + id));
 
         if (studentRepository.existsBySpecializationIdAndDeletedFalse(id)) {
-            throw new CannotDeleteException("Cannot delete specialization because it still has active students");
+            throw new CannotDeleteException("Không thể xóa chuyên ngành vì vẫn còn sinh viên đang theo học");
         }
 
         specialization.setDeleted(true);

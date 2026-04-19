@@ -12,11 +12,11 @@ import lombok.*;
 @Builder
 public class SpecializationRequest {
 
-    @NotNull(message = "Major ID is required")
+    @NotNull(message = "Mã ngành học là bắt buộc")
     private Integer majorId;
 
-    @NotBlank(message = "Specialization name is required")
-    @Size(max = 255, message = "Specialization name must not exceed 255 characters")
+    @NotBlank(message = "Tên chuyên ngành là bắt buộc")
+    @Size(max = 255, message = "Tên chuyên ngành không được vượt quá 255 ký tự")
     private String specializationName;
 }
 

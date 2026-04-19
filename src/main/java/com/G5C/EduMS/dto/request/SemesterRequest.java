@@ -38,4 +38,5 @@ public class SemesterRequest {
     private Integer totalWeeks;
 
     private SemesterStatus status;
+
 }

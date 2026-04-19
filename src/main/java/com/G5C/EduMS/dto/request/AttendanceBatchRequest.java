@@ -9,7 +9,7 @@ import java.util.List;
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class AttendanceBatchRequest {
 
-    @NotEmpty(message = "Attendance list must not be empty")
+    @NotEmpty(message = "Danh sách điểm danh không được để trống")
     @Valid
     private List<AttendanceItemRequest> items;
 }

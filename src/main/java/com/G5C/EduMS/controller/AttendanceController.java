@@ -28,45 +28,49 @@ public class AttendanceController {
     @GetMapping("/api/v1/class-sessions/{sessionId}/attendances")
     @Operation(summary = "Get attendance list by session")
     public ResponseEntity<ResponseData<List<AttendanceResponse>>> getBySession(
+            Authentication authentication,
             @PathVariable Integer sessionId) {
         return ResponseEntity.ok(
             ResponseData.success("Success",
-                attendanceService.getBySession(sessionId), 200));
+                attendanceService.getBySession(authentication.getName(), sessionId), 200));
     }
 
     @PostMapping("/api/v1/class-sessions/{sessionId}/attendances/batch")
     @Operation(summary = "Create batch attendance for a session")
     public ResponseEntity<ResponseData<List<AttendanceResponse>>> createBatch(
+            Authentication authentication,
             @PathVariable Integer sessionId,
             @Valid @RequestBody AttendanceBatchRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(
             ResponseData.success("Attendance recorded successfully",
-                attendanceService.createBatch(sessionId, request), 201));
+                attendanceService.createBatch(authentication.getName(), sessionId, request), 201));
     }
 
     @PostMapping("/api/v1/class-sessions/{sessionId}/attendances/sync")
     @Operation(summary = "Sync initial attendance list for a session")
     public ResponseEntity<ResponseData<List<AttendanceResponse>>> syncSessionAttendance(
+            Authentication authentication,
             @PathVariable Integer sessionId) {
         return ResponseEntity.ok(
                 ResponseData.success("Attendance list synchronized successfully",
-                        attendanceService.syncSessionAttendance(sessionId), 200));
+                        attendanceService.syncSessionAttendance(authentication.getName(), sessionId), 200));
     }
 
     @PutMapping("/api/v1/attendances/{id}")
     @Operation(summary = "Update attendance record")
     public ResponseEntity<ResponseData<AttendanceResponse>> update(
+            Authentication authentication,
             @PathVariable Integer id,
             @Valid @RequestBody AttendanceUpdateRequest request) {
         return ResponseEntity.ok(
             ResponseData.success("Attendance updated successfully",
-                attendanceService.update(id, request), 200));
+                attendanceService.update(authentication.getName(), id, request), 200));
     }
 
     @DeleteMapping("/api/v1/attendances/{id}")
     @Operation(summary = "Soft delete attendance record")
-    public ResponseEntity<ResponseData<Void>> delete(@PathVariable Integer id) {
-        attendanceService.delete(id);
+    public ResponseEntity<ResponseData<Void>> delete(Authentication authentication, @PathVariable Integer id) {
+        attendanceService.delete(authentication.getName(), id);
         return ResponseEntity.ok(
             ResponseData.success("Attendance deleted successfully", null, 200));
     }

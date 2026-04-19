@@ -11,20 +11,20 @@ import lombok.*;
 @Builder
 public class CourseRequest {
 
-    @NotBlank(message = "Course code is required")
-    @Size(max = 20, message = "Course code must not exceed 20 characters")
+    @NotBlank(message = "Mã môn học là bắt buộc")
+    @Size(max = 20, message = "Mã môn học không được vượt quá 20 ký tự")
     private String courseCode;
 
-    @NotBlank(message = "Course name is required")
-    @Size(max = 255, message = "Course name must not exceed 255 characters")
+    @NotBlank(message = "Tên môn học là bắt buộc")
+    @Size(max = 255, message = "Tên môn học không được vượt quá 255 ký tự")
     private String courseName;
 
-    @NotNull(message = "Credits is required")
-    @Min(value = 1, message = "Credits must be at least 1")
-    @Max(value = 10, message = "Credits must not exceed 10")
+    @NotNull(message = "Số tín chỉ là bắt buộc")
+    @Min(value = 1, message = "Số tín chỉ phải lớn hơn hoặc bằng 1")
+    @Max(value = 10, message = "Số tín chỉ không được vượt quá 10")
     private Integer credits;
 
-    @NotNull(message = "Faculty ID is required")
+    @NotNull(message = "Mã khoa là bắt buộc")
     private Integer facultyId;
 
     // null = không có môn tiên quyết

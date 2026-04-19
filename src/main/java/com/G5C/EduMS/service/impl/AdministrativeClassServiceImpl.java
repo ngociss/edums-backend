@@ -79,24 +79,24 @@ public class AdministrativeClassServiceImpl implements AdministrativeClassServic
     private AdministrativeClass findOrThrow(Integer id) {
         return administrativeClassRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new NotFoundResourcesException(
-                    "Administrative class not found with id: " + id));
+                    "Không tìm thấy lớp hành chính với id: " + id));
     }
 
     private void setRelations(AdministrativeClass entity, AdministrativeClassRequest request) {
         entity.setHeadLecturer(
             lecturerRepository.findById(request.getHeadLecturerId())
                 .orElseThrow(() -> new NotFoundResourcesException(
-                    "Lecturer not found with id: " + request.getHeadLecturerId()))
+                    "Không tìm thấy giảng viên với id: " + request.getHeadLecturerId()))
         );
         entity.setCohort(
             cohortRepository.findById(request.getCohortId())
                 .orElseThrow(() -> new NotFoundResourcesException(
-                    "Cohort not found with id: " + request.getCohortId()))
+                    "Không tìm thấy khóa học với id: " + request.getCohortId()))
         );
         entity.setMajor(
             majorRepository.findById(request.getMajorId())
                 .orElseThrow(() -> new NotFoundResourcesException(
-                    "Major not found with id: " + request.getMajorId()))
+                    "Không tìm thấy ngành học với id: " + request.getMajorId()))
         );
     }
 }

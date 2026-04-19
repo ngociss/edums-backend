@@ -9,20 +9,20 @@ import lombok.*;
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class AdministrativeClassRequest {
 
-    @NotBlank(message = "Class name is required")
-    @Size(max = 255, message = "Class name must not exceed 255 characters")
+    @NotBlank(message = "Tên lớp là bắt buộc")
+    @Size(max = 255, message = "Tên lớp không được vượt quá 255 ký tự")
     private String className;
 
-    @NotNull(message = "Head lecturer ID is required")
+    @NotNull(message = "Mã giảng viên chủ nhiệm là bắt buộc")
     private Integer headLecturerId; 
 
-    @NotNull(message = "Cohort ID is required")
+    @NotNull(message = "Mã khóa học là bắt buộc")
     private Integer cohortId;
 
-    @NotNull(message = "Major ID is required")
+    @NotNull(message = "Mã ngành học là bắt buộc")
     private Integer majorId;
 
-    @NotNull(message = "Max capacity is required")
-    @Min(value = 1, message = "Max capacity must be at least 1")
-    private Integer maxCapacity; 
+    @NotNull(message = "Sĩ số tối đa là bắt buộc")
+    @Min(value = 1, message = "Sĩ số tối đa phải lớn hơn hoặc bằng 1")
+    private Integer maxCapacity;
 }

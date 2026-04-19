@@ -17,7 +17,7 @@ public class SpecializationValidator {
     public void validateDuplicate(String specializationName, Integer majorId, Integer excludeId) {
         if (specializationRepository.existsBySpecializationNameAndMajorIdAndIdNotAndDeletedFalse(
                 specializationName, majorId, excludeId)) {
-            throw new ExistingResourcesException("Specialization name already exists in this major");
+            throw new ExistingResourcesException("Tên chuyên ngành đã tồn tại trong ngành học này");
         }
     }
 }

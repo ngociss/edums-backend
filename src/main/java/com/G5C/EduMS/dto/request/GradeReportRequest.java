@@ -11,12 +11,13 @@ import java.util.List;
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class GradeReportRequest {
 
-    @NotNull(message = "Registration ID is required")
+    @NotNull(message = "Mã đăng ký là bắt buộc")
     private Integer registrationId;
 
-    @NotEmpty(message = "Grade details must not be empty")
+    @NotEmpty(message = "Chi tiết điểm không được để trống")
     @Valid
     private List<GradeDetailRequest> gradeDetails;
 
     private GradeStatus status;
+
 }

@@ -1,9 +1,12 @@
 package com.G5C.EduMS.service;
 
+import com.G5C.EduMS.dto.response.LecturerCourseSectionResponse;
 import com.G5C.EduMS.dto.response.LecturerResponse;
 import com.G5C.EduMS.dto.request.LecturerCreateRequest;
 import com.G5C.EduMS.dto.request.LecturerUpdateRequest;
 import org.springframework.data.domain.Page;
+
+import java.util.List;
 
 public interface LecturerService {
 
@@ -12,6 +15,8 @@ public interface LecturerService {
 
     // Lấy chi tiết giảng viên (có thể map thêm danh sách lớp chủ nhiệm trong impl)
     LecturerResponse getLecturerById(Integer id);
+
+    List<LecturerCourseSectionResponse> getMyCourseSections(String username);
 
     // Thêm mới giảng viên
     LecturerResponse createLecturer(LecturerCreateRequest request);

@@ -25,43 +25,43 @@ public class AdministrativeClassValidator {
     public void validateCreate(AdministrativeClassRequest request) {
         if (administrativeClassRepository.existsByClassNameAndDeletedFalse(request.getClassName()))
             throw new ExistingResourcesException(
-                "Administrative class already exists with name: " + request.getClassName());
+                "Lớp hành chính đã tồn tại với tên: " + request.getClassName());
 
         if (!lecturerRepository.existsById(request.getHeadLecturerId()))
             throw new NotFoundResourcesException(
-                "Lecturer not found with id: " + request.getHeadLecturerId());
+                "Không tìm thấy giảng viên với id: " + request.getHeadLecturerId());
 
         if (!cohortRepository.existsById(request.getCohortId()))
             throw new NotFoundResourcesException(
-                "Cohort not found with id: " + request.getCohortId());
+                "Không tìm thấy khóa học với id: " + request.getCohortId());
 
         if (!majorRepository.existsById(request.getMajorId()))
             throw new NotFoundResourcesException(
-                "Major not found with id: " + request.getMajorId());
+                "Không tìm thấy ngành học với id: " + request.getMajorId());
     }
 
     public void validateUpdate(Integer id, AdministrativeClassRequest request) {
         if (administrativeClassRepository.existsByClassNameAndDeletedFalseAndIdNot(
                 request.getClassName(), id))
             throw new ExistingResourcesException(
-                "Administrative class already exists with name: " + request.getClassName());
+                "Lớp hành chính đã tồn tại với tên: " + request.getClassName());
 
         if (!lecturerRepository.existsById(request.getHeadLecturerId()))
             throw new NotFoundResourcesException(
-                "Lecturer not found with id: " + request.getHeadLecturerId());
+                "Không tìm thấy giảng viên với id: " + request.getHeadLecturerId());
 
         if (!cohortRepository.existsById(request.getCohortId()))
             throw new NotFoundResourcesException(
-                "Cohort not found with id: " + request.getCohortId());
+                "Không tìm thấy khóa học với id: " + request.getCohortId());
 
         if (!majorRepository.existsById(request.getMajorId()))
             throw new NotFoundResourcesException(
-                "Major not found with id: " + request.getMajorId());
+                "Không tìm thấy ngành học với id: " + request.getMajorId());
     }
 
     public void validateDelete(Integer id) {
         if (studentRepository.existsByAdministrativeClassIdAndDeletedFalse(id))
             throw new CannotDeleteException(
-                "Cannot delete: administrative class still has active students");
+                "Không thể xóa: lớp hành chính vẫn còn sinh viên đang học");
     }
 }

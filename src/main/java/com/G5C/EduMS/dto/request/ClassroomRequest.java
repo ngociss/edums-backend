@@ -13,16 +13,16 @@ import lombok.*;
 @Builder
 public class ClassroomRequest {
 
-    @NotBlank(message = "Room name is required")
-    @Size(max = 255, message = "Room name must not exceed 255 characters")
+    @NotBlank(message = "Tên phòng là bắt buộc")
+    @Size(max = 255, message = "Tên phòng không được vượt quá 255 ký tự")
     private String roomName;
 
-    @NotNull(message = "Capacity is required")
-    @Min(value = 1, message = "Capacity must be at least 1")
+    @NotNull(message = "Sức chứa là bắt buộc")
+    @Min(value = 1, message = "Sức chứa phải lớn hơn hoặc bằng 1")
     private Integer capacity;
 
-    @NotBlank(message = "Room type is required")
-    @Size(max = 255, message = "Room type must not exceed 255 characters")
+    @NotBlank(message = "Loại phòng là bắt buộc")
+    @Size(max = 255, message = "Loại phòng không được vượt quá 255 ký tự")
     private String roomType;
 }
 

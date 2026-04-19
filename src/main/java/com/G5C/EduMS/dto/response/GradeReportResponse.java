@@ -15,10 +15,16 @@ public class GradeReportResponse {
     private String studentName;
     private String studentCode;
     private Integer sectionId;
+    private String sectionCode;
+    private Integer semesterId;
+    private Integer semesterNumber;
+    private String academicYear;
+    private String courseCode;
     private String courseName;
     private Float finalScore;
     private String letterGrade;
     private GradeStatus status;
     private LocalDateTime createdAt;
     private List<GradeDetailResponse> gradeDetails;
+    private Integer credits;
 }

@@ -38,7 +38,7 @@ public class FacultyServiceImpl implements FacultyService {
     @Override
     public FacultyResponse getById(Integer id) {
         Faculty faculty = facultyRepository.findByIdAndDeletedFalse(id)
-                .orElseThrow(() -> new NotFoundResourcesException("Faculty not found with id: " + id));
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy khoa với id: " + id));
         return facultyMapper.toResponse(faculty);
     }
 
@@ -54,7 +54,7 @@ public class FacultyServiceImpl implements FacultyService {
     @Transactional
     public FacultyResponse update(Integer id, FacultyRequest request) {
         Faculty faculty = facultyRepository.findByIdAndDeletedFalse(id)
-                .orElseThrow(() -> new NotFoundResourcesException("Faculty not found with id: " + id));
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy khoa với id: " + id));
         facultyValidator.validateDuplicate(request.getFacultyName(), request.getFacultyCode(), id);
         facultyMapper.updateEntity(request, faculty);
         return facultyMapper.toResponse(facultyRepository.save(faculty));
@@ -64,12 +64,12 @@ public class FacultyServiceImpl implements FacultyService {
     @Transactional
     public void delete(Integer id) {
         Faculty faculty = facultyRepository.findByIdAndDeletedFalse(id)
-                .orElseThrow(() -> new NotFoundResourcesException("Faculty not found with id: " + id));
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy khoa với id: " + id));
         if (majorRepository.existsByFacultyIdAndDeletedFalse(id)) {
-            throw new CannotDeleteException("Cannot delete faculty because it still has active majors");
+            throw new CannotDeleteException("Không thể xóa khoa vì vẫn còn ngành học đang hoạt động");
         }
         if (courseRepository.existsByFacultyIdAndDeletedFalse(id)) {
-            throw new CannotDeleteException("Cannot delete faculty because it still has active courses");
+            throw new CannotDeleteException("Không thể xóa khoa vì vẫn còn môn học đang hoạt động");
         }
         faculty.setDeleted(true);
         facultyRepository.save(faculty);

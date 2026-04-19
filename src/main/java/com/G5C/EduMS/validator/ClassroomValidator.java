@@ -16,7 +16,7 @@ public class ClassroomValidator {
      */
     public void validateDuplicate(String roomName, Integer excludeId) {
         if (classroomRepository.existsByRoomNameAndIdNotAndDeletedFalse(roomName, excludeId)) {
-            throw new ExistingResourcesException("Classroom already exists with room name: " + roomName);
+            throw new ExistingResourcesException("Phòng học đã tồn tại với tên phòng: " + roomName);
         }
     }
 }

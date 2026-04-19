@@ -89,6 +89,8 @@ public class RecurringScheduleServiceImpl implements RecurringScheduleService {
                 request.getDayOfWeek(),
                 request.getStartPeriod(),
                 request.getEndPeriod(),
+                startWeek,
+                endWeek,
                 0
         );
 
@@ -144,6 +146,8 @@ public class RecurringScheduleServiceImpl implements RecurringScheduleService {
                 request.getDayOfWeek(),
                 request.getStartPeriod(),
                 request.getEndPeriod(),
+                startWeek,
+                endWeek,
                 id
         );
 

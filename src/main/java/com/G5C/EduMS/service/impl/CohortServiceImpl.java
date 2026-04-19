@@ -59,6 +59,6 @@ public class CohortServiceImpl implements CohortService {
 
     private Cohort findOrThrow(Integer id) {
         return cohortRepository.findByIdAndDeletedFalse(id)
-                .orElseThrow(() -> new NotFoundResourcesException("Cohort not found with id: " + id));
+                .orElseThrow(() -> new NotFoundResourcesException("Không tìm thấy khóa học với id: " + id));
     }
 }

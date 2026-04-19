@@ -16,10 +16,10 @@ public class CourseValidator {
      */
     public void validateDuplicate(String courseCode, String courseName, Integer facultyId, Integer excludeId) {
         if (courseRepository.existsByCourseCodeAndIdNotAndDeletedFalse(courseCode, excludeId)) {
-            throw new ExistingResourcesException("Course code already exists: " + courseCode);
+            throw new ExistingResourcesException("Mã môn học đã tồn tại: " + courseCode);
         }
         if (courseRepository.existsByCourseNameAndFacultyIdAndIdNotAndDeletedFalse(courseName, facultyId, excludeId)) {
-            throw new ExistingResourcesException("Course name already exists in this faculty: " + courseName);
+            throw new ExistingResourcesException("Tên môn học đã tồn tại trong khoa này: " + courseName);
         }
     }
 }

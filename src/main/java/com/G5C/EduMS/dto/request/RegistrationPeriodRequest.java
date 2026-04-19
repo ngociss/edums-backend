@@ -15,19 +15,20 @@ import java.time.LocalDateTime;
 @Builder
 public class RegistrationPeriodRequest {
 
-    @NotNull(message = "Semester ID is required")
+    @NotNull(message = "Mã học kỳ là bắt buộc")
     private Integer semesterId;
 
-    @NotBlank(message = "Registration period name is required")
-    @Size(max = 100, message = "Registration period name must not exceed 100 characters")
+    @NotBlank(message = "Tên đợt đăng ký là bắt buộc")
+    @Size(max = 100, message = "Tên đợt đăng ký không được vượt quá 100 ký tự")
     private String name;
 
-    @NotNull(message = "Start time is required")
+    @NotNull(message = "Thời gian bắt đầu là bắt buộc")
     private LocalDateTime startTime;
 
-    @NotNull(message = "End time is required")
+    @NotNull(message = "Thời gian kết thúc là bắt buộc")
     private LocalDateTime endTime;
 
-    @NotNull(message = "Status is required")
+    @NotNull(message = "Trạng thái là bắt buộc")
     private RegistrationPeriodStatus status;
+
 }
